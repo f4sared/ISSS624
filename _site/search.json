@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "ISSS624",
     "section": "",
-    "text": "I’m gonna share what I learned\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "I’m gonna share what I learned use\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
   },
   {
     "objectID": "about.html",
@@ -12,5 +12,12 @@
     "title": "About",
     "section": "",
     "text": "1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "Hands_on_ex1.html",
+    "href": "Hands_on_ex1.html",
+    "title": "Hands-on Exercise 1",
+    "section": "",
+    "text": "Hello ! Here is my second page"
   }
 ]
