@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "ISSS624",
-    "section": "",
-    "text": "I’m gonna share what I learned use\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
@@ -19,5 +12,19 @@
     "title": "Hands-on Exercise 1",
     "section": "",
     "text": "Hello ! Here is my second page"
+  },
+  {
+    "objectID": "hands_on_ex_1/hands_on_ex_1.html",
+    "href": "hands_on_ex_1/hands_on_ex_1.html",
+    "title": "hands_on_ex_1_geo_data_wrangling",
+    "section": "",
+    "text": "In this hands-on exercise, I learned how to import cool data and wrangle them using the proper R packages.\nGetting started\nFirst import:\n\npacman::p_load(sf,tidyverse)\n\nSecond import:\n\nmpsz <- st_read(dsn = \"data/geospatial\", layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `D:\\f4sared\\ISSS624\\hands_on_ex_1\\data\\geospatial' using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "I’m gonna share what I learned use\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
   }
 ]

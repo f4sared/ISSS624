@@ -1,0 +1,22 @@
+---
+title: "hands_on_ex_1_geo_data_wrangling"
+editor: visual
+---
+
+Overview
+
+In this hands-on exercise, I learned how to import cool data and wrangle them using the proper R packages.
+
+Getting started
+
+First import:
+
+```{r}
+pacman::p_load(sf,tidyverse)
+```
+
+Second import:
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+```
