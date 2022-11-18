@@ -3,20 +3,111 @@ title: "hands_on_ex_1_geo_data_wrangling"
 editor: visual
 ---
 
-Overview
+## Overview
 
 In this hands-on exercise, I learned how to import cool data and wrangle them using the proper R packages.
 
-Getting started
+## Getting started
 
-First import:
+Load packages:
 
 ```{r}
 pacman::p_load(sf,tidyverse)
 ```
 
-Second import:
+Import the geospatial data:
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
 ```
+
+Import the polyline feature data in shape form:
+
+```{r}
+cyclingpath <- st_read(dsn = "data/geospatial", 
+                         layer = "CyclingPath")
+```
+
+Import GIS data in kml format:
+
+```{r}
+preschool <- st_read("data/geospatial/pre-schools-location-kml.kml")
+```
+
+Checking the Content of A Simple Feature Data Frame
+
+```{r}
+st_geometry(mpsz)
+```
+
+Working with glimpse
+
+```{r}
+glimpse(mpsz)
+```
+
+Working with head:
+
+```{r}
+head(mpsz, n=5)  
+```
+
+Plotting the geospatial data:
+
+```{r}
+plot(mpsz)
+```
+
+```{r}
+plot(st_geometry(mpsz))
+```
+
+```{r}
+plot(mpsz["PLN_AREA_N"])
+```
+
+### Assigning EPSG code to a simple feature data frame
+
+```{r}
+st_crs(mpsz)
+```
+
+```{r}
+mpsz3414 <- st_set_crs(mpsz, 3414)
+```
+
+```{r}
+st_crs(mpsz3414)
+```
+
+### Transforming the projection of preschool from wgs84 to svy21
+
+```{r}
+preschool3414 <- st_transform(preschool, 
+                              crs = 3414)
+```
+
+# Import Aspatial data
+
+```{r}
+listings <- read_csv("data/aspatial/listings.csv")
+```
+
+```{r}
+list(listings) 
+```
+
+```{r}
+listings_sf <- st_as_sf(listings, 
+                       coords = c("longitude", "latitude"),
+                       crs=4326) %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+glimpse(listings_sf)
+```
+
+# Geoprocessing with sf package
+
+Buffering
