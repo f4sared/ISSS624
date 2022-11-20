@@ -123,9 +123,23 @@ tm_shape(mpsz_pop2020) +
   tm_polygons()
 ```
 
-We can also draw according to each column feature:
+We can also draw according to each column feature with tm_polygon:
 
 ```{r}
 tm_shape(mpsz_pop2020)+
   tm_polygons("DEPENDENCY")
+```
+
+tm_polygon is a wrapper of tm_fill, just that it is missing the borders:
+
+```{r}
+tm_shape(mpsz_pop2020)+tm_fill("DEPENDENCY")
+```
+
+so now, we will add the borders in:
+
+```{r}
+tm_shape(mpsz_pop2020)+
+  tm_fill("DEPENDENCY") +
+  tm_borders(lwd = 0.1,  alpha = 1)
 ```
