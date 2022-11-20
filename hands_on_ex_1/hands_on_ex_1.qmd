@@ -3,7 +3,7 @@ title: "hands_on_ex_1_geo_data_wrangling"
 editor: visual
 ---
 
-## Overview S
+## Overview SS
 
 In this hands-on exercise, I learned how to import cool data and wrangle them using the proper R packages.
 

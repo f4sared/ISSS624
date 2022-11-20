@@ -2,9 +2,7 @@
 title: "ISSS624"
 ---
 
-Welcome to class !
-
-I'm gonna share what I learned use
+Licheng Yan's Page
 
 To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
 
