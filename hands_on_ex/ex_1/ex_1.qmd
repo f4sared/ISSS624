@@ -1,0 +1,12 @@
+---
+title: "Hand on ex 1 - Geodata wrangling"
+editor: visual
+---
+
+## Overview Ex 1
+
+### Step 1: Load packages
+
+```{r}
+pacman::p_load(sf,tidyverse)
+```

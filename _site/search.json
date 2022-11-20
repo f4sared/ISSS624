@@ -7,11 +7,11 @@
     "text": "1 + 1\n\n[1] 2"
   },
   {
-    "objectID": "hands_on_ex/ex_1.html",
-    "href": "hands_on_ex/ex_1.html",
-    "title": "Hand on ex 1",
+    "objectID": "hands_on_ex/ex_1/ex_1.html",
+    "href": "hands_on_ex/ex_1/ex_1.html",
+    "title": "Hand on ex 1 - Geodata wrangling",
     "section": "",
-    "text": "Hello !"
+    "text": "pacman::p_load(sf,tidyverse)"
   },
   {
     "objectID": "Hands_on_ex1.html",
@@ -51,8 +51,8 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "ISSS624_Licheng_Yan",
+    "title": "ISSS624_Licheng_Yan_Learning_Journal",
     "section": "",
-    "text": "To learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "This Netlify site is a documentation of learning journey for geospatial analytics and Rstudio\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n50 + 50\n\n[1] 100"
   }
 ]

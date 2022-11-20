@@ -1,7 +1,7 @@
 {
-  "hash": "48ab1dfeb2dcde34a86bf5a59908210d",
+  "hash": "450bfb9639e29528ab617e76141b49ce",
   "result": {
-    "markdown": "---\ntitle: \"ISSS624_Licheng_Yan\"\n---\n\n\nName: Licheng Yan\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 2\n```\n:::\n:::\n",
+    "markdown": "---\ntitle: \"ISSS624_Licheng_Yan_Learning_Journal\"\n---\n\n\nName: Licheng Yan\n\nThis Netlify site is a documentation of learning journey for geospatial analytics and Rstudio\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n50 + 50\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 100\n```\n:::\n:::\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"
