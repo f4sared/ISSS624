@@ -30,3 +30,17 @@ Import KML into R as a Point format:
 ```{r}
 preschookl <- st_read("data/geospatial/pre-schools-location-kml.kml")
 ```
+
+### Step 3: Check content of the data frame 
+
+This function provides a simple overview of the dataframe:
+
+```{r}
+st_geometry(mpsz)
+```
+
+This function gives a detailed breakdown of the columns and the data within the column:
+
+```{r}
+glimpse(mpsz)
+```
