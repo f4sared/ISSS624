@@ -77,7 +77,9 @@ Save the table:
 write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
 ```
 
-## Step 3: Do some plotting 
+## Step 3: Do some plotting with various tools 
+
+#### qtm()
 
 Make our first plot based on the column "Dependency".
 
@@ -88,8 +90,42 @@ tmap_mode("plot")
 qtm(mpsz_pop2020, fill = "DEPENDENCY")
 ```
 
-With the disadvantage of the qtm(), we will next try tm_shape() to get better quality:
+#### tm_shape()
+
+With the disadvantage of the qtm(), we will next try tm_shape() to get better professional quality:
 
 ```{r}
+tm_shape(mpsz_pop2020)+
+  tm_fill("DEPENDENCY", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Dependency ratio") +
+  tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS", 
+             position = c("left", "bottom"))
+```
 
+#### Drawing a base map
+
+tm_shape() is the basic building block.
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_polygons()
+```
+
+We can also draw according to each column feature:
+
+```{r}
+tm_shape(mpsz_pop2020)+
+  tm_polygons("DEPENDENCY")
 ```
