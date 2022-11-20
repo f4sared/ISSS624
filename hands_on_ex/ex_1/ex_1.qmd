@@ -28,7 +28,7 @@ cyclingpath <- st_read(dsn = "data/geospatial", layer = "CyclingPath")
 Import KML into R as a Point format:
 
 ```{r}
-preschookl <- st_read("data/geospatial/pre-schools-location-kml.kml")
+preschool <- st_read("data/geospatial/pre-schools-location-kml.kml")
 ```
 
 ### Step 3: Check content of the data frame 
@@ -75,3 +75,82 @@ Note\*\*\*\
 plot() is only meant for a quick look, for cartographic quality, we should use other packages such as tamp.
 
 ### Step 5: Working with projections 
+
+Projection is important because we want to use geospatial data that are of similar coordinate system.
+
+The following code will show how to project from one coordinate system to another coordinate system.
+
+Check the coordinate reference system as follow:
+
+```{r}
+st_crs(mpsz)
+```
+
+Note\*\*\*\
+EPSG stands for "European Petroleum Survey Group"
+
+```{r}
+mpsz3414 <- st_set_crs(mpsz, 3414)
+```
+
+Question to self: Why is there a warning above ?
+
+Below we will set the correct EPSG code to 3414:
+
+```{r}
+st_crs(mpsz3414)
+```
+
+Next we will convert the projection of preschool from wsg84 to svy21:
+
+We will take a loot at the CRS o the preschool:
+
+```{r}
+st_crs(preschool)
+```
+
+Now we will convert:
+
+```{r}
+preschool3414 <- st_transform(preschool, crs=3414)
+```
+
+We will now take a look at the converted geometry dataframe:
+
+```{r}
+st_geometry(preschool3414)
+```
+
+We can see that after conversion, the values of the geometry are now different:
+
+```{r}
+glimpse(preschool)
+```
+
+```{r}
+glimpse(preschool3414)
+```
+
+Just for interest, we will plot the preschool data:
+
+```{r}
+plot(preschool3414)
+```
+
+### Step 6: Importing and Converting Aspatial Data
+
+We first import the csv file:
+
+```{r}
+listings <- read_csv("data/aspatial/listings.csv")
+```
+
+Next, we check if the files has been imported correctly:
+
+\*\*Here, we will assume that the coordinate data is in the degree format & in wgs84 system
+
+\*\*WGS stands for "World Geodetic System"
+
+```{r}
+list(listings)
+```
