@@ -1,0 +1,95 @@
+---
+title: "Hand on ex 1 Choropleth Mapping with R"
+editor: visual
+---
+
+## Overview 
+
+### Step 1: Import Packages 
+
+As usual, we first import all the packages:
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse)
+```
+
+### Step 2: Import the data 
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+```
+
+Examine the contents:
+
+```{r}
+head(mpsz, n=1)
+```
+
+Next, we import the csv attribute data into R:
+
+```{r}
+popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
+```
+
+Data Wrangling:
+
+Below we will prepare the new dataframe.
+
+```{r}
+popdata2020 <- popdata %>%
+  filter(Time == 2020) %>%
+  group_by(PA, SZ, AG) %>%
+  summarise(`POP` = sum(`Pop`)) %>%
+  ungroup()%>%
+  pivot_wider(names_from=AG, 
+              values_from=POP) %>%
+  mutate(YOUNG = rowSums(.[3:6])
+         +rowSums(.[12])) %>%
+mutate(`ECONOMY ACTIVE` = rowSums(.[7:11])+
+rowSums(.[13:15]))%>%
+mutate(`AGED`=rowSums(.[16:21])) %>%
+mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
+/`ECONOMY ACTIVE`) %>%
+  select(`PA`, `SZ`, `YOUNG`, 
+       `ECONOMY ACTIVE`, `AGED`, 
+       `TOTAL`, `DEPENDENCY`)
+```
+
+Convert some data into upper case:
+
+```{r}
+popdata2020 <- popdata2020 %>%
+  mutate_at(.vars = vars(PA, SZ), 
+          .funs = funs(toupper)) %>%
+  filter(`ECONOMY ACTIVE` > 0)
+```
+
+Next we will join the tables together:
+
+```{r}
+mpsz_pop2020 <- left_join(mpsz, popdata2020, by = c("SUBZONE_N" = "SZ"))
+```
+
+Save the table:
+
+```{r}
+write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
+```
+
+## Step 3: Do some plotting 
+
+Make our first plot based on the column "Dependency".
+
+However, a disadvantage of qtm() is that i makes individual layers harder to control.
+
+```{r}
+tmap_mode("plot")
+qtm(mpsz_pop2020, fill = "DEPENDENCY")
+```
+
+With the disadvantage of the qtm(), we will next try tm_shape() to get better quality:
+
+```{r}
+
+```

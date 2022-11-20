@@ -271,7 +271,7 @@ plot(st_geometry(specific_plot))
 
 ------------------------------------------------------------------------
 
-### EDA: Exploratory Data Analysis
+### Step 8: EDA Exploratory Data Analysis
 
 Create a histogram to show the preschool density:
 
