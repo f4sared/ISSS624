@@ -3,7 +3,7 @@ title: "hands_on_ex_1_geo_data_wrangling"
 editor: visual
 ---
 
-## Overview
+## Overview S
 
 In this hands-on exercise, I learned how to import cool data and wrangle them using the proper R packages.
 
@@ -235,7 +235,7 @@ mpsz_pop2020 <- left_join(mpsz, popdata2020,
 write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
 ```
 
-## Plots: 
+## Plots:
 
 ```{r}
 tmap_mode("plot")
