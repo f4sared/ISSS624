@@ -1,9 +1,9 @@
 ---
-title: "Hand on ex 1 - Geodata wrangling"
+title: "Hand on ex 1 - Chap 1 Geodata wrangling"
 editor: visual
 ---
 
-## Overview Ex 1
+### Overview Ex 1
 
 ### Step 1: Load packages
 

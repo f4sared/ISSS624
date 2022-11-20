@@ -1,11 +1,11 @@
 ---
-title: "Hand on ex 1 Choropleth Mapping with R"
+title: "Hand on ex 1 - Chap 2 Choropleth Mapping with R"
 editor: visual
 ---
 
-# Overview 
+## Overview
 
-## Step 1: Import Packages 
+## Step 1: Import Packages
 
 As usual, we first import all the packages:
 
@@ -13,7 +13,7 @@ As usual, we first import all the packages:
 pacman::p_load(sf, tmap, tidyverse)
 ```
 
-## Step 2: Import the data 
+## Step 2: Import the data
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
@@ -77,9 +77,9 @@ Save the table:
 write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
 ```
 
-## Step 3: Do some plotting with various tools 
+## Step 3: Plotting with various tools
 
-### qtm()
+### Using qtm()
 
 Make our first plot based on the column "Dependency".
 
@@ -90,7 +90,7 @@ tmap_mode("plot")
 qtm(mpsz_pop2020, fill = "DEPENDENCY")
 ```
 
-### tm_shape()
+### Using tm_shape()
 
 With the disadvantage of the qtm(), we will next try tm_shape() to get better professional quality:
 
@@ -116,7 +116,7 @@ tm_shape(mpsz_pop2020)+
 
 ### Drawing a base map
 
-tm_shape() is the basic building block.
+Uisng tm_shape() as the basic building block.
 
 ```{r}
 tm_shape(mpsz_pop2020) +
@@ -144,9 +144,9 @@ tm_shape(mpsz_pop2020)+
   tm_borders(lwd = 0.1,  alpha = 1)
 ```
 
-### Data Classification Methods: Using Different Styles 
+### Data Classification Methods: Using Different Styles
 
-tmap uses a total of ten data classification methods !
+Note: tmap has a total of ten data classification methods !
 
 Here we will use classification quantile of 5 classes:
 
@@ -168,7 +168,7 @@ tm_shape(mpsz_pop2020)+
   tm_borders(alpha = 0.5)
 ```
 
-#### DIY: Here we try out some different styles: 
+### DIY_1: Here we try out some different styles:
 
 ```{r}
 A <- tm_shape(mpsz_pop2020)+ 
@@ -217,7 +217,7 @@ ggplot(data=mpsz_pop2020,
       y = "Frequency")
 ```
 
-#### DIY: Data Classification Methods: Using different number of classes
+### DIY_2: Data Classification Methods: Using different number of classes
 
 For this section, we will use jenks !
 
@@ -280,7 +280,7 @@ tm_shape(mpsz_pop2020)+
   tm_borders(alpha = 0.5)
 ```
 
-## Step 5: Map Layouts and styles 
+## Step 5: Map Layouts and styles
 
 Apparently we can add even more customization options to our map plots !
 
@@ -338,7 +338,9 @@ tm_shape(mpsz_pop2020)+
              position = c("left", "bottom"))
 ```
 
-## Step 7: Multiple map 
+## Step 7: Multiple map
+
+Here we will attempt to plot multiple plots together:
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -409,32 +411,4 @@ tm_shape(mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ])+
             legend.position = c("right", "bottom"),
             frame = FALSE) +
   tm_borders(alpha = 0.5)
-```
-
-```{r}
-A <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("DEPENDENCY", 
-              style = "jenks", 
-              palette = "Blues")+
-    tm_layout(main.title = "jenks")
-
-B <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("DEPENDENCY", 
-              style = "quantile", 
-              palette = "Blues")+
-  tm_layout(main.title = "quantile")
-
-C <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("DEPENDENCY", 
-              style = "sd", 
-              palette = "Blues")+
-  tm_layout(main.title = "sd")
-
-D <- tm_shape(mpsz_pop2020)+ 
-  tm_polygons("DEPENDENCY", 
-              style = "equal", 
-              palette = "Blues")+
-  tm_layout(main.title = "equal")
-
-tmap_arrange(A, B, C, D, asp=2, ncol=2)
 ```

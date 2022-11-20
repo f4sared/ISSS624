@@ -1,0 +1,31 @@
+---
+title: "in_class_ex_1"
+editor: visual
+---
+
+Overview SS
+
+This is xxx
+
+Getting Started
+
+Install and load the tidyverse and sf packages.
+
+```{r}
+pacman::p_load(sf, tidyverse, spdep)
+```
+
+Import Geo spatial data
+
+Import Polygon
+
+```{r}
+hunan_sf <- st_read(dsn = "dataH/geospatial", 
+                  layer = "Hunan")
+```
+
+Importing and transforming using a nested piping
+
+```{r}
+hunan <- read_csv("dataH/aspatial/Hunan_2012.csv") 
+```

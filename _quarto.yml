@@ -5,12 +5,15 @@ website:
   title: "ISSS624"
   navbar:
     left: 
-      - text: Hands-on Exercise
+      - text: Hands-on Ex / In Class Ex
         menu: 
-          - text: Hands-on Exercise 1 - Chap 1
+          - text: Hands-on Ex 1 - Chap 1 Geospatial Data Wrangling with R
             href: hands_on_ex/ex_1/ex_1.qmd
-          - text: Hands-on Exercise 1 - Chap 2
+          - text: Hands-on Ex 1 - Chap 2 Choropleth Mapping with R
             href: hands_on_ex/ex_1/ex_1_2.qmd
+          - text: In-Class Ex 1 - Chap 3 Spatial Weights and Applications
+            href: in_class/ex_1/in_class_ex_1.qmd
+            
     right:
       - href: index.qmd
         text: Home

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ISSS624 - Hand on ex 1 - Geodata wrangling</title>
+<title>ISSS624 - Hand on ex 1 - Chap 1 Geodata wrangling</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -143,15 +143,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercise" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hands-on Exercise</a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercise">    
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-ex--in-class-ex" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hands-on Ex / In Class Ex</a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-ex--in-class-ex">    
         <li>
     <a class="dropdown-item" href="../../hands_on_ex/ex_1/ex_1.html">
- <span class="dropdown-text">Hands-on Exercise 1 - Chap 1</span></a>
+ <span class="dropdown-text">Hands-on Ex 1 - Chap 1 Geospatial Data Wrangling with R</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../../hands_on_ex/ex_1/ex_1_2.html">
- <span class="dropdown-text">Hands-on Exercise 1 - Chap 2</span></a>
+ <span class="dropdown-text">Hands-on Ex 1 - Chap 2 Choropleth Mapping with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../in_class/ex_1/in_class_ex_1.html">
+ <span class="dropdown-text">In-Class Ex 1 - Chap 3 Spatial Weights and Applications</span></a>
   </li>  
     </ul>
   </li>
@@ -178,8 +182,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview-ex-1" id="toc-overview-ex-1" class="nav-link active" data-scroll-target="#overview-ex-1">Overview Ex 1</a>
-  <ul class="collapse">
+  <li><a href="#overview-ex-1" id="toc-overview-ex-1" class="nav-link active" data-scroll-target="#overview-ex-1">Overview Ex 1</a></li>
   <li><a href="#step-1-load-packages" id="toc-step-1-load-packages" class="nav-link" data-scroll-target="#step-1-load-packages">Step 1: Load packages</a></li>
   <li><a href="#step-2-import-geo-spatial-data" id="toc-step-2-import-geo-spatial-data" class="nav-link" data-scroll-target="#step-2-import-geo-spatial-data">Step 2: Import Geo spatial Data</a></li>
   <li><a href="#step-3-check-content-of-the-data-frame" id="toc-step-3-check-content-of-the-data-frame" class="nav-link" data-scroll-target="#step-3-check-content-of-the-data-frame">Step 3: Check content of the data frame</a></li>
@@ -188,7 +191,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#step-6-importing-and-converting-aspatial-data" id="toc-step-6-importing-and-converting-aspatial-data" class="nav-link" data-scroll-target="#step-6-importing-and-converting-aspatial-data">Step 6: Importing and Converting Aspatial Data</a></li>
   <li><a href="#step-7-geoprocessing-with-sf-package" id="toc-step-7-geoprocessing-with-sf-package" class="nav-link" data-scroll-target="#step-7-geoprocessing-with-sf-package">Step 7: Geoprocessing with sf package</a></li>
   <li><a href="#step-8-eda-exploratory-data-analysis" id="toc-step-8-eda-exploratory-data-analysis" class="nav-link" data-scroll-target="#step-8-eda-exploratory-data-analysis">Step 8: EDA Exploratory Data Analysis</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -197,7 +199,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Hand on ex 1 - Geodata wrangling</h1>
+<h1 class="title">Hand on ex 1 - Chap 1 Geodata wrangling</h1>
 </div>
 
 
@@ -211,8 +213,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="overview-ex-1" class="level2">
-<h2 class="anchored" data-anchor-id="overview-ex-1">Overview Ex 1</h2>
+<section id="overview-ex-1" class="level3">
+<h3 class="anchored" data-anchor-id="overview-ex-1">Overview Ex 1</h3>
+</section>
 <section id="step-1-load-packages" class="level3">
 <h3 class="anchored" data-anchor-id="step-1-load-packages">Step 1: Load packages</h3>
 <div class="cell">
@@ -840,7 +843,6 @@ Projected CRS: SVY21 / Singapore TM
 <p>```</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

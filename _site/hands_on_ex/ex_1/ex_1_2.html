@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ISSS624 - Hand on ex 1 Choropleth Mapping with R</title>
+<title>ISSS624 - Hand on ex 1 - Chap 2 Choropleth Mapping with R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -143,15 +143,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-exercise" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hands-on Exercise</a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercise">    
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-hands-on-ex--in-class-ex" role="button" data-bs-toggle="dropdown" aria-expanded="false">Hands-on Ex / In Class Ex</a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-ex--in-class-ex">    
         <li>
     <a class="dropdown-item" href="../../hands_on_ex/ex_1/ex_1.html">
- <span class="dropdown-text">Hands-on Exercise 1 - Chap 1</span></a>
+ <span class="dropdown-text">Hands-on Ex 1 - Chap 1 Geospatial Data Wrangling with R</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../../hands_on_ex/ex_1/ex_1_2.html">
- <span class="dropdown-text">Hands-on Exercise 1 - Chap 2</span></a>
+ <span class="dropdown-text">Hands-on Ex 1 - Chap 2 Choropleth Mapping with R</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../in_class/ex_1/in_class_ex_1.html">
+ <span class="dropdown-text">In-Class Ex 1 - Chap 3 Spatial Weights and Applications</span></a>
   </li>  
     </ul>
   </li>
@@ -178,18 +182,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
-  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#step-1-import-packages" id="toc-step-1-import-packages" class="nav-link" data-scroll-target="#step-1-import-packages">Step 1: Import Packages</a></li>
   <li><a href="#step-2-import-the-data" id="toc-step-2-import-the-data" class="nav-link" data-scroll-target="#step-2-import-the-data">Step 2: Import the data</a></li>
-  </ul></li>
-  <li><a href="#step-3-do-some-plotting-with-various-tools" id="toc-step-3-do-some-plotting-with-various-tools" class="nav-link" data-scroll-target="#step-3-do-some-plotting-with-various-tools">Step 3: Do some plotting with various tools</a>
+  <li><a href="#step-3-plotting-with-various-tools" id="toc-step-3-plotting-with-various-tools" class="nav-link" data-scroll-target="#step-3-plotting-with-various-tools">Step 3: Plotting with various tools</a>
   <ul class="collapse">
+  <li><a href="#using-qtm" id="toc-using-qtm" class="nav-link" data-scroll-target="#using-qtm">Using qtm()</a></li>
+  <li><a href="#using-tm_shape" id="toc-using-tm_shape" class="nav-link" data-scroll-target="#using-tm_shape">Using tm_shape()</a></li>
+  <li><a href="#drawing-a-base-map" id="toc-drawing-a-base-map" class="nav-link" data-scroll-target="#drawing-a-base-map">Drawing a base map</a></li>
+  <li><a href="#data-classification-methods-using-different-styles" id="toc-data-classification-methods-using-different-styles" class="nav-link" data-scroll-target="#data-classification-methods-using-different-styles">Data Classification Methods: Using Different Styles</a></li>
+  <li><a href="#diy_1-here-we-try-out-some-different-styles" id="toc-diy_1-here-we-try-out-some-different-styles" class="nav-link" data-scroll-target="#diy_1-here-we-try-out-some-different-styles">DIY_1: Here we try out some different styles:</a></li>
+  <li><a href="#diy_2-data-classification-methods-using-different-number-of-classes" id="toc-diy_2-data-classification-methods-using-different-number-of-classes" class="nav-link" data-scroll-target="#diy_2-data-classification-methods-using-different-number-of-classes">DIY_2: Data Classification Methods: Using different number of classes</a></li>
+  </ul></li>
   <li><a href="#step-4-color-scheme" id="toc-step-4-color-scheme" class="nav-link" data-scroll-target="#step-4-color-scheme">Step 4: Color scheme</a></li>
   <li><a href="#step-5-map-layouts-and-styles" id="toc-step-5-map-layouts-and-styles" class="nav-link" data-scroll-target="#step-5-map-layouts-and-styles">Step 5: Map Layouts and styles</a></li>
   <li><a href="#step-6-add-cartographic-furniture-to-the-map" id="toc-step-6-add-cartographic-furniture-to-the-map" class="nav-link" data-scroll-target="#step-6-add-cartographic-furniture-to-the-map">Step 6: Add Cartographic Furniture to the map</a></li>
   <li><a href="#step-7-multiple-map" id="toc-step-7-multiple-map" class="nav-link" data-scroll-target="#step-7-multiple-map">Step 7: Multiple map</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -198,7 +206,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Hand on ex 1 Choropleth Mapping with R</h1>
+<h1 class="title">Hand on ex 1 - Chap 2 Choropleth Mapping with R</h1>
 </div>
 
 
@@ -214,15 +222,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<section id="step-1-import-packages" class="level3">
-<h3 class="anchored" data-anchor-id="step-1-import-packages">Step 1: Import Packages</h3>
+</section>
+<section id="step-1-import-packages" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-import-packages">Step 1: Import Packages</h2>
 <p>As usual, we first import all the packages:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tmap, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="step-2-import-the-data" class="level3">
-<h3 class="anchored" data-anchor-id="step-2-import-the-data">Step 2: Import the data</h3>
+<section id="step-2-import-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-import-the-data">Step 2: Import the data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -318,11 +327,10 @@ dbl (2): Pop, Time
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(mpsz_pop2020, <span class="st">"data/rds/mpszpop2020.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-</section>
-<section id="step-3-do-some-plotting-with-various-tools" class="level2">
-<h2 class="anchored" data-anchor-id="step-3-do-some-plotting-with-various-tools">Step 3: Do some plotting with various tools</h2>
-<section id="qtm" class="level4">
-<h4 class="anchored" data-anchor-id="qtm">qtm()</h4>
+<section id="step-3-plotting-with-various-tools" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-plotting-with-various-tools">Step 3: Plotting with various tools</h2>
+<section id="using-qtm" class="level3">
+<h3 class="anchored" data-anchor-id="using-qtm">Using qtm()</h3>
 <p>Make our first plot based on the column “Dependency”.</p>
 <p>However, a disadvantage of qtm() is that i makes individual layers harder to control.</p>
 <div class="cell">
@@ -336,8 +344,8 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="tm_shape" class="level4">
-<h4 class="anchored" data-anchor-id="tm_shape">tm_shape()</h4>
+<section id="using-tm_shape" class="level3">
+<h3 class="anchored" data-anchor-id="using-tm_shape">Using tm_shape()</h3>
 <p>With the disadvantage of the qtm(), we will next try tm_shape() to get better professional quality:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
@@ -362,9 +370,9 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="drawing-a-base-map" class="level4">
-<h4 class="anchored" data-anchor-id="drawing-a-base-map">Drawing a base map</h4>
-<p>tm_shape() is the basic building block.</p>
+<section id="drawing-a-base-map" class="level3">
+<h3 class="anchored" data-anchor-id="drawing-a-base-map">Drawing a base map</h3>
+<p>Uisng tm_shape() as the basic building block.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020) <span class="sc">+</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -397,9 +405,9 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="data-classification-methods-using-different-styles" class="level4">
-<h4 class="anchored" data-anchor-id="data-classification-methods-using-different-styles">Data Classification Methods: Using Different Styles</h4>
-<p>tmap uses a total of ten data classification methods !</p>
+<section id="data-classification-methods-using-different-styles" class="level3">
+<h3 class="anchored" data-anchor-id="data-classification-methods-using-different-styles">Data Classification Methods: Using Different Styles</h3>
+<p>Note: tmap has a total of ten data classification methods !</p>
 <p>Here we will use classification quantile of 5 classes:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
@@ -422,8 +430,9 @@ dbl (2): Pop, Time
 <p><img src="ex_1_2_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<section id="diy-here-we-try-out-some-different-styles" class="level5">
-<h5 class="anchored" data-anchor-id="diy-here-we-try-out-some-different-styles">DIY: Here we try out some different styles:</h5>
+</section>
+<section id="diy_1-here-we-try-out-some-different-styles" class="level3">
+<h3 class="anchored" data-anchor-id="diy_1-here-we-try-out-some-different-styles">DIY_1: Here we try out some different styles:</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span> </span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>, </span>
@@ -475,8 +484,8 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="diy-data-classification-methods-using-different-number-of-classes" class="level5">
-<h5 class="anchored" data-anchor-id="diy-data-classification-methods-using-different-number-of-classes">DIY: Data Classification Methods: Using different number of classes</h5>
+<section id="diy_2-data-classification-methods-using-different-number-of-classes" class="level3">
+<h3 class="anchored" data-anchor-id="diy_2-data-classification-methods-using-different-number-of-classes">DIY_2: Data Classification Methods: Using different number of classes</h3>
 <p>For this section, we will use jenks !</p>
 <p>where n = 2, 6, 10 , 20</p>
 <div class="cell">
@@ -516,8 +525,8 @@ dbl (2): Pop, Time
 <p>From what we can see above, as the number of classes get bigger and bigger, more and more details are revealed ! Previous regions with similar colors are now further differentiated with better gradient spread.</p>
 </section>
 </section>
-<section id="step-4-color-scheme" class="level3">
-<h3 class="anchored" data-anchor-id="step-4-color-scheme">Step 4: Color scheme</h3>
+<section id="step-4-color-scheme" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-color-scheme">Step 4: Color scheme</h2>
 <p>Here, we will assign a new color !</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
@@ -542,8 +551,8 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="step-5-map-layouts-and-styles" class="level3">
-<h3 class="anchored" data-anchor-id="step-5-map-layouts-and-styles">Step 5: Map Layouts and styles</h3>
+<section id="step-5-map-layouts-and-styles" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-map-layouts-and-styles">Step 5: Map Layouts and styles</h2>
 <p>Apparently we can add even more customization options to our map plots !</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
@@ -585,8 +594,8 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="step-6-add-cartographic-furniture-to-the-map" class="level3">
-<h3 class="anchored" data-anchor-id="step-6-add-cartographic-furniture-to-the-map">Step 6: Add Cartographic Furniture to the map</h3>
+<section id="step-6-add-cartographic-furniture-to-the-map" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-add-cartographic-furniture-to-the-map">Step 6: Add Cartographic Furniture to the map</h2>
 <p>We can further add more useful features to the generated map</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
@@ -611,8 +620,9 @@ dbl (2): Pop, Time
 </div>
 </div>
 </section>
-<section id="step-7-multiple-map" class="level3">
-<h3 class="anchored" data-anchor-id="step-7-multiple-map">Step 7: Multiple map</h3>
+<section id="step-7-multiple-map" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-multiple-map">Step 7: Multiple map</h2>
+<p>Here we will attempt to plot multiple plots together:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="fu">c</span>(<span class="st">"YOUNG"</span>, <span class="st">"AGED"</span>),</span>
@@ -705,39 +715,8 @@ Please use legend.outside.size to control the width of the outside legend</code>
 <p><img src="ex_1_2_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span> </span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>, </span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">style =</span> <span class="st">"jenks"</span>, </span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">palette =</span> <span class="st">"Blues"</span>)<span class="sc">+</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"jenks"</span>)</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span> </span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>, </span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">style =</span> <span class="st">"quantile"</span>, </span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">palette =</span> <span class="st">"Blues"</span>)<span class="sc">+</span></span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"quantile"</span>)</span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span> </span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>, </span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">style =</span> <span class="st">"sd"</span>, </span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>              <span class="at">palette =</span> <span class="st">"Blues"</span>)<span class="sc">+</span></span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"sd"</span>)</span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>D <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span> </span>
-<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>, </span>
-<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>              <span class="at">style =</span> <span class="st">"equal"</span>, </span>
-<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>              <span class="at">palette =</span> <span class="st">"Blues"</span>)<span class="sc">+</span></span>
-<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"equal"</span>)</span>
-<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(A, B, C, D, <span class="at">asp=</span><span class="dv">2</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="ex_1_2_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
