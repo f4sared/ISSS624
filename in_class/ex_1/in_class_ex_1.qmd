@@ -3,4 +3,32 @@ title: "In Class ex 1 - Chap 3 Spatial Weights and Applications"
 editor: visual
 ---
 
-Start
+# Overview
+
+# Step 1: Check and load packages
+
+In this chapter, we will learn how to compute spatial weights using R.
+
+Check if we have required packages:
+
+```{r}
+packages = c('sf', 'spdep', 'tmap', 'tidyverse')
+for (p in packages){
+  if(!require(p, character.only = T)){
+    install.packages(p)
+  }
+  library(p,character.only = T)
+}
+```
+
+Import the required packages:
+
+```{r}
+pacman::p_load(sf,spdep,tmap,tidyverse)
+```
+
+# Step 2: Loading the data into R
+
+```{r}
+hunan <- st_read(dsn = "dataH/geospatial", layer = "Hunan")
+```
