@@ -11,7 +11,7 @@
     "href": "hands_on_ex/ex_1/ex_1.html",
     "title": "Hand on ex 1 - Geodata wrangling",
     "section": "",
-    "text": "pacman::p_load(sf,tidyverse)"
+    "text": "pacman::p_load(sf,tidyverse)\n\n\n\n\nImport shapefile into R as a polygon feature dataframe :\n\nmpsz <- st_read(dsn = \"data/geospatial\", layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `D:\\f4sared\\ISSS624\\hands_on_ex\\ex_1\\data\\geospatial' using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21\n\n\nImport shapefile into R as a line feature dataframe :\n\ncyclingpath <- st_read(dsn = \"data/geospatial\", layer = \"CyclingPath\")\n\nReading layer `CyclingPath' from data source \n  `D:\\f4sared\\ISSS624\\hands_on_ex\\ex_1\\data\\geospatial' using driver `ESRI Shapefile'\nSimple feature collection with 1625 features and 2 fields\nGeometry type: LINESTRING\nDimension:     XY\nBounding box:  xmin: 12711.19 ymin: 28711.33 xmax: 42626.09 ymax: 48948.15\nProjected CRS: SVY21\n\n\nImport KML into R as a Point format:\n\npreschookl <- st_read(\"data/geospatial/pre-schools-location-kml.kml\")\n\nReading layer `PRESCHOOLS_LOCATION' from data source \n  `D:\\f4sared\\ISSS624\\hands_on_ex\\ex_1\\data\\geospatial\\pre-schools-location-kml.kml' \n  using driver `KML'\nSimple feature collection with 1359 features and 2 fields\nGeometry type: POINT\nDimension:     XYZ\nBounding box:  xmin: 103.6824 ymin: 1.248403 xmax: 103.9897 ymax: 1.462134\nz_range:       zmin: 0 zmax: 0\nGeodetic CRS:  WGS 84"
   },
   {
     "objectID": "Hands_on_ex1.html",
@@ -53,6 +53,6 @@
     "href": "index.html",
     "title": "ISSS624_Licheng_Yan_Learning_Journal",
     "section": "",
-    "text": "This Netlify site is a documentation of learning journey for geospatial analytics and Rstudio\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n50 + 50\n\n[1] 100"
+    "text": "This Netlify site is a documentation of my learning journey for geospatial analytics and Rstudio\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n50 + 50\n\n[1] 100"
   }
 ]

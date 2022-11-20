@@ -10,3 +10,23 @@ editor: visual
 ```{r}
 pacman::p_load(sf,tidyverse)
 ```
+
+### Step 2: Import Geo spatial Data
+
+Import shapefile into R as a polygon feature dataframe :
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+```
+
+Import shapefile into R as a line feature dataframe :
+
+```{r}
+cyclingpath <- st_read(dsn = "data/geospatial", layer = "CyclingPath")
+```
+
+Import KML into R as a Point format:
+
+```{r}
+preschookl <- st_read("data/geospatial/pre-schools-location-kml.kml")
+```

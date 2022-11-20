@@ -4,7 +4,7 @@ title: "ISSS624_Licheng_Yan_Learning_Journal"
 
 Name: Licheng Yan
 
-This Netlify site is a documentation of learning journey for geospatial analytics and Rstudio
+This Netlify site is a documentation of my learning journey for geospatial analytics and Rstudio
 
 To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
 
