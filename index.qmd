@@ -1,8 +1,8 @@
 ---
-title: "ISSS624"
+title: "ISSS624_Licheng_Yan"
 ---
 
-Licheng Yan's Page
+Name: Licheng Yan
 
 To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
 
