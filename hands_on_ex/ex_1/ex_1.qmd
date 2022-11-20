@@ -44,3 +44,34 @@ This function gives a detailed breakdown of the columns and the data within the 
 ```{r}
 glimpse(mpsz)
 ```
+
+Here we will take a detailed look at the first 5 rows of the dataset:
+
+```{r}
+head(mpsz, n=5)
+```
+
+### Step 4: Plotting the data
+
+Below command will plot a map for each of the columns:
+
+```{r}
+plot(mpsz)
+```
+
+In order to plot the whole map only, we use the following:
+
+```{r}
+plot(st_geometry(mpsz))
+```
+
+Also we can choose to plot based on a specific column or "feature":
+
+```{r}
+plot(mpsz["PLN_AREA_N"])
+```
+
+Note\*\*\*\
+plot() is only meant for a quick look, for cartographic quality, we should use other packages such as tamp.
+
+### Step 5: Working with projections 
