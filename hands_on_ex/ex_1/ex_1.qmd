@@ -31,7 +31,7 @@ Import KML into R as a Point format:
 preschool <- st_read("data/geospatial/pre-schools-location-kml.kml")
 ```
 
-### Step 3: Check content of the data frame 
+### Step 3: Check content of the data frame
 
 This function provides a simple overview of the dataframe:
 
@@ -74,7 +74,7 @@ plot(mpsz["PLN_AREA_N"])
 Note\*\*\*\
 plot() is only meant for a quick look, for cartographic quality, we should use other packages such as tamp.
 
-### Step 5: Working with projections 
+### Step 5: Working with projections
 
 Projection is important because we want to use geospatial data that are of similar coordinate system.
 
@@ -154,3 +154,121 @@ Next, we check if the files has been imported correctly:
 ```{r}
 list(listings)
 ```
+
+Next, we will convert the imported csv file to a dataframe:
+
+We will first convert listings into a dataframe, then convert/project accordingly.
+
+```{r}
+listings_sf <- st_as_sf(listings, coords = c("longitude","latitude"), crs=4326) %>% st_transform(crs=3414)
+```
+
+Next we will take a look at the features and columns:
+
+```{r}
+glimpse(listings_sf)
+```
+
+### Step 7: Geoprocessing with sf package
+
+In this section, we will learn to use geo processing functions, buffering and point in polygon count.
+
+#### Buffering
+
+```{r}
+buffer_cycling <- st_buffer(cyclingpath, dist = 5, nQuadSegs = 30)
+```
+
+Just for interest, we will plot the buffered cycling path:
+
+```{r}
+plot(buffer_cycling)
+```
+
+Next we calculate the area:
+
+We will add this back to the main dataframe buffer_cycling
+
+```{r}
+buffer_cycling$AREA <- st_area(buffer_cycling)
+
+```
+
+Next, we will get the sum:
+
+```{r}
+sum(buffer_cycling$AREA)
+```
+
+We will also take a look at the newly added column "AREA"
+
+```{r}
+glimpse(buffer_cycling)
+```
+
+#### Point in polygon count
+
+We first check the dataframe:
+
+Our dataframe consists of 323 areas
+
+```{r}
+mpsz
+```
+
+Perform first intersection:
+
+This will produce a dataframe with 323 rows. In each of the rows, we will get the index of the preschool whose coordinates fall into our polygon area.
+
+```{r}
+intersect <- st_intersects(mpsz3414, preschool3414)
+```
+
+Store the counts into the main dataframe
+
+```{r}
+mpsz3414$`PreSch Count`<- lengths(intersect)
+```
+
+Check the summary statistics:
+
+```{r}
+summary(mpsz3414$`PreSch Count`)
+```
+
+Next, we will list the top 3 planning zone with most number of preschools using the function below:
+
+```{r}
+top_n(mpsz3414, 3, `PreSch Count`)
+```
+
+Calculate and save the area:
+
+```{r}
+mpsz3414$Area <- mpsz3414 %>% st_area()
+```
+
+```{r}
+testing <- mpsz3414 %>% st_area()
+head(testing, n=20)
+```
+
+Use the mutate function:
+
+```{r}
+mpsz3414 <- mpsz3414 %>% mutate(`PreSch Density` = (`PreSch Count`/Area)*1000000)
+```
+
+------------------------------------------------------------------------
+
+For fun and learning, we will try to plot a specific area such as queens town
+
+```{r}
+specific_plot <- mpsz3414 %>% filter(PLN_AREA_C == "MS")
+plot(specific_plot["PLN_AREA_N"])
+plot(st_geometry(specific_plot))
+```
+
+------------------------------------------------------------------------
+
+### EDA: Exploratory Data Analysis
