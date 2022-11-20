@@ -272,3 +272,35 @@ plot(st_geometry(specific_plot))
 ------------------------------------------------------------------------
 
 ### EDA: Exploratory Data Analysis
+
+Create a histogram to show the preschool density:
+
+```{r}
+hist(mpsz3414$`PreSch Density`)
+```
+
+To get better plot, we will use ggplot:
+
+```{r}
+ggplot(data=mpsz3414, 
+       aes(x= as.numeric(`PreSch Density`)))+
+  geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue") +
+  labs(title = "Are pre-school even distributed in Singapore?",
+       subtitle= "There are many planning sub-zones with a single pre-school, on the other hand, \nthere are two planning sub-zones with at least 20 pre-schools",
+      x = "Pre-school density (per km sq)",
+      y = "Frequency")
+```
+
+```{r}
+ggplot(data=mpsz3414, 
+       aes(x= as.numeric(`PreSch Density`), y= as.numeric(`PreSch Count`)))+ geom_point()+
+    labs(title = "Scatter Plot",
+       subtitle= "My Plot",
+      x = "Pre-school density (per km sq)",
+      y = "Preschool Counts")
+
+```
+
+\`\`\`
