@@ -35,12 +35,43 @@ We will first load the shapefile into the environment:
 hunan <- st_read(dsn = "dataH/geospatial", layer = "Hunan")
 ```
 
+We will then check the loaded file:
+
+```{r}
+list(hunan)
+```
+
 Next we will Import the CSV file:
 
 ```{r}
 hunan2012 <- read_csv("dataH/aspatial/Hunan_2012.csv")
 ```
 
+After the CSV files is imported, we will check it:
+
 ```{r}
-plot(hunan)
+list(hunan2012)
 ```
+
+After the CSV file is imported, we need to perform a relational join using **dplyr**:
+
+\*\*Note: Here it seems relational join magically detects the common feature to join by. WOW !
+
+```{r}
+hunan <- left_join(hunan,hunan2012)
+```
+
+# Step 3: Visualize using plots
+
+Next we will make use of the **tmap** package (tm_shape, tm_text, qtm):
+
+```{r}
+basemap <- tm_shape(hunan) +
+  tm_polygons() +
+  tm_text("NAME_3", size=0.2)
+
+gdppc <- qtm(hunan, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+```
+
+# Step 4: Computing the Contiguity Spatial Weights 

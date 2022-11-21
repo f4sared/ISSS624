@@ -185,6 +185,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#step-1-check-and-load-packages" id="toc-step-1-check-and-load-packages" class="nav-link" data-scroll-target="#step-1-check-and-load-packages">Step 1: Check and load packages</a></li>
   <li><a href="#step-2-loading-the-data-into-r" id="toc-step-2-loading-the-data-into-r" class="nav-link" data-scroll-target="#step-2-loading-the-data-into-r">Step 2: Loading the data into R</a></li>
+  <li><a href="#step-3-visualize-using-plots" id="toc-step-3-visualize-using-plots" class="nav-link" data-scroll-target="#step-3-visualize-using-plots">Step 3: Visualize using plots</a></li>
+  <li><a href="#step-4-computing-the-contiguity-spatial-weights" id="toc-step-4-computing-the-contiguity-spatial-weights" class="nav-link" data-scroll-target="#step-4-computing-the-contiguity-spatial-weights">Step 4: Computing the Contiguity Spatial Weights</a></li>
   </ul>
 </nav>
     </div>
@@ -279,9 +281,44 @@ Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
 Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
+<p>We will then check the loaded file:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+Simple feature collection with 88 features and 7 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84
+First 10 features:
+     NAME_2  ID_3    NAME_3   ENGTYPE_3 Shape_Leng Shape_Area    County
+1   Changde 21098   Anxiang      County   1.869074 0.10056190   Anxiang
+2   Changde 21100   Hanshou      County   2.360691 0.19978745   Hanshou
+3   Changde 21101    Jinshi County City   1.425620 0.05302413    Jinshi
+4   Changde 21102        Li      County   3.474325 0.18908121        Li
+5   Changde 21103     Linli      County   2.289506 0.11450357     Linli
+6   Changde 21104    Shimen      County   4.171918 0.37194707    Shimen
+7  Changsha 21109   Liuyang County City   4.060579 0.46016789   Liuyang
+8  Changsha 21110 Ningxiang      County   3.323754 0.26614198 Ningxiang
+9  Changsha 21111 Wangcheng      County   2.292093 0.13049161 Wangcheng
+10 Chenzhou 21112     Anren      County   2.240739 0.13343936     Anren
+                         geometry
+1  POLYGON ((112.0625 29.75523...
+2  POLYGON ((112.2288 29.11684...
+3  POLYGON ((111.8927 29.6013,...
+4  POLYGON ((111.3731 29.94649...
+5  POLYGON ((111.6324 29.76288...
+6  POLYGON ((110.8825 30.11675...
+7  POLYGON ((113.9905 28.5682,...
+8  POLYGON ((112.7181 28.38299...
+9  POLYGON ((112.7914 28.52688...
+10 POLYGON ((113.1757 26.82734...</code></pre>
+</div>
+</div>
 <p>Next we will Import the CSV file:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>hunan2012 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"dataH/aspatial/Hunan_2012.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>hunan2012 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"dataH/aspatial/Hunan_2012.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 88 Columns: 29
 ── Column specification ────────────────────────────────────────────────────────
@@ -293,12 +330,57 @@ dbl (27): avg_wage, deposite, FAI, Gov_Rev, Gov_Exp, GDP, GDPPC, GIO, Loan, ...
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
+<p>After the CSV files is imported, we will check it:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(hunan2012)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+# A tibble: 88 × 29
+   County    City     avg_w…¹ depos…²    FAI Gov_Rev Gov_Exp    GDP GDPPC    GIO
+   &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+ 1 Anhua     Yiyang     30544  10967   6832.    457.   2703  13225  14567  9277.
+ 2 Anren     Chenzhou   28058   4599.  6386.    221.   1455.  4941. 12761  4189.
+ 3 Anxiang   Changde    31935   5517.  3541     244.   1780. 12482  23667  5109.
+ 4 Baojing   Hunan W…   30843   2250   1005.    193.   1379.  4088. 14563  3624.
+ 5 Chaling   Zhuzhou    31251   8241.  6508.    620.   1947  11585  20078  9158.
+ 6 Changning Hengyang   28518  10860   7920     770.   2632. 19886  24418 37392 
+ 7 Changsha  Changsha   54540  24332  33624    5350    7886. 88009  88656 51361 
+ 8 Chengbu   Shaoyang   28597   2581.  1922.    161.   1192.  2570. 10132  1681.
+ 9 Chenxi    Huaihua    33580   4990   5818.    460.   1724.  7755. 17026  6644.
+10 Cili      Zhangji…   33099   8117.  4498.    500.   2306. 11378  18714  5843.
+# … with 78 more rows, 19 more variables: Loan &lt;dbl&gt;, NIPCR &lt;dbl&gt;, Bed &lt;dbl&gt;,
+#   Emp &lt;dbl&gt;, EmpR &lt;dbl&gt;, EmpRT &lt;dbl&gt;, Pri_Stu &lt;dbl&gt;, Sec_Stu &lt;dbl&gt;,
+#   Household &lt;dbl&gt;, Household_R &lt;dbl&gt;, NOIP &lt;dbl&gt;, Pop_R &lt;dbl&gt;, RSCG &lt;dbl&gt;,
+#   Pop_T &lt;dbl&gt;, Agri &lt;dbl&gt;, Service &lt;dbl&gt;, Disp_Inc &lt;dbl&gt;, RORP &lt;dbl&gt;,
+#   ROREmp &lt;dbl&gt;, and abbreviated variable names ¹​avg_wage, ²​deposite</code></pre>
+</div>
+</div>
+<p>After the CSV file is imported, we need to perform a relational join using <strong>dplyr</strong>:</p>
+<p>**Note: Here it seems relational join magically detects the common feature to join by. WOW !</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan,hunan2012)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining, by = "County"</code></pre>
+</div>
+</div>
+</section>
+<section id="step-3-visualize-using-plots" class="level1">
+<h1>Step 3: Visualize using plots</h1>
+<p>Next we will make use of the <strong>tmap</strong> package (tm_shape, tm_text, qtm):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>basemap <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(hunan) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_text</span>(<span class="st">"NAME_3"</span>, <span class="at">size=</span><span class="fl">0.2</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>gdppc <span class="ot">&lt;-</span> <span class="fu">qtm</span>(hunan, <span class="st">"GDPPC"</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(basemap, gdppc, <span class="at">asp=</span><span class="dv">1</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="in_class_ex_1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+<p><img src="in_class_ex_1_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
+<section id="step-4-computing-the-contiguity-spatial-weights" class="level1">
+<h1>Step 4: Computing the Contiguity Spatial Weights</h1>
 
 
 </section>
