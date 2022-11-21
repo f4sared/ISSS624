@@ -29,6 +29,18 @@ pacman::p_load(sf,spdep,tmap,tidyverse)
 
 # Step 2: Loading the data into R
 
+We will first load the shapefile into the environment:
+
 ```{r}
 hunan <- st_read(dsn = "dataH/geospatial", layer = "Hunan")
+```
+
+Next we will Import the CSV file:
+
+```{r}
+hunan2012 <- read_csv("dataH/aspatial/Hunan_2012.csv")
+```
+
+```{r}
+plot(hunan)
 ```
