@@ -85,7 +85,7 @@ wm_q <- poly2nb(hunan, queen = TRUE)
 summary(wm_q)
 ```
 
-Next we want to see the neighbor for the first polygon: \
+Next we want to see the neighbor for the first polygon:\
 \*\*Note: Both syntax below seem to work
 
 ```{r}
@@ -123,7 +123,7 @@ Using str(), we will then display the complete weight matrix:
 str(wm_q)
 ```
 
-## Rook: 
+## Rook:
 
 Create the weight matrix based on the ROOK:
 
@@ -132,7 +132,7 @@ wm_r <- poly2nb(hunan, queen = FALSE)
 summary(wm_r)
 ```
 
-# Step 5: Visualize the contiguity weights: 
+# Step 5: Visualize the contiguity weights:
 
 ## Data preparation:
 
@@ -164,7 +164,7 @@ Check the head of the newly created data:
 head(coords)
 ```
 
-## Plot QUEEN: 
+## Plot QUEEN:
 
 Next we will plot the contiguity based neighbors map:
 
@@ -173,7 +173,7 @@ plot(hunan$geometry, border = "lightgrey")
 plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red")
 ```
 
-## Plot ROOK: 
+## Plot ROOK:
 
 ```{r}
 plot(hunan$geometry, border="lightgrey")
@@ -192,7 +192,7 @@ plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red", main="Rook Cont
 
 # Step 6: Compute distance based neighbors:
 
-## Compute the neighbors: 
+## Compute the neighbors:
 
 Calculate the nearest neighbor:
 
@@ -200,6 +200,12 @@ Calculate the nearest neighbor:
 
 ```{r}
 k1 <- knn2nb(knearneigh(coords))
+```
+
+Here we see that each polygon only has 1 neighbor:
+
+```{r}
+str(k1)
 ```
 
 compute the distance between all neighbors:
@@ -223,3 +229,76 @@ We compute the distance weight matrix as follow:
 wm_d62 <- dnearneigh(coords, 0, 62, longlat = TRUE)
 wm_d62
 ```
+
+\*\*Average number of links here refers to the average number of nearest neighbor per polygon
+
+Display the weight matrix:
+
+```{r}
+str(wm_d62)
+```
+
+An alternative way to present the data:
+
+```{r}
+table(hunan$County, card(wm_d62))
+```
+
+Find number of disjoint sub graph:
+
+<https://r4gdsa.netlify.app/chap03.html#computing-distance-based-neighbours>
+
+```{r}
+n_comp <- n.comp.nb(wm_d62)
+n_comp$nc
+```
+
+```{r}
+table(n_comp$comp.id)
+```
+
+## Plot the distance based weight matrix: 
+
+Plot the distance based neighbor + K1 nearest neighbor:
+
+\*\*Note it is an overlap of 2 plots on 1
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_d62, coords, add=TRUE)
+plot(k1, coords, add=TRUE, col="red", length=0.08)
+```
+
+Plot the distance based + K nearest neighbor on 2 separate plots:
+
+```{r}
+par(mfrow=c(1,2))
+plot(hunan$geometry, border="lightgrey")
+plot(k1, coords, add=TRUE, col="red", length=0.08, main="1st nearest neighbours")
+plot(hunan$geometry, border="lightgrey")
+plot(wm_d62, coords, add=TRUE, pch = 19, cex = 0.6, main="Distance link")
+```
+
+## Compute adaptive distance weight matrix: 
+
+Recalculate the N nearest neighbors, this time using K = 6
+
+```{r}
+knn6 <- knn2nb(knearneigh(coords, k=6))
+knn6
+```
+
+Check the output:
+
+```{r}
+str(knn6)
+```
+
+Plot the new K = 6:
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(knn6, coords, pch = 19, cex = 0.6, add = TRUE, col = "black")
+```
+
+# Step 7: Inversed Distance method 
