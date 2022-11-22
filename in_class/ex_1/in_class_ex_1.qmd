@@ -74,4 +74,152 @@ gdppc <- qtm(hunan, "GDPPC")
 tmap_arrange(basemap, gdppc, asp=1, ncol=2)
 ```
 
-# Step 4: Computing the Contiguity Spatial Weights 
+# Step 4: Computing the Contiguity Spatial Weights
+
+## Queen:
+
+Compute the (QUEEN) contiguity based neighbors weight matrix:
+
+```{r}
+wm_q <- poly2nb(hunan, queen = TRUE)
+summary(wm_q)
+```
+
+Next we want to see the neighbor for the first polygon: \
+\*\*Note: Both syntax below seem to work
+
+```{r}
+wm_q[1]
+wm_q[[1]]
+```
+
+Next we will retrieve the name of polygon 1:
+
+```{r}
+hunan$County[1]
+```
+
+We will next reveal the neighbouring counties of Anxiang:
+
+```{r}
+hunan$NAME_3[c(2,3,4,57,85)]
+```
+
+We can also retrieve the neighbouring GDPPC of the five countries by code chunk below:
+
+\*\*Note: we can save the neighbor as a list.
+
+\*\*Then we will just use that as the input for filtering
+
+```{r}
+nb_1 <- wm_q[[1]]
+nb_1 <- hunan$GDPPC[nb_1]
+nb_1
+```
+
+Using str(), we will then display the complete weight matrix:
+
+```{r}
+str(wm_q)
+```
+
+## Rook: 
+
+Create the weight matrix based on the ROOK:
+
+```{r}
+wm_r <- poly2nb(hunan, queen = FALSE)
+summary(wm_r)
+```
+
+# Step 5: Visualize the contiguity weights: 
+
+## Data preparation:
+
+Store the longitude:
+
+\*\*\~ means shorthand for writing a function
+
+\*\* .x means a vector input
+
+```{r}
+longitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[1]])
+```
+
+Store the latitude:
+
+```{r}
+latitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[2]])
+```
+
+Bind the 2 above together:
+
+```{r}
+coords <- cbind(longitude, latitude)
+```
+
+Check the head of the newly created data:
+
+```{r}
+head(coords)
+```
+
+## Plot QUEEN: 
+
+Next we will plot the contiguity based neighbors map:
+
+```{r}
+plot(hunan$geometry, border = "lightgrey")
+plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red")
+```
+
+## Plot ROOK: 
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red")
+```
+
+Plotting both maps together:
+
+```{r}
+par(mfrow=c(1,2))
+plot(hunan$geometry, border="lightgrey")
+plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red", main="Queen Contiguity")
+plot(hunan$geometry, border="lightgrey")
+plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red", main="Rook Contiguity")
+```
+
+# Step 6: Compute distance based neighbors:
+
+## Compute the neighbors: 
+
+Calculate the nearest neighbor:
+
+\*\*k is default value 1
+
+```{r}
+k1 <- knn2nb(knearneigh(coords))
+```
+
+compute the distance between all neighbors:
+
+```{r}
+k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
+summary(k1dists)
+```
+
+Summary report shows that the max value is 61.79, so this value will be used as the upper threshold
+
+## Compute the weight matrix:
+
+We compute the distance weight matrix as follow:
+
+\*\*0 is min threshold
+
+\*\*62 is max threshold
+
+```{r}
+wm_d62 <- dnearneigh(coords, 0, 62, longlat = TRUE)
+wm_d62
+```
