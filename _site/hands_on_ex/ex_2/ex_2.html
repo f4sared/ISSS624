@@ -187,6 +187,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview:</a></li>
+  <li><a href="#step-1-check-and-load-packages" id="toc-step-1-check-and-load-packages" class="nav-link" data-scroll-target="#step-1-check-and-load-packages">Step 1: Check and load packages</a></li>
+  <li><a href="#step-2-loading-data-into-r" id="toc-step-2-loading-data-into-r" class="nav-link" data-scroll-target="#step-2-loading-data-into-r">Step 2: Loading Data into R</a></li>
+  <li><a href="#step-3-prepare-the-data" id="toc-step-3-prepare-the-data" class="nav-link" data-scroll-target="#step-3-prepare-the-data">Step 3: Prepare the data</a>
+  <ul class="collapse">
+  <li><a href="#minor-notes" id="toc-minor-notes" class="nav-link" data-scroll-target="#minor-notes">Minor notes:</a></li>
+  </ul></li>
+  <li><a href="#step-4-compute-the-spatial-weights" id="toc-step-4-compute-the-spatial-weights" class="nav-link" data-scroll-target="#step-4-compute-the-spatial-weights">Step 4: Compute the spatial weights</a></li>
+  <li><a href="#step-5-morans-i" id="toc-step-5-morans-i" class="nav-link" data-scroll-target="#step-5-morans-i">Step 5: Moran’s I</a>
+  <ul class="collapse">
+  <li><a href="#morans-i-test" id="toc-morans-i-test" class="nav-link" data-scroll-target="#morans-i-test">Moran’s I Test:</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -211,21 +222,30 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <section id="overview" class="level1">
 <h1>Overview:</h1>
+</section>
+<section id="step-1-check-and-load-packages" class="level1">
+<h1>Step 1: Check and load packages</h1>
+<p>**We will use the additional “here” package</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, spdep, tmap, tidyverse, here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="step-2-loading-data-into-r" class="level1">
+<h1>Step 2: Loading Data into R</h1>
+<p>We first generate the shape file path:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>shapefile_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"in_class"</span>, <span class="st">"ex_1"</span>, <span class="st">"dataH"</span>, <span class="st">"geospatial"</span>)</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>shapefile_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"dataHunan"</span>, <span class="st">"geospatial"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>shapefile_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "D:/f4sared/ISSS624/in_class/ex_1/dataH/geospatial"</code></pre>
+<pre><code>[1] "D:/f4sared/ISSS624/data/dataHunan/geospatial"</code></pre>
 </div>
 </div>
+<p>Next we load in the shape file using the path generated:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> shapefile_path, <span class="at">layer =</span> <span class="st">"Hunan"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `Hunan' from data source 
-  `D:\f4sared\ISSS624\in_class\ex_1\dataH\geospatial' using driver `ESRI Shapefile'
+  `D:\f4sared\ISSS624\data\dataHunan\geospatial' using driver `ESRI Shapefile'
 Simple feature collection with 88 features and 7 fields
 Geometry type: POLYGON
 Dimension:     XY
@@ -233,8 +253,168 @@ Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
 Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
+<p>We check the loaded shapefile:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(hunan)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 88
+Columns: 8
+$ NAME_2     &lt;chr&gt; "Changde", "Changde", "Changde", "Changde", "Changde", "Cha…
+$ ID_3       &lt;int&gt; 21098, 21100, 21101, 21102, 21103, 21104, 21109, 21110, 211…
+$ NAME_3     &lt;chr&gt; "Anxiang", "Hanshou", "Jinshi", "Li", "Linli", "Shimen", "L…
+$ ENGTYPE_3  &lt;chr&gt; "County", "County", "County City", "County", "County", "Cou…
+$ Shape_Leng &lt;dbl&gt; 1.869074, 2.360691, 1.425620, 3.474325, 2.289506, 4.171918,…
+$ Shape_Area &lt;dbl&gt; 0.10056190, 0.19978745, 0.05302413, 0.18908121, 0.11450357,…
+$ County     &lt;chr&gt; "Anxiang", "Hanshou", "Jinshi", "Li", "Linli", "Shimen", "L…
+$ geometry   &lt;POLYGON [°]&gt; POLYGON ((112.0625 29.75523..., POLYGON ((112.2288 …</code></pre>
+</div>
+</div>
+<p>We generate the csv file path:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>csv_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"dataHunan"</span>, <span class="st">"aspatial"</span>, <span class="st">"Hunan_2012.csv"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>csv_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "D:/f4sared/ISSS624/data/dataHunan/aspatial/Hunan_2012.csv"</code></pre>
+</div>
+</div>
+<p>We then load the csv file:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>hunan_2012 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(csv_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 88 Columns: 29
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (2): County, City
+dbl (27): avg_wage, deposite, FAI, Gov_Rev, Gov_Exp, GDP, GDPPC, GIO, Loan, ...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+</section>
+<section id="step-3-prepare-the-data" class="level1">
+<h1>Step 3: Prepare the data</h1>
+<p>We perform a relational join:</p>
+<p>**Auto detect, join by “County”</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan, hunan_2012)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining, by = "County"</code></pre>
+</div>
+</div>
+<p>Step 3: Visualize the Regional Development Indicator</p>
+<p>**Note: qtm() belongs to tmap</p>
+<p>**qtm() offers less control, for more professional option, use tm_shape instead</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>equal <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(hunan)<span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_fill</span>(<span class="st">"GDPPC"</span>, <span class="at">n=</span><span class="dv">5</span>, <span class="at">style =</span> <span class="st">"equal"</span>)<span class="sc">+</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>)<span class="sc">+</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Equal interval classification"</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>quantile <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(hunan)<span class="sc">+</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_fill</span>(<span class="st">"GDPPC"</span>, <span class="at">n=</span><span class="dv">5</span>, <span class="at">style =</span> <span class="st">"quantile"</span>)<span class="sc">+</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_borders</span>(<span class="at">alpha=</span><span class="fl">0.5</span>)<span class="sc">+</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Equal quantile classification"</span>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(equal, </span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>             quantile, </span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">asp=</span><span class="dv">1</span>, </span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="ex_2_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="minor-notes" class="level2">
+<h2 class="anchored" data-anchor-id="minor-notes">Minor notes:</h2>
+<p><a href="https://bookdown.org/nicohahn/making_maps_with_r5/docs/tmap.html" class="uri">https://bookdown.org/nicohahn/making_maps_with_r5/docs/tmap.html</a></p>
+<p><a href="https://www.rdocumentation.org/packages/classInt/versions/0.4-8/topics/classIntervals" class="uri">https://www.rdocumentation.org/packages/classInt/versions/0.4-8/topics/classIntervals</a></p>
+<p>style = pretty: Rounds interval boundaries to whole numbers. Default setting.</p>
+<p>style = equal: Splits the variable into intervals of equal length. Should only be used if the variable follows an uniform distribution.</p>
+<p>style = quantile: Splits the variable into quantiles. Consequently there are the same number of observations in each interval.</p>
+<p>style = jenks: Identifies groups with similar values and maximizes the difference between them.</p>
+<p>style = cont: Displays many colors over a continuous palette.</p>
+<p>style = cat: Colors each category individually for categorical data.</p>
+</section>
+</section>
+<section id="step-4-compute-the-spatial-weights" class="level1">
+<h1>Step 4: Compute the spatial weights</h1>
+<p>Construct the spatial weight based on the “Queen” contiguity:</p>
+<p>**polyn2b means: polygons to neighbor list</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>wm_q <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(hunan, <span class="at">queen=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Generate the row standardized weight matrix:</p>
+<p>**Note: for more robust option use style B</p>
+<p>**This is because style W will create weakness for the polygon at the edges due to less neighbor</p>
+<hr>
+<p>Taken from:<br>
+<a href="https://r4gdsa.netlify.app/chap04.html" class="uri">https://r4gdsa.netlify.app/chap04.html</a></p>
+<p>Style can take values “W”, “B”, “C”, “U”, “minmax” and “S”. B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al.&nbsp;1999, p.&nbsp;167-168 (sums over all links to n).</p>
+<hr>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>rswm_q <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(wm_q, <span class="at">style=</span><span class="st">"W"</span>, <span class="at">zero.policy =</span><span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>rswm_q</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Characteristics of weights list object:
+Neighbour list object:
+Number of regions: 88 
+Number of nonzero links: 448 
+Percentage nonzero weights: 5.785124 
+Average number of links: 5.090909 
+
+Weights style: W 
+Weights constants summary:
+   n   nn S0       S1       S2
+W 88 7744 88 37.86334 365.9147</code></pre>
+</div>
+</div>
+</section>
+<section id="step-5-morans-i" class="level1">
+<h1>Step 5: Moran’s I</h1>
+<section id="morans-i-test" class="level2">
+<h2 class="anchored" data-anchor-id="morans-i-test">Moran’s I Test:</h2>
+<p>**moran.test() belongs to spdep</p>
+<p>**Are we testing against randomization or normality ?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.test</span>(hunan<span class="sc">$</span>GDPPC, <span class="at">listw=</span>rswm_q, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>, <span class="at">na.action =</span> na.omit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Moran I test under randomisation
+
+data:  hunan$GDPPC  
+weights: rswm_q    
+
+Moran I statistic standard deviate = 4.7351, p-value = 1.095e-06
+alternative hypothesis: greater
+sample estimates:
+Moran I statistic       Expectation          Variance 
+      0.300749970      -0.011494253       0.004348351 </code></pre>
+</div>
+</div>
+<p>Useful Link:<br>
+<a href="https://bookdown.org/lexcomber/brunsdoncomber2e/morans-i-an-index-of-autocorrelation.html" class="uri">https://bookdown.org/lexcomber/brunsdoncomber2e/morans-i-an-index-of-autocorrelation.html</a> &gt;&gt; Moran’I eigen value code<br>
+<a href="https://www.youtube.com/watch?v=_FtR878eic4" class="uri">https://www.youtube.com/watch?v=_FtR878eic4</a> &gt;&gt; Moran’s I explained<br>
+<a href="https://www.youtube.com/watch?v=MPcNT0KUym0" class="uri">https://www.youtube.com/watch?v=MPcNT0KUym0</a> &gt;&gt; Moran’s I ranging</p>
+<p>When moran’s I is 0, it means the points are distributed randomly across the space.<br>
+When moran’s I is 1, it means that similar values tend to cluster.<br>
+Our P-value is 0.000001, which is really significant.</p>
+<p>We calculate the Moran’s I eigen value range:</p>
+<p>**Note: The Moran’s I range is dependent on the inputs !</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>moran.range <span class="ot">&lt;-</span> <span class="cf">function</span>(lw) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  wmat <span class="ot">&lt;-</span> <span class="fu">listw2mat</span>(lw)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">range</span>(<span class="fu">eigen</span>((wmat <span class="sc">+</span> <span class="fu">t</span>(wmat))<span class="sc">/</span><span class="dv">2</span>)<span class="sc">$</span>values))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.range</span>(rswm_q)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -0.733384  1.032489</code></pre>
+</div>
+</div>
+<p>Our moran’s estimate is 0.300 which is closer to 1.032 than -0.733.</p>
+<p>Text</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

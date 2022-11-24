@@ -5,16 +5,163 @@ editor: visual
 
 # Overview:
 
+# Step 1: Check and load packages 
+
+\*\*We will use the additional "here" package
+
 ```{r}
 pacman::p_load(sf, spdep, tmap, tidyverse, here)
 ```
 
+# Step 2: Loading Data into R
+
+We first generate the shape file path:
+
 ```{r}
-shapefile_path <- here("in_class", "ex_1", "dataH", "geospatial")
+shapefile_path <- here("data", "dataHunan", "geospatial")
 shapefile_path
 ```
+
+Next we load in the shape file using the path generated:
 
 ```{r}
 hunan <- st_read(dsn = shapefile_path, layer = "Hunan")
 
 ```
+
+We check the loaded shapefile:
+
+```{r}
+glimpse(hunan)
+```
+
+We generate the csv file path:
+
+```{r}
+csv_path <- here("data", "dataHunan", "aspatial", "Hunan_2012.csv")
+csv_path
+```
+
+We then load the csv file:
+
+```{r}
+hunan_2012 <- read_csv(csv_path)
+```
+
+# Step 3: Prepare the data
+
+We perform a relational join:
+
+\*\*Auto detect, join by "County"
+
+```{r}
+hunan <- left_join(hunan, hunan_2012)
+```
+
+Step 3: Visualize the Regional Development Indicator
+
+\*\*Note: qtm() belongs to tmap
+
+\*\*qtm() offers less control, for more professional option, use tm_shape instead
+
+```{r}
+equal <- tm_shape(hunan)+
+          tm_fill("GDPPC", n=5, style = "equal")+
+          tm_borders(alpha = 0.5)+
+          tm_layout(main.title = "Equal interval classification")
+
+quantile <- tm_shape(hunan)+
+          tm_fill("GDPPC", n=5, style = "quantile")+
+          tm_borders(alpha=0.5)+
+          tm_layout(main.title = "Equal quantile classification")
+
+tmap_arrange(equal, 
+             quantile, 
+             asp=1, 
+             ncol=2)
+```
+
+## Minor notes:
+
+<https://bookdown.org/nicohahn/making_maps_with_r5/docs/tmap.html>
+
+<https://www.rdocumentation.org/packages/classInt/versions/0.4-8/topics/classIntervals>
+
+style = pretty: Rounds interval boundaries to whole numbers. Default setting.
+
+style = equal: Splits the variable into intervals of equal length. Should only be used if the variable follows an uniform distribution.
+
+style = quantile: Splits the variable into quantiles. Consequently there are the same number of observations in each interval.
+
+style = jenks: Identifies groups with similar values and maximizes the difference between them.
+
+style = cont: Displays many colors over a continuous palette.
+
+style = cat: Colors each category individually for categorical data.
+
+# Step 4: Compute the spatial weights 
+
+Construct the spatial weight based on the "Queen" contiguity:
+
+\*\*polyn2b means: polygons to neighbor list
+
+```{r}
+wm_q <- poly2nb(hunan, queen=TRUE)
+```
+
+Generate the row standardized weight matrix:
+
+\*\*Note: for more robust option use style B
+
+\*\*This is because style W will create weakness for the polygon at the edges due to less neighbor
+
+------------------------------------------------------------------------
+
+Taken from:\
+<https://r4gdsa.netlify.app/chap04.html>
+
+Style can take values "W", "B", "C", "U", "minmax" and "S". B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999, p. 167-168 (sums over all links to n).
+
+------------------------------------------------------------------------
+
+```{r}
+rswm_q <- nb2listw(wm_q, style="W", zero.policy =TRUE)
+rswm_q
+```
+
+# Step 5: Moran's I 
+
+## Moran's I Test: 
+
+\*\*moran.test() belongs to spdep
+
+\*\*Are we testing against randomization or normality ?
+
+```{r}
+moran.test(hunan$GDPPC, listw=rswm_q, zero.policy = TRUE, na.action = na.omit)
+```
+
+Useful Link: \
+<https://bookdown.org/lexcomber/brunsdoncomber2e/morans-i-an-index-of-autocorrelation.html> \>\> Moran'I eigen value code\
+<https://www.youtube.com/watch?v=_FtR878eic4> \>\> Moran's I explained \
+<https://www.youtube.com/watch?v=MPcNT0KUym0> \>\> Moran's I ranging
+
+When moran's I is 0, it means the points are distributed randomly across the space. \
+When moran's I is 1, it means that similar values tend to cluster. \
+Our P-value is 0.000001, which is really significant.
+
+We calculate the Moran's I eigen value range:
+
+\*\*Note: The Moran's I range is dependent on the inputs !
+
+```{r}
+moran.range <- function(lw) {
+  wmat <- listw2mat(lw)
+  return(range(eigen((wmat + t(wmat))/2)$values))
+}
+moran.range(rswm_q)
+```
+
+Our moran's estimate is 0.300 which is closer to 1.032 than -0.733.
+
+Text
