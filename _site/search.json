@@ -67,7 +67,7 @@
     "href": "hands_on_ex/ex_2/ex_2.html",
     "title": "Hand on ex 2 - Chap 4 Global and Local Measures of Spatial Autocorrelation",
     "section": "",
-    "text": "pacman::p_load(sf, spdep, tmap, tidyverse)"
+    "text": "pacman::p_load(sf, spdep, tmap, tidyverse, here)\n\n\nshapefile_path <- here(\"in_class\", \"ex_1\", \"dataH\", \"geospatial\")\nshapefile_path\n\n[1] \"D:/f4sared/ISSS624/in_class/ex_1/dataH/geospatial\"\n\n\n\nhunan <- st_read(dsn = shapefile_path, layer = \"Hunan\")\n\nReading layer `Hunan' from data source \n  `D:\\f4sared\\ISSS624\\in_class\\ex_1\\dataH\\geospatial' using driver `ESRI Shapefile'\nSimple feature collection with 88 features and 7 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812\nGeodetic CRS:  WGS 84"
   },
   {
     "objectID": "Hands_on_ex1.html",

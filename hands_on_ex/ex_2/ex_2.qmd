@@ -3,12 +3,18 @@ title: "Hand on ex 2 - Chap 4 Global and Local Measures of Spatial Autocorrelati
 editor: visual
 ---
 
-# Overview: 
+# Overview:
 
 ```{r}
-pacman::p_load(sf, spdep, tmap, tidyverse)
+pacman::p_load(sf, spdep, tmap, tidyverse, here)
 ```
 
 ```{r}
+shapefile_path <- here("in_class", "ex_1", "dataH", "geospatial")
+shapefile_path
+```
+
+```{r}
+hunan <- st_read(dsn = shapefile_path, layer = "Hunan")
 
 ```
