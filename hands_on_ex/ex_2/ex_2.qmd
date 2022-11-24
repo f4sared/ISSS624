@@ -1,0 +1,14 @@
+---
+title: "Hand on ex 2 - Chap 4 Global and Local Measures of Spatial Autocorrelation"
+editor: visual
+---
+
+# Overview: 
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse)
+```
+
+```{r}
+
+```
