@@ -5,7 +5,7 @@ editor: visual
 
 # Overview:
 
-# Step 1: Check and load packages 
+# Step 1: Check and load packages
 
 \*\*We will use the additional "here" package
 
@@ -83,9 +83,11 @@ tmap_arrange(equal,
 
 ## Minor notes:
 
-<https://bookdown.org/nicohahn/making_maps_with_r5/docs/tmap.html>
+Useful Links:
 
-<https://www.rdocumentation.org/packages/classInt/versions/0.4-8/topics/classIntervals>
+-   <https://bookdown.org/nicohahn/making_maps_with_r5/docs/tmap.html>
+
+-   <https://www.rdocumentation.org/packages/classInt/versions/0.4-8/topics/classIntervals>
 
 style = pretty: Rounds interval boundaries to whole numbers. Default setting.
 
@@ -99,7 +101,7 @@ style = cont: Displays many colors over a continuous palette.
 
 style = cat: Colors each category individually for categorical data.
 
-# Step 4: Compute the spatial weights 
+# Step 4: Compute the spatial weights
 
 Construct the spatial weight based on the "Queen" contiguity:
 
@@ -109,7 +111,13 @@ Construct the spatial weight based on the "Queen" contiguity:
 wm_q <- poly2nb(hunan, queen=TRUE)
 ```
 
-Generate the row standardized weight matrix:
+\*\*Question: \
+What is the order of the poly2nb here ? How many layers of neighbors are considered here ?\
+It appears poly2nb only consider the first order neighbor.
+
+Useful Link:
+
+-   <https://search.r-project.org/CRAN/refmans/geomerge/html/geomerge.neighbor.html>
 
 \*\*Note: for more robust option use style B
 
@@ -117,21 +125,40 @@ Generate the row standardized weight matrix:
 
 ------------------------------------------------------------------------
 
-Taken from:\
-<https://r4gdsa.netlify.app/chap04.html>
+Taken from:
+
+-   <https://r4gdsa.netlify.app/chap04.html>
 
 Style can take values "W", "B", "C", "U", "minmax" and "S". B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999, p. 167-168 (sums over all links to n).
 
 ------------------------------------------------------------------------
+
+Generate the row standardized weight matrix:
 
 ```{r}
 rswm_q <- nb2listw(wm_q, style="W", zero.policy =TRUE)
 rswm_q
 ```
 
-# Step 5: Moran's I 
+# Step 5: Moran's I
 
-## Moran's I Test: 
+Take not that for the Moran's I test, there are 2 methods:
+
+-   Analytical Method: \
+    This is a single step calculation.
+
+-   Monte Carlo Method:\
+    For Monte Carlo Method, we will take samples randomly with replacements to create lots and lot of datasets. For each of the datasets, we will then compute the Moran's I value. We will then plot a histogram of the values. The resultant Moran's I value should be as far as possible away from the mean for a good indication of spatial auto correlation.
+
+Useful ink for study:
+
+-   <https://mgimond.github.io/simple_moransI_example/>
+
+-   <https://web.pdx.edu/~abrasch/GEOG597/Lab3_spatial_autocorrelation_AlexBrasch.html#moran%E2%80%99s_i_scatter_plot>
+
+-   <https://rpubs.com/spring19cp6521/Week12_Wednesday1>
+
+## Moran's I Test:
 
 \*\*moran.test() belongs to spdep
 
@@ -141,13 +168,16 @@ rswm_q
 moran.test(hunan$GDPPC, listw=rswm_q, zero.policy = TRUE, na.action = na.omit)
 ```
 
-Useful Link: \
-<https://bookdown.org/lexcomber/brunsdoncomber2e/morans-i-an-index-of-autocorrelation.html> \>\> Moran'I eigen value code\
-<https://www.youtube.com/watch?v=_FtR878eic4> \>\> Moran's I explained \
-<https://www.youtube.com/watch?v=MPcNT0KUym0> \>\> Moran's I ranging
+Useful Link:
 
-When moran's I is 0, it means the points are distributed randomly across the space. \
-When moran's I is 1, it means that similar values tend to cluster. \
+-   <https://bookdown.org/lexcomber/brunsdoncomber2e/morans-i-an-index-of-autocorrelation.html> \>\> Moran' I eigen value code
+
+-   <https://www.youtube.com/watch?v=_FtR878eic4> \>\> Moran's I explained
+
+-   <https://www.youtube.com/watch?v=MPcNT0KUym0> \>\> Moran's I ranging with eigen values
+
+When Moran's I is 0, it means the points are distributed randomly across the space.\
+When Moran's I is 1, it means that similar values tend to cluster.\
 Our P-value is 0.000001, which is really significant.
 
 We calculate the Moran's I eigen value range:
@@ -162,6 +192,230 @@ moran.range <- function(lw) {
 moran.range(rswm_q)
 ```
 
-Our moran's estimate is 0.300 which is closer to 1.032 than -0.733.
+Our Moran's estimate is 0.300 which is closer to 1.032 than -0.733.
 
-Text
+## Monte Carlo Moran's I:
+
+```{r}
+set.seed(1234)
+bperm <- moran.mc(hunan$GDPPC, listw = rswm_q, nsim = 999, zero.policy = TRUE, na.action = na.omit)
+bperm
+```
+
+Here we observe a similar Moran's I value above.\
+However, the p-value is now less significant as compared to the first test.
+
+### Plot the Monte Carlo Moran's I:
+
+\*\*Why Monte Carlo ?
+
+\*\*Monte Carlo is a statistical method that generates multiple datasets using random sampling.
+
+```{r}
+mean(bperm$res[1:999])
+```
+
+```{r}
+var(bperm$res[1:999])
+```
+
+```{r}
+summary(bperm$res[1:999])
+```
+
+```{r}
+hist(bperm$res, 
+     freq=TRUE, 
+     breaks=20, 
+     xlab="Simulated Moran's I")
+abline(v=0, 
+       col="red") 
+```
+
+Plot using ggplot:
+
+Useful Links:
+
+-   <https://sparkbyexamples.com/r-programming/convert-list-to-r-dataframe/>
+
+-   <https://www.projectpro.io/recipes/change-column-headers-of-dataframe-r#:~:text=How%20to%20change%20column%20headers%20of%20a%20data%2Dframe%20in,can%20be%20changed%20at%20once.>
+
+Create a dataframe:
+
+```{r}
+xx <- data.frame(bperm$res)
+```
+
+```{r}
+colnames(xx)[1]  <- "res" 
+```
+
+Plot using ggplot:
+
+```{r}
+ggplot(data=xx, aes(x= as.numeric(`res`)))+
+    geom_histogram(bins=20, 
+                 color="black", 
+                 fill="light blue") +
+    labs(title = "Distribution of DEPENDENCY",
+      x = "Moran's I",
+      y = "Frequency")
+```
+
+# Step 6: Geary's C
+
+## Geary's C test:
+
+```{r}
+geary.test(hunan$GDPPC, listw = rswm_q)
+```
+
+Here we see a small p-value of 0.0001 which makes it statistically significant.\
+For Geary's C, 1 means pure randomization. \< 1 means clustering. \> 1 means dispersed.\
+Our value is 0.69, which tends towards some clustering.
+
+## Monte Carlo Geary's C:
+
+```{r}
+set.seed(1234)
+bperm=geary.mc(hunan$GDPPC, 
+               listw=rswm_q, 
+               nsim=999)
+bperm
+```
+
+Here, we see a higher P-Value which is less statistically significant.\
+The statistic value remains to be similar.
+
+### Plot the Monte Carlo:
+
+```{r}
+mean(bperm$res[1:999])
+```
+
+```{r}
+var(bperm$res[1:999])
+```
+
+```{r}
+summary(bperm$res[1:999])
+```
+
+```{r}
+hist(bperm$res, freq=TRUE, breaks=20, xlab="Simulated Geary c")
+abline(v=1, col="red") 
+```
+
+# Step 7: Spatial Correlogram
+
+Correlogram allows us the ability to study the variation of the spatial correlation as it evolves across space. In a certain manner, it allows us to get a feel of the gradient as the lag increases. For our purposes, the lag refers mainly to the spatial distance. In other cases, the lag can be that of time. For example, the weather today may be highly correlated with the weather the next day and the day after. However, from the 4th day onward, we observe less and less correlation.
+
+Useful Links:
+
+-   <https://www.ecologycenter.us/vegetation-ecology/correlograms-morans-i.html>
+
+-   <https://www.youtube.com/watch?v=Aft25mI1ffw>
+
+## Moran's I
+
+```{r}
+MI_corr <- sp.correlogram(wm_q, 
+                          hunan$GDPPC, 
+                          order=6, 
+                          method="I", 
+                          style="W")
+plot(MI_corr)
+```
+
+```{r}
+print(MI_corr)
+```
+
+As we increase the order of lag, the Moran's I value decreases. From a lag value of 3 onwards, we observe less indication of clustering.
+
+## Geary's C
+
+```{r}
+GC_corr <- sp.correlogram(wm_q, 
+                          hunan$GDPPC, 
+                          order=6, 
+                          method="C", 
+                          style="W")
+plot(GC_corr)
+```
+
+```{r}
+print(GC_corr)
+```
+
+As we increase the lag, the C value increases, which shows less clustering. From a lag of 3 onwards, we observe less clustering.
+
+# Step 8: Cluster and Outlier Analysis
+
+Ever wondered why the local Moran's I value is bigger than 1 ?
+
+This has to do with the eigen values, check the useful link below:
+
+-   <https://www.researchgate.net/post/What-about-extrem-value-of-Local-Morans-Index#:~:text=Typically%20Moran%20Index%20value%20should,of%20%2D1%20to%20%2B4.>
+
+Compute Local Moran I:
+
+```{r}
+fips <- order(hunan$County)
+localMI <- localmoran(hunan$GDPPC, rswm_q)
+head(localMI)
+```
+
+```{r}
+printCoefmat(data.frame(localMI[fips,], row.names=hunan$County[fips]), check.names=FALSE)
+```
+
+Append output to dataframe:
+
+```{r}
+hunan.localMI <- cbind(hunan,localMI) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)
+```
+
+Map the local Moran I
+
+```{r}
+tm_shape(hunan.localMI) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          palette = "RdBu",
+          title = "local moran statistics") +
+  tm_borders(alpha = 0.5)
+```
+
+\*\*Question, why is the Moran's I value here \> 1 ?
+
+Map Local Moran I P-value:
+
+```{r}
+tm_shape(hunan.localMI) +
+  tm_fill(col = "Pr.Ii", 
+          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+          palette="-Blues", 
+          title = "local Moran's I p-values") +
+  tm_borders(alpha = 0.5)
+```
+
+Plot both maps together:
+
+```{r}
+localMI.map <- tm_shape(hunan.localMI) +
+  tm_fill(col = "Ii", 
+          style = "pretty", 
+          title = "local moran statistics") +
+  tm_borders(alpha = 0.5)
+
+pvalue.map <- tm_shape(hunan.localMI) +
+  tm_fill(col = "Pr.Ii", 
+          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+          palette="-Blues", 
+          title = "local Moran's I p-values") +
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)
+```
