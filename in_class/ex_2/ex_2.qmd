@@ -1,5 +1,5 @@
 ---
-title: "In-Class Ex 1 - Loading data + prepare data for take home Ex 1"
+title: "In-Class Ex 2 - Loading data + prepare data for take home Ex 1"
 editor: visual
 ---
 

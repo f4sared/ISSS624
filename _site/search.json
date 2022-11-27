@@ -275,56 +275,56 @@
   {
     "objectID": "in_class/ex_2/ex_2.html#import-nigeria-water-point-data-file",
     "href": "in_class/ex_2/ex_2.html#import-nigeria-water-point-data-file",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Import Nigeria water point data-file:",
     "text": "Import Nigeria water point data-file:\nGenerate a path:\nWe use the here function to generate a specific file path on the root folder.\n\nshapefile_path <- here(\"data\", \"dataNigeria\", \"geospatial\")\nshapefile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/geospatial\"\n\n\nSome useful link for the CRS:\n\nhttps://datacarpentry.org/organization-geospatial/03-crs/\nhttps://www.nceas.ucsb.edu/sites/default/files/2020-04/OverviewCoordinateReferenceSystems.pdf\n\nst_read() belongs to the sf package. It reads simple features from file or database. Simple features or simple feature access refers to formal standard ISO 19125-1:2004 that describes how real world data can be represented in computers, with emphasis on the spatial geometry of these objects. Link below:\nhttps://cran.r-project.org/web/packages/sf/vignettes/sf1.html#:~:text=Simple%20features%20or%20simple%20feature,spatial%20geometry%20of%20these%20objects.\nTo find the CRS of the shapefile, open the .prj file as a text. It will tell you which projection system is being used.\nRead the shapefile using st_read() belonging to the sf package:\nThe data read will be saved as a simple feature data table.\nWe will use the filter() function of dplyr package to filter only rows for Nigeria\n\n# wp <- st_read(\n#   dsn = shapefile_path,\n#   layer = \"geo_export\",\n#   crs = 4326) %>%\n#   filter(clean_coun == \"Nigeria\")\n\nGenerate the save path using here function:\n\nsavefile_path <- here(\"data\", \"dataNigeria\", \"geospatial\", \"wp_nga.rds\")\nsavefile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/geospatial/wp_nga.rds\"\n\n\nWe will next save the file using write_rds() of the tidyverse package:\nrds is a native data format of R.\n\n# wp_ng <- write_rds(wp, savefile_path)"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#import-nigeria-geo-boundary-file",
     "href": "in_class/ex_2/ex_2.html#import-nigeria-geo-boundary-file",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Import Nigeria geo-boundary file:",
     "text": "Import Nigeria geo-boundary file:\nNext we will make the path to the geo boundary file:\n\nshapefile_path <- here(\"data\", \"dataNigeria\", \"boundary\")\nshapefile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/boundary\"\n\n\nNext we will Import the Nigeria LGA Boundary Data with st_read() function:\nThe imported data will be saved as a simple features dataset.\n\nnga <- st_read(\n  dsn = shapefile_path,\n  layer = \"geoBoundaries-NGA-ADM2\",\n  crs = 4326)\n\nReading layer `geoBoundaries-NGA-ADM2' from data source \n  `D:\\f4sared\\ISSS624\\data\\dataNigeria\\boundary' using driver `ESRI Shapefile'\nSimple feature collection with 774 features and 5 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2.668534 ymin: 4.273007 xmax: 14.67882 ymax: 13.89442\nGeodetic CRS:  WGS 84"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#downsize-further-the-wp_nga-data",
     "href": "in_class/ex_2/ex_2.html#downsize-further-the-wp_nga-data",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Downsize further the wp_nga data:",
     "text": "Downsize further the wp_nga data:\nLoad the previously saved data:\nWe will select specific columns using select().\n\n# final <- read_rds(rdsfile_path) %>% select(1:2, 14:17, 23)\n\nCreate the path for saving the file\n\n# savefile_path <- here(\"data\", \"dataNigeria\", \"geospatial\", \"wp_nga_v2.rds\")\n# savefile_path\n\nSave the file:\n\n# write_rds(final, savefile_path)"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#visualize-initial-distribution",
     "href": "in_class/ex_2/ex_2.html#visualize-initial-distribution",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Visualize Initial distribution",
     "text": "Visualize Initial distribution\nGenerate path to rds file saved previously:\n\nrdsfile_path <- here(\"data\", \"dataNigeria\", \"geospatial\",\"wp_nga_v2.rds\")\nrdsfile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/geospatial/wp_nga_v2.rds\"\n\n\nLoad the rds file with read_rds() function of the tidyverse package:\nWe will also make use of the piping to replace the “na” values with “unknown”.\nmutate() is a function of the dplyr package.\n\nwp_nga <- read_rds(rdsfile_path) %>%\n  mutate(status_cle = replace_na(status_cle, \"Unknown\"))\n\nCheck the CRS of the spatial datafile with st_crs():\n\nst_crs(wp_nga)\n\nCoordinate Reference System:\n  User input: EPSG:4326 \n  wkt:\nGEOGCRS[\"WGS 84\",\n    DATUM[\"World Geodetic System 1984\",\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    USAGE[\n        SCOPE[\"Horizontal component of 3D system.\"],\n        AREA[\"World.\"],\n        BBOX[-90,-180,90,180]],\n    ID[\"EPSG\",4326]]\n\n\nUse the freq() of the funModeling package to show the distribution percentage of status_cle:\n\nfreq(data=wp_nga,\n     input = 'status_cle')\n\nWarning: The `<scale>` argument of `guides()` cannot be `FALSE`. Use \"none\" instead as\nof ggplot2 3.3.4.\nℹ The deprecated feature was likely used in the funModeling package.\n  Please report the issue at <https://github.com/pablo14/funModeling/issues>.\n\n\n\n\n\n                        status_cle frequency percentage cumulative_perc\n1                       Functional     45883      48.29           48.29\n2                   Non-Functional     29385      30.93           79.22\n3                          Unknown     10656      11.22           90.44\n4      Functional but needs repair      4579       4.82           95.26\n5 Non-Functional due to dry season      2403       2.53           97.79\n6        Functional but not in use      1686       1.77           99.56\n7         Abandoned/Decommissioned       234       0.25           99.81\n8                        Abandoned       175       0.18           99.99\n9 Non functional due to dry season         7       0.01          100.00"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#filter-for-functional-water-points",
     "href": "in_class/ex_2/ex_2.html#filter-for-functional-water-points",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Filter for functional water-points:",
     "text": "Filter for functional water-points:\nHere we will use the filter() function from the dplyr package to select “functional” rows only:\nWe use the %in% to denote the membership in the group of strings.\n\nwpt_functional <- wp_nga %>%\n  filter(status_cle %in%\n           c(\"Functional\",\n             \"Functional but not in use\",\n             \"Functional but needs repair\"))\n\nThen we will plot with freq() function from funModeling to show the distribution:\n\nfreq(data=wpt_functional, \n     input = 'status_cle')\n\n\n\n\n                   status_cle frequency percentage cumulative_perc\n1                  Functional     45883      87.99           87.99\n2 Functional but needs repair      4579       8.78           96.77\n3   Functional but not in use      1686       3.23          100.00"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#filter-for-non-functional",
     "href": "in_class/ex_2/ex_2.html#filter-for-non-functional",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Filter for non-functional",
     "text": "Filter for non-functional\nFilter for non-functional rows:\nUse %in% for to select rows that fall into the specific categories.\n\nwpt_nonfunctional <- wp_nga %>%\n  filter(status_cle %in%\n           c(\"Abandoned/Decommissioned\", \n             \"Abandoned\",\n             \"Non-Functional\",\n             \"Non functional due to dry season\",\n             \"Non-Functional due to dry season\"))\n\nPlot the distribution with the freq() function:\n\nfreq(data=wpt_nonfunctional, \n     input = 'status_cle')\n\n\n\n\n                        status_cle frequency percentage cumulative_perc\n1                   Non-Functional     29385      91.25           91.25\n2 Non-Functional due to dry season      2403       7.46           98.71\n3         Abandoned/Decommissioned       234       0.73           99.44\n4                        Abandoned       175       0.54           99.98\n5 Non functional due to dry season         7       0.02          100.00"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#filter-for-unknown",
     "href": "in_class/ex_2/ex_2.html#filter-for-unknown",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Filter for unknown:",
     "text": "Filter for unknown:\nLastly we filter for the rows that have unknown status:\n\nwpt_unknown <- wp_nga %>%\n  filter(status_cle == \"Unknown\")"
   },
   {
     "objectID": "in_class/ex_2/ex_2.html#perform-data-manipulation",
     "href": "in_class/ex_2/ex_2.html#perform-data-manipulation",
-    "title": "In-Class Ex 1 - Loading data + prepare data for take home Ex 1",
+    "title": "In-Class Ex 2 - Loading data + prepare data for take home Ex 1",
     "section": "Perform data manipulation:",
     "text": "Perform data manipulation:\nUsing st_intersects, we will be able to create a list of rows from wp_nga that intersects each row of nga.\nFor the intersection to work, st_intersect will check if each point falls within the polygon of nga.\nNext we use the lengths() function to count the number of instances. Then we append to a new column.\nWe repeat this step across all 3 categories of Functional, Non-Functional & Unknown\n\nnga_wp <- nga %>%\n  mutate(`total wpt` = lengths(\n    st_intersects(nga, wp_nga))) %>%\n  mutate(`wpt functional` = lengths(\n    st_intersects(nga, wpt_functional))) %>%\n  mutate(`wpt non-functional` = lengths(\n    st_intersects(nga, wpt_nonfunctional))) %>%\n  mutate(`wpt unknown` = lengths(\n    st_intersects(nga, wpt_unknown)))\n\nNext, using the mutate() function of dplyr, we will create 2 new columns:\n\npct_functional = `wpt functional`/`total wpt`\npct_non-functional = `wpt non-functional`/`total wpt`\n\nWe will then use select() of dplyr to retain the fields that we require.\n\nnga_wp <- nga_wp %>%\n  mutate(pct_functional = `wpt functional`/`total wpt`) %>%\n  mutate(`pct_non-functional` = `wpt non-functional`/`total wpt`) \n# select(3:4, 9:10, 18:23)\n\nWe will then create a save file path:\n\nsavefile_path <- here(\"data\", \"dataNigeria\", \"geospatial\", \"nga_wp.rds\")\nsavefile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/geospatial/nga_wp.rds\"\n\n\nNext we will save this final dataframe using write_rds of tidyverse package:\n\nwrite_rds(nga_wp, savefile_path)"
   }
