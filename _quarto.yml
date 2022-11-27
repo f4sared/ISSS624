@@ -15,6 +15,8 @@ website:
             href: in_class/ex_1/in_class_ex_1.qmd
           - text: Hands-on Ex 2 - Chap 4 Global and Local Measures of Spatial Autocorrelation
             href: hands_on_ex/ex_2/ex_2.qmd
+          - text: In-Class Ex 1 - Loading data + prepare data for take home Ex 1
+            href: in_class/ex_2/ex_2.qmd
             
     right:
       - href: index.qmd

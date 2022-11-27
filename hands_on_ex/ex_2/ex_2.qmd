@@ -111,7 +111,7 @@ Construct the spatial weight based on the "Queen" contiguity:
 wm_q <- poly2nb(hunan, queen=TRUE)
 ```
 
-\*\*Question: \
+\*\*Question:\
 What is the order of the poly2nb here ? How many layers of neighbors are considered here ?\
 It appears poly2nb only consider the first order neighbor.
 
@@ -144,7 +144,7 @@ rswm_q
 
 Take not that for the Moran's I test, there are 2 methods:
 
--   Analytical Method: \
+-   Analytical Method:\
     This is a single step calculation.
 
 -   Monte Carlo Method:\
@@ -420,13 +420,13 @@ pvalue.map <- tm_shape(hunan.localMI) +
 tmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)
 ```
 
-# Step 9: Creating the LISA Cluster Map: 
+# Step 9: Creating the LISA Cluster Map:
 
 LISA stands for "Local Indication of Spatial Association".
 
 The first step to generating the LISA is to plot the Moran Scatterplot.
 
-## Plot Moran's scatterplot: 
+## Plot Moran's scatterplot:
 
 Useful link:
 
@@ -443,7 +443,7 @@ nci <- moran.plot(hunan$GDPPC, rswm_q,
                   ylab="Spatially Lag GDPPC 2012")
 ```
 
-## Plot Moran's scatterplot with standardized variable: 
+## Plot Moran's scatterplot with standardized variable:
 
 Why do we need to do this ? What is the use ?
 
@@ -458,7 +458,7 @@ nci2 <- moran.plot(hunan$Z.GDPPC, rswm_q,
                    ylab="Spatially Lag z-GDPPC 2012")
 ```
 
-## Preparing LISA map classes: 
+## Preparing LISA map classes:
 
 We create a empty vector based on the number of rows in the localMI:
 
@@ -501,7 +501,7 @@ Place non-significant Moran in category 0:
 quadrant[localMI[,5]>signif] <- 0
 ```
 
-## Plotting the LISA Map: 
+## Plotting the LISA Map:
 
 Interpreting the LISA Map:
 
@@ -534,7 +534,7 @@ Useful Link:
 
 \*\*Note Gi\* includes the central point in the evaluation while Gi does not.
 
-## Deriving Spatial Weight Matrix 
+## Deriving Spatial Weight Matrix
 
 ### Distance Based Matrix
 
@@ -597,9 +597,9 @@ knn_lw <- nb2listw(knn, style = 'B')
 summary(knn_lw)
 ```
 
-## Computing Gi Statistics 
+## Computing Gi Statistics
 
-### Using Fixed Distance 
+### Using Fixed Distance
 
 ```{r}
 fips <- order(hunan$County)
@@ -629,7 +629,7 @@ tmap_arrange(gdppc, Gimap, asp=1, ncol=2)
 
 We observe high level of significance of spatial concentration in the most central area highlighted by the red zone. However, we observe a steep change in the significance gradient of the local Gi score.
 
-### Using adaptive distance: 
+### Using adaptive distance:
 
 Compute using adaptive weights:
 
@@ -658,6 +658,6 @@ tmap_arrange(gdppc,
 
 Again, we observe a high level of spatial concentration significance in the areas highlighted in red. However, this time, we get a larger patch and a more gentle gradient distribution.
 
-## Thoughts: 
+## Thoughts:
 
 So apparently using different measures of distance weight matrix can have quite a big effect on the interpretation of the hotspot analysis. The question then lies in the motivation for selecting the different kinds of spatial weight matrix since they can produce different results.
