@@ -385,6 +385,20 @@
     "text": "Perform data manipulation (Point-In-Polygon):\nUsing st_intersects, we will be able to create a list of rows from wp_nga that intersects each row of nga.\nFor the intersection to work, st_intersect will check if each point falls within the polygon of nga.\nNext we use the lengths() function to count the number of instances. Then we append to a new column.\nWe repeat this step across all 3 categories of Functional, Non-Functional & Unknown:\n\nnga_wp <- nga %>%\n  mutate(`total wpt` = lengths(\n    st_intersects(nga, wp_nga))) %>%\n  mutate(`wpt functional` = lengths(\n    st_intersects(nga, wpt_functional))) %>%\n  mutate(`wpt non-functional` = lengths(\n    st_intersects(nga, wpt_nonfunctional))) %>%\n  mutate(`wpt unknown` = lengths(\n    st_intersects(nga, wpt_unknown)))\n\nNext, using the mutate() function of dplyr, we will create 2 new columns:\n\npct_functional = `wpt functional`/`total wpt`\npct_non-functional = `wpt non-functional`/`total wpt`\n\nWe will then use select() of dplyr to retain the fields that we require.\n\nnga_wp <- nga_wp %>%\n  mutate(pct_functional = `wpt functional`/`total wpt`) %>%\n  mutate(`pct_non-functional` = `wpt non-functional`/`total wpt`) \n\nWe will then create a save file path:\n\nsavefile_path <- here(\"data\", \"dataNigeria\", \"geospatial\", \"nga_wp.rds\")\nsavefile_path\n\n[1] \"D:/f4sared/ISSS624/data/dataNigeria/geospatial/nga_wp.rds\"\n\n\nNext we will save this final dataframe using write_rds() of tidyverse package:\n\nwrite_rds(nga_wp, savefile_path)"
   },
   {
+    "objectID": "take_home_ex/ex_1/ex_1.html#plotting-with-qtm",
+    "href": "take_home_ex/ex_1/ex_1.html#plotting-with-qtm",
+    "title": "Take Home Ex-1",
+    "section": "Plotting with qtm()",
+    "text": "Plotting with qtm()\nSet the tmap mode to “view” for interactive mode. Else set to “plot”.\nqtm() represents quick plotting with tmap package:\n\ntmap_mode(\"plot\")\n\ntmap mode set to plotting\n\nqtm(nga_wp_26391, \n    fill = \"wpt non-functional\")"
+  },
+  {
+    "objectID": "take_home_ex/ex_1/ex_1.html#plotting-with-tmap",
+    "href": "take_home_ex/ex_1/ex_1.html#plotting-with-tmap",
+    "title": "Take Home Ex-1",
+    "section": "Plotting with tmap()",
+    "text": "Plotting with tmap()\nUsing interactive tmap(), we will plot using “equal” classification:\n\ntmap_mode(\"view\")\n\ntmap mode set to interactive viewing\n\ntm_shape(nga_wp_26391)+\n  tm_fill(c(\"wpt non-functional\", \"wpt functional\"),\n          style = \"equal\") +\n  tm_borders(alpha = 0.5) +\n  tmap_style(\"white\")\n\ntmap style set to \"white\"\n\n\nother available styles are: \"gray\", \"natural\", \"cobalt\", \"col_blind\", \"albatross\", \"beaver\", \"bw\", \"classic\", \"watercolor\" \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nUsing interactive tmap(), we will plot using “quantile” classification:\n\ntm_shape(nga_wp_26391)+\n  tm_fill(c(\"wpt non-functional\", \"wpt functional\"),\n          style = \"quantile\") +\n  tm_borders(alpha = 0.5) +\n  tmap_style(\"white\")\n\ntmap style set to \"white\"\n\n\nother available styles are: \"gray\", \"natural\", \"cobalt\", \"col_blind\", \"albatross\", \"beaver\", \"bw\", \"classic\", \"watercolor\""
+  },
+  {
     "objectID": "take_home_ex/ex_1/ex_1.html#prepare-the-coordinates",
     "href": "take_home_ex/ex_1/ex_1.html#prepare-the-coordinates",
     "title": "Take Home Ex-1",
@@ -410,6 +424,6 @@
     "href": "take_home_ex/ex_1/ex_1.html#plot-the-fixed-distance-weight-matrix",
     "title": "Take Home Ex-1",
     "section": "Plot the fixed distance weight matrix:",
-    "text": "Plot the fixed distance weight matrix:\nUsing the plot() function, we will then visualize the neighbors that we have identified.\n\nplot(nga_wp_26391$geometry, border=\"black\")\nplot(wm_d72, coords, add=TRUE, col=\"red\")"
+    "text": "Plot the fixed distance weight matrix:\nUsing the plot() function, we will then visualize the neighbors that we have identified.\n\nplot(nga_wp_26391$geometry, border=\"black\")\nplot(wm_d72, coords, add=TRUE, col=\"red\")\n\n\n\n\n\n# rswm_q <- nb2listw(wm_d72, \n#                    style=\"W\", \n#                    zero.policy = TRUE)\n# rswm_q\n\n\n# moran.test(nga_wp_26391$`wpt functional`, \n#            listw=rswm_q, \n#            zero.policy = TRUE, \n#            na.action=na.omit)\n\n\n# plays <- nb2listw(wm_d72, \n#                    style=\"B\", \n#                    zero.policy = TRUE)\n\n\n# globalG.test(nga_wp$`wpt functional`, plays)"
   }
 ]

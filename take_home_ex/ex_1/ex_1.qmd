@@ -309,7 +309,48 @@ unknown <- qtm(nga_wp_26391, fill = "wpt unknown") +
 tmap_arrange(total, wp_functional, wp_nonfunctional, unknown, asp=2, ncol=2)
 ```
 
-# Step 6: Prepare the Spatial Weights
+# Step 6: Thematic mapping with qtm() & tmap()
+
+## Plotting with qtm()
+
+Set the tmap mode to "view" for interactive mode. Else set to "plot".
+
+[qtm() represents quick plotting with tmap package:]{.underline}
+
+```{r}
+tmap_mode("plot")
+qtm(nga_wp_26391, 
+    fill = "wpt non-functional")
+```
+
+## Plotting with tmap()
+
+[Using interactive tmap(), we will plot using "equal" classification:]{.underline}
+
+```{r}
+tmap_mode("view")
+tm_shape(nga_wp_26391)+
+  tm_fill(c("wpt non-functional", "wpt functional"),
+          style = "equal") +
+  tm_borders(alpha = 0.5) +
+  tmap_style("white")
+```
+
+------------------------------------------------------------------------
+
+[Using interactive tmap(), we will plot using "quantile" classification:]{.underline}
+
+```{r}
+tm_shape(nga_wp_26391)+
+  tm_fill(c("wpt non-functional", "wpt functional"),
+          style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tmap_style("white")
+```
+
+------------------------------------------------------------------------
+
+# Step 7: Prepare the Spatial Weights
 
 Usually for geospatial weights preparation, there are 2 options:
 
@@ -407,8 +448,6 @@ Using the plot() function, we will then visualize the neighbors that we have ide
 plot(nga_wp_26391$geometry, border="black")
 plot(wm_d72, coords, add=TRUE, col="red")
 ```
-
-# Step 7:
 
 ```{r}
 # rswm_q <- nb2listw(wm_d72, 
