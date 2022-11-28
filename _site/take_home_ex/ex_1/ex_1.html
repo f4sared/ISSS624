@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ISSS624 - In-Class Ex 2 - Loading data + prepare data for take home Ex 1</title>
+<title>ISSS624 - Take Home Ex-1</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -195,7 +195,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
    
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#step-1-import-the-required-packages" id="toc-step-1-import-the-required-packages" class="nav-link" data-scroll-target="#step-1-import-the-required-packages">Step 1: Import the required Packages</a></li>
+  <li><a href="#step-1-load-the-required-packages" id="toc-step-1-load-the-required-packages" class="nav-link" data-scroll-target="#step-1-load-the-required-packages">Step 1: Load the required Packages</a></li>
   <li><a href="#step-2-import-the-data" id="toc-step-2-import-the-data" class="nav-link" data-scroll-target="#step-2-import-the-data">Step 2: Import the Data</a>
   <ul class="collapse">
   <li><a href="#import-nigeria-water-point-data-file" id="toc-import-nigeria-water-point-data-file" class="nav-link" data-scroll-target="#import-nigeria-water-point-data-file">Import Nigeria water point data-file:</a></li>
@@ -208,9 +208,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#filter-for-functional-water-points" id="toc-filter-for-functional-water-points" class="nav-link" data-scroll-target="#filter-for-functional-water-points">Filter for functional water-points:</a></li>
   <li><a href="#filter-for-non-functional" id="toc-filter-for-non-functional" class="nav-link" data-scroll-target="#filter-for-non-functional">Filter for non-functional</a></li>
   <li><a href="#filter-for-unknown" id="toc-filter-for-unknown" class="nav-link" data-scroll-target="#filter-for-unknown">Filter for unknown:</a></li>
-  <li><a href="#perform-data-manipulation" id="toc-perform-data-manipulation" class="nav-link" data-scroll-target="#perform-data-manipulation">Perform data manipulation:</a></li>
+  <li><a href="#perform-data-manipulation-point-in-polygon" id="toc-perform-data-manipulation-point-in-polygon" class="nav-link" data-scroll-target="#perform-data-manipulation-point-in-polygon">Perform data manipulation (Point-In-Polygon):</a></li>
   </ul></li>
   <li><a href="#step-4-plot-the-initial-distribution" id="toc-step-4-plot-the-initial-distribution" class="nav-link" data-scroll-target="#step-4-plot-the-initial-distribution">Step 4: Plot the initial distribution</a></li>
+  <li><a href="#step-5-prepare-the-spatial-weights" id="toc-step-5-prepare-the-spatial-weights" class="nav-link" data-scroll-target="#step-5-prepare-the-spatial-weights">Step 5: Prepare the Spatial Weights</a>
+  <ul class="collapse">
+  <li><a href="#prepare-the-coordinates" id="toc-prepare-the-coordinates" class="nav-link" data-scroll-target="#prepare-the-coordinates">Prepare the coordinates</a></li>
+  <li><a href="#determine-cut-off-distance" id="toc-determine-cut-off-distance" class="nav-link" data-scroll-target="#determine-cut-off-distance">Determine cut off distance:</a></li>
+  <li><a href="#compute-the-fixed-distance-weight-matrix" id="toc-compute-the-fixed-distance-weight-matrix" class="nav-link" data-scroll-target="#compute-the-fixed-distance-weight-matrix">Compute the fixed distance weight matrix:</a></li>
+  <li><a href="#plot-the-fixed-distance-weight-matrix" id="toc-plot-the-fixed-distance-weight-matrix" class="nav-link" data-scroll-target="#plot-the-fixed-distance-weight-matrix">Plot the fixed distance weight matrix:</a></li>
+  </ul></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan:</a></li>
   </ul>
 </nav>
     </div>
@@ -219,7 +227,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">In-Class Ex 2 - Loading data + prepare data for take home Ex 1</h1>
+<h1 class="title">Take Home Ex-1</h1>
 </div>
 
 
@@ -236,8 +244,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="overview" class="level1">
 <h1>Overview</h1>
 </section>
-<section id="step-1-import-the-required-packages" class="level1">
-<h1>Step 1: Import the required Packages</h1>
+<section id="step-1-load-the-required-packages" class="level1">
+<h1>Step 1: Load the required Packages</h1>
 <p>sf : Simple features for R. We import this package to help us read the aspatial and geospatial data.</p>
 <p>tidyverse: This package help us to transform and better present the data.</p>
 <p>tmap: We use this package to plot thematic maps</p>
@@ -246,7 +254,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>here: Helps us generate a path to a specific directory on the root</p>
 <p><u>Load the packages:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse, tmap, spdep, funModeling, here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse, tmap, spdep, funModeling, purrr, here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-2-import-the-data" class="level1">
@@ -397,7 +405,7 @@ of ggplot2 3.3.4.
   Please report the issue at &lt;https://github.com/pablo14/funModeling/issues&gt;.</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="ex_2_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex_1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                        status_cle frequency percentage cumulative_perc
@@ -429,7 +437,7 @@ of ggplot2 3.3.4.
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(<span class="at">data=</span>wpt_functional, </span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">input =</span> <span class="st">'status_cle'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex_2_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex_1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                   status_cle frequency percentage cumulative_perc
@@ -457,7 +465,7 @@ Use %in% for to select rows that fall into the specific categories.</p>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(<span class="at">data=</span>wpt_nonfunctional, </span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">input =</span> <span class="st">'status_cle'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex_2_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex_1_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                        status_cle frequency percentage cumulative_perc
@@ -477,12 +485,12 @@ Use %in% for to select rows that fall into the specific categories.</p>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(status_cle <span class="sc">==</span> <span class="st">"Unknown"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="perform-data-manipulation" class="level2">
-<h2 class="anchored" data-anchor-id="perform-data-manipulation">Perform data manipulation:</h2>
+<section id="perform-data-manipulation-point-in-polygon" class="level2">
+<h2 class="anchored" data-anchor-id="perform-data-manipulation-point-in-polygon">Perform data manipulation (Point-In-Polygon):</h2>
 <p>Using st_intersects, we will be able to create a list of rows from wp_nga that intersects each row of nga.<br>
 For the intersection to work, st_intersect will check if each point falls within the polygon of nga.<br>
 Next we use the lengths() function to count the number of instances. Then we append to a new column.</p>
-<p><u>We repeat this step across all 3 categories of Functional, Non-Functional &amp; Unknown</u></p>
+<p><u>We repeat this step across all 3 categories of Functional, Non-Functional &amp; Unknown:</u></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>nga_wp <span class="ot">&lt;-</span> nga <span class="sc">%&gt;%</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">total wpt</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">lengths</span>(</span>
@@ -503,8 +511,7 @@ Next we use the lengths() function to count the number of instances. Then we app
 <div class="cell">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>nga_wp <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct_functional =</span> <span class="st">`</span><span class="at">wpt functional</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_non-functional</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt non-functional</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total wpt</span><span class="st">`</span>) </span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># select(3:4, 9:10, 18:23)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_non-functional</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt non-functional</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total wpt</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><u>We will then create a save file path:</u></p>
 <div class="cell">
@@ -514,7 +521,7 @@ Next we use the lengths() function to count the number of instances. Then we app
 <pre><code>[1] "D:/f4sared/ISSS624/data/dataNigeria/geospatial/nga_wp.rds"</code></pre>
 </div>
 </div>
-<p><u>Next we will save this final dataframe using write_rds of tidyverse package:</u></p>
+<p><u>Next we will save this final dataframe using write_rds() of tidyverse package:</u></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(nga_wp, savefile_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -522,7 +529,7 @@ Next we use the lengths() function to count the number of instances. Then we app
 </section>
 <section id="step-4-plot-the-initial-distribution" class="level1">
 <h1>Step 4: Plot the initial distribution</h1>
-<p><u>Plot the initial distribution of the water points using qtm() package of tmap:<br>
+<p><u>Plot the distribution of the water points using qtm() package of tmap:<br>
 </u>Here we will add the additional settings to better adjust the size of the legend.<br>
 This is done via the tm_layout() function.</p>
 <div class="cell">
@@ -542,9 +549,268 @@ This is done via the tm_layout() function.</p>
 <span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(total, wp_functional, wp_nonfunctional, unknown, <span class="at">asp=</span><span class="dv">2</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex_2_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+<p><img src="ex_1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+</section>
+<section id="step-5-prepare-the-spatial-weights" class="level1">
+<h1>Step 5: Prepare the Spatial Weights</h1>
+<p>Usually for geospatial weights preparation, there are 2 options:</p>
+<ul>
+<li><p>Contiguity based weights</p>
+<ul>
+<li>Useful when the polygons are of similar size</li>
+</ul></li>
+<li><p>Distance based weights</p>
+<ul>
+<li><p>Fixed distance</p></li>
+<li><p>K-nearest neighbors (Adaptive distance)</p></li>
+<li><p>Inversed-Distance</p></li>
+</ul></li>
+</ul>
+<p>For our analysis, we will consider using the distance based weights because the polygons size is not spread evenly across the map of Nigeria.</p>
+<section id="prepare-the-coordinates" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-the-coordinates">Prepare the coordinates</h2>
+<p>In order to work with fixed distance weight matrix, we need to prepare the coordinates of the center of gravity (COG) for all the polygons.</p>
+<p>To achieve this, we will need to pass the column “geometry” into the function st_centroid() from the sf package. This function will calculate the COG and return us the coordinates accordingly. We will also make use of the map_dbl() function from the purrr package to apply the st_centroid() function to row.</p>
+<p><u>Longitude:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>longitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">1</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u>Latitude:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>latitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">2</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we will use the function of cbind() from the base package to bind our coordinates together.</p>
+<p><u>Bind long &amp; lat:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">cbind</span>(longitude, latitude)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u>Check if output is correct:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(coords)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     longitude  latitude
+[1,]  7.372450  5.113107
+[2,]  7.352131  5.083219
+[3,] 13.322900 13.428835
+[4,]  6.847325  8.825812
+[5,]  7.771541  5.022061
+[6,]  8.219654  6.259845</code></pre>
+</div>
+</div>
+</section>
+<section id="determine-cut-off-distance" class="level2">
+<h2 class="anchored" data-anchor-id="determine-cut-off-distance">Determine cut off distance:</h2>
+<p>In order to ensure that each polygon has at least 1 neighbor, we need to determine the cut off distance. To do this, we will first run the k-nearest neighbor with k=1. This is achieved with the function of knearneigh() of the spdep package.</p>
+<p><u>We run the code as follow:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">&lt;-</span> <span class="fu">knn2nb</span>(<span class="fu">knearneigh</span>(coords))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>After obtaining k1, a list of 774 polygons where each row shows the nearest neighbor polygon ID, we next need to calculate the distance between all of them using nbdists() of spdep.</p>
+<p>Next, in order to calculate the summary, we need then to unlist() the output of nbdists(). This is then followed by using the summary() function which reports to us the max distance for us to use.</p>
+<p><u>We run the code as follow:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>k1dists <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">nbdists</span>(k1, coords, <span class="at">longlat =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(k1dists)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.662  12.815  20.242  22.031  27.706  71.661 </code></pre>
+</div>
+</div>
+<p>From the above summary, it shows that the minimum distance for every polygon to have a neighbor is 71.661, thus we will use the value 72.</p>
+</section>
+<section id="compute-the-fixed-distance-weight-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="compute-the-fixed-distance-weight-matrix">Compute the fixed distance weight matrix:</h2>
+<p>With the above information, we will then compute the fixed distance weight matrix using dnearneigh() function from spdep. For this to work, we will need the coordinate of the polygons, min dist &amp; max dist.</p>
+<p>We will run the code as follow:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>wm_d72 <span class="ot">&lt;-</span> <span class="fu">dnearneigh</span>(coords, <span class="dv">0</span>, <span class="dv">72</span>, <span class="at">longlat =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>wm_d72</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Neighbour list object:
+Number of regions: 774 
+Number of nonzero links: 18112 
+Percentage nonzero weights: 3.023323 
+Average number of links: 23.40052 </code></pre>
+</div>
+</div>
+<p><u>Next, we will display our results for viewing:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(wm_d72)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 774
+ $ : int [1:63] 2 5 10 25 55 66 68 103 122 181 ...
+ $ : int [1:62] 1 5 10 25 55 66 68 103 122 181 ...
+ $ : int [1:2] 261 447
+ $ : int [1:10] 12 20 257 263 446 454 466 641 690 695
+ $ : int [1:56] 1 2 55 66 104 136 137 169 184 202 ...
+ $ : int [1:21] 9 14 18 19 56 170 217 218 330 337 ...
+ $ : int [1:19] 8 15 22 176 177 214 281 282 283 295 ...
+ $ : int [1:32] 7 15 22 49 176 177 214 275 276 277 ...
+ $ : int [1:26] 6 18 19 56 66 77 103 104 217 218 ...
+ $ : int [1:63] 1 2 23 25 66 103 181 191 203 204 ...
+ $ : int [1:22] 26 27 43 68 126 157 190 191 204 336 ...
+ $ : int [1:11] 4 135 257 263 401 417 429 446 454 690 ...
+ $ : int [1:13] 31 37 38 40 94 211 320 393 436 471 ...
+ $ : int [1:24] 6 170 193 194 195 217 309 310 311 362 ...
+ $ : int [1:27] 7 8 22 32 49 51 62 82 176 177 ...
+ $ : int [1:37] 30 38 39 41 44 45 70 71 120 124 ...
+ $ : int [1:34] 28 29 35 72 172 173 178 179 182 275 ...
+ $ : int [1:29] 6 9 19 56 66 77 103 104 217 218 ...
+ $ : int [1:41] 6 9 18 25 56 66 77 103 104 181 ...
+ $ : int [1:7] 4 106 239 263 419 454 466
+ $ : int [1:9] 60 61 162 269 484 520 578 596 626
+ $ : int [1:31] 7 8 15 32 49 51 62 82 176 177 ...
+ $ : int [1:64] 10 25 52 53 54 56 58 77 78 79 ...
+ $ : int [1:5] 123 476 527 673 761
+ $ : int [1:68] 1 2 10 19 23 54 56 66 77 103 ...
+ $ : int [1:30] 11 27 43 68 157 190 191 204 336 370 ...
+ $ : int [1:24] 11 26 43 68 157 191 204 336 370 371 ...
+ $ : int [1:43] 17 29 35 70 71 124 172 173 178 179 ...
+ $ : int [1:45] 17 28 35 70 71 124 172 173 178 179 ...
+ $ : int [1:30] 16 38 39 40 41 44 45 175 185 186 ...
+ $ : int [1:13] 13 37 94 158 210 211 212 289 308 561 ...
+ $ : int [1:28] 15 22 49 51 62 82 177 196 207 214 ...
+ $ : int [1:29] 47 111 130 142 145 155 166 219 227 233 ...
+ $ : int [1:11] 42 86 104 136 137 213 375 553 559 733 ...
+ $ : int [1:32] 17 28 29 172 173 178 179 182 275 276 ...
+ $ : int [1:8] 50 107 247 408 432 455 681 759
+ $ : int [1:21] 13 31 38 39 40 41 186 192 197 198 ...
+ $ : int [1:25] 13 16 30 37 39 40 41 44 186 192 ...
+ $ : int [1:27] 16 30 37 38 40 41 44 185 186 192 ...
+ $ : int [1:21] 13 30 37 38 39 41 44 186 192 211 ...
+ $ : int [1:22] 16 30 37 38 39 40 44 45 186 192 ...
+ $ : int [1:20] 34 86 136 137 184 202 285 286 375 499 ...
+ $ : int [1:19] 11 26 27 68 122 126 157 190 191 246 ...
+ $ : int [1:27] 16 30 38 39 40 41 45 70 175 186 ...
+ $ : int [1:27] 16 30 41 44 70 175 187 188 192 290 ...
+ $ : int [1:12] 119 380 387 417 423 429 438 459 521 656 ...
+ $ : int [1:24] 33 111 127 130 155 166 227 234 238 242 ...
+ $ : int [1:12] 64 65 74 113 131 265 386 407 428 482 ...
+ $ : int [1:30] 8 15 22 32 51 62 82 176 177 207 ...
+ $ : int [1:4] 36 107 409 432
+ $ : int [1:27] 15 22 32 49 62 82 177 207 214 284 ...
+ $ : int [1:47] 23 53 54 57 58 77 78 79 80 165 ...
+ $ : int [1:37] 23 52 54 57 58 78 79 80 165 189 ...
+ $ : int [1:58] 23 25 52 53 56 57 58 77 78 79 ...
+ $ : int [1:33] 1 2 5 68 122 157 169 184 190 208 ...
+ $ : int [1:51] 6 9 18 19 23 25 54 66 77 78 ...
+ $ : int [1:34] 52 53 54 58 78 79 80 165 189 197 ...
+ $ : int [1:37] 23 52 53 54 57 78 79 165 189 197 ...
+ $ : int [1:5] 128 129 493 700 748
+ $ : int [1:14] 21 61 158 269 310 311 561 563 578 589 ...
+ $ : int [1:11] 21 60 162 268 269 484 578 589 592 596 ...
+ $ : int [1:28] 15 22 32 49 51 82 177 196 207 214 ...
+ $ : int [1:5] 384 416 467 765 772
+ $ : int [1:7] 48 65 74 113 131 265 407
+ $ : int [1:11] 48 64 74 109 113 265 386 407 683 701 ...
+ $ : int [1:47] 1 2 5 9 10 18 19 25 56 103 ...
+ $ : int [1:25] 72 120 124 179 182 304 305 346 347 348 ...
+ $ : int [1:30] 1 2 11 26 27 43 55 122 157 190 ...
+ $ : int [1:8] 140 146 248 274 473 500 512 513
+ $ : int [1:44] 16 28 29 44 45 71 120 124 172 173 ...
+ $ : int [1:49] 16 28 29 70 120 124 172 173 175 178 ...
+ $ : int [1:18] 17 67 182 361 374 378 404 566 567 568 ...
+ $ : int [1:6] 361 374 377 404 665 666
+ $ : int [1:14] 48 64 65 109 113 116 251 265 672 683 ...
+ $ : int [1:15] 110 229 255 258 272 373 382 398 422 433 ...
+ $ : int [1:9] 254 287 427 459 470 547 647 677 751
+ $ : int [1:55] 9 18 19 23 25 52 54 56 78 79 ...
+ $ : int [1:51] 23 52 53 54 56 57 58 77 79 80 ...
+ $ : int [1:57] 23 52 53 54 56 57 58 77 78 80 ...
+ $ : int [1:39] 23 52 53 54 57 77 78 79 165 189 ...
+ $ : int [1:19] 99 145 227 233 242 255 270 426 449 483 ...
+ $ : int [1:21] 15 22 32 49 51 62 177 207 214 297 ...
+ $ : int [1:6] 132 258 383 414 529 767
+ $ : int [1:3] 148 437 692
+ $ : int [1:38] 101 105 130 142 145 155 156 219 235 242 ...
+ $ : int [1:17] 34 42 136 137 184 202 285 286 499 538 ...
+ $ : int [1:19] 147 149 151 221 226 245 267 399 410 415 ...
+ $ : int [1:5] 150 489 648 700 714
+ $ : int [1:12] 100 107 159 260 408 458 463 542 674 676 ...
+ $ : int 237
+ $ : int [1:3] 160 271 406
+ $ : int [1:11] 95 119 390 391 392 423 487 642 656 668 ...
+ $ : int [1:3] 354 607 665
+ $ : int [1:7] 13 31 158 436 561 596 709
+ $ : int [1:10] 92 390 391 392 405 423 469 656 708 770
+ $ : int [1:17] 97 108 139 167 168 350 389 403 412 420 ...
+ $ : int [1:13] 96 108 114 139 147 168 389 403 420 451 ...
+ $ : int [1:4] 153 231 432 696
+ $ : int [1:18] 81 145 154 167 227 233 255 270 426 449 ...
+  [list output truncated]
+ - attr(*, "class")= chr "nb"
+ - attr(*, "region.id")= chr [1:774] "1" "2" "3" "4" ...
+ - attr(*, "call")= language dnearneigh(x = coords, d1 = 0, d2 = 72, longlat = TRUE)
+ - attr(*, "dnn")= num [1:2] 0 72
+ - attr(*, "bounds")= chr [1:2] "GE" "LE"
+ - attr(*, "nbtype")= chr "distance"
+ - attr(*, "sym")= logi TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="plot-the-fixed-distance-weight-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="plot-the-fixed-distance-weight-matrix">Plot the fixed distance weight matrix:</h2>
+<p>Using the plot() function, we will then visualize the neighbors that we have identified.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(nga_wp<span class="sc">$</span>geometry, <span class="at">border=</span><span class="st">"black"</span>)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wm_d72, coords, <span class="at">add=</span><span class="cn">TRUE</span>, <span class="at">col=</span><span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="ex_1_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>rswm_q <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(wm_d72, </span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">style=</span><span class="st">"W"</span>, </span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>rswm_q</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Characteristics of weights list object:
+Neighbour list object:
+Number of regions: 774 
+Number of nonzero links: 18112 
+Percentage nonzero weights: 3.023323 
+Average number of links: 23.40052 
+
+Weights style: W 
+Weights constants summary:
+    n     nn  S0       S1       S2
+W 774 599076 774 129.7549 3127.064</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.test</span>(nga_wp<span class="sc">$</span><span class="st">`</span><span class="at">wpt functional</span><span class="st">`</span>, </span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">listw=</span>rswm_q, </span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">zero.policy =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.action=</span>na.omit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Moran I test under randomisation
+
+data:  nga_wp$`wpt functional`  
+weights: rswm_q    
+
+Moran I statistic standard deviate = 34.98, p-value &lt; 2.2e-16
+alternative hypothesis: greater
+sample estimates:
+Moran I statistic       Expectation          Variance 
+     0.5039949963     -0.0012936611      0.0002086652 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="plan" class="level1">
+<h1>Plan:</h1>
+<ul>
+<li><p>Lagged variables ?</p></li>
+<li><p>Moran’s I test</p></li>
+<li><p>Geary C Test</p></li>
+<li><p>Correlogram</p></li>
+<li><p>Local Moran I test</p></li>
+<li><p>LISA</p></li>
+<li><p>Getis ORD</p></li>
+</ul>
 
 
 </section>

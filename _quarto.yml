@@ -17,6 +17,8 @@ website:
             href: hands_on_ex/ex_2/ex_2.qmd
           - text: In-Class Ex 2 - Loading data + prepare data for take home Ex 1
             href: in_class/ex_2/ex_2.qmd
+          - text: Take-Home Ex 1 
+            href: take_home_ex/ex_1/ex_1.qmd
             
     right:
       - href: index.qmd

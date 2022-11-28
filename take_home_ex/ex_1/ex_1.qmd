@@ -1,0 +1,401 @@
+---
+title: "Take Home Ex-1"
+editor: visual
+---
+
+# Overview
+
+# Step 1: Load the required Packages
+
+sf : Simple features for R. We import this package to help us read the aspatial and geospatial data.
+
+tidyverse: This package help us to transform and better present the data.
+
+tmap: We use this package to plot thematic maps
+
+spdep: We use this package to help us obtain the spatial weights.
+
+funModeling: We use this package to help us with EDA
+
+here: Helps us generate a path to a specific directory on the root
+
+[Load the packages:]{.underline}
+
+```{r}
+pacman::p_load(sf, tidyverse, tmap, spdep, funModeling, purrr, here)
+```
+
+# Step 2: Import the Data
+
+## Import Nigeria water point data-file:
+
+[Generate a path:]{.underline}\
+We use the here function to generate a specific file path on the root folder.
+
+```{r}
+shapefile_path <- here("data", "dataNigeria", "geospatial")
+shapefile_path
+```
+
+Some useful link for the CRS:
+
+-   <https://datacarpentry.org/organization-geospatial/03-crs/>
+
+-   <https://www.nceas.ucsb.edu/sites/default/files/2020-04/OverviewCoordinateReferenceSystems.pdf>
+
+st_read() belongs to the sf package. It reads simple features from file or database. Simple features or simple feature access refers to formal standard ISO 19125-1:2004 that describes how real world data can be represented in computers, with emphasis on the spatial geometry of these objects. Link below:
+
+<https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#:~:text=Simple%20features%20or%20simple%20feature,spatial%20geometry%20of%20these%20objects.>
+
+To find the CRS of the shapefile, open the .prj file as a text. It will tell you which projection system is being used.
+
+[Read the shapefile using st_read() belonging to the sf package:]{.underline}\
+The data read will be saved as a simple feature data table.\
+We will use the filter() function of dplyr package to filter only rows for Nigeria
+
+```{r}
+# wp <- st_read(
+#   dsn = shapefile_path,
+#   layer = "geo_export",
+#   crs = 4326) %>%
+#   filter(clean_coun == "Nigeria")
+```
+
+[Generate the save path using here function:]{.underline}
+
+```{r}
+savefile_path <- here("data", "dataNigeria", "geospatial", "wp_nga.rds")
+savefile_path
+```
+
+[We will next save the file using write_rds() of the tidyverse package:]{.underline}\
+rds is a native data format of R.
+
+```{r}
+# wp_ng <- write_rds(wp, savefile_path)
+```
+
+## Import Nigeria geo-boundary file:
+
+[Next we will make the path to the geo boundary file:]{.underline}
+
+```{r}
+shapefile_path <- here("data", "dataNigeria", "boundary")
+shapefile_path
+```
+
+[Next we will Import the Nigeria LGA Boundary Data with st_read() function:]{.underline}\
+The imported data will be saved as a simple features dataset.
+
+```{r}
+nga <- st_read(
+  dsn = shapefile_path,
+  layer = "geoBoundaries-NGA-ADM2",
+  crs = 4326)
+```
+
+## Downsize further the wp_nga data:
+
+[Load the previously saved data:\
+]{.underline}We will select specific columns using select().
+
+```{r}
+# final <- read_rds(rdsfile_path) %>% select(1:2, 14:17, 23)
+```
+
+[Create the path for saving the file]{.underline}
+
+```{r}
+# savefile_path <- here("data", "dataNigeria", "geospatial", "wp_nga_v2.rds")
+# savefile_path
+```
+
+[Save the file:]{.underline}
+
+```{r}
+# write_rds(final, savefile_path)
+```
+
+# Step 3: Data wrangling
+
+## Visualize Initial distribution
+
+[Generate path to rds file saved previously:]{.underline}
+
+```{r}
+rdsfile_path <- here("data", "dataNigeria", "geospatial","wp_nga_v2.rds")
+rdsfile_path
+```
+
+[Load the rds file with read_rds() function of the tidyverse package:]{.underline}\
+We will also make use of the piping to replace the "na" values with "unknown".\
+mutate() is a function of the dplyr package.
+
+```{r}
+wp_nga <- read_rds(rdsfile_path) %>%
+  mutate(status_cle = replace_na(status_cle, "Unknown"))
+```
+
+[Check the CRS of the spatial datafile with st_crs():]{.underline}
+
+```{r}
+st_crs(wp_nga)
+```
+
+[Use the freq() of the funModeling package to show the distribution percentage of status_cle:]{.underline}
+
+```{r}
+freq(data=wp_nga,
+     input = 'status_cle')
+```
+
+## Filter for functional water-points:
+
+[Here we will use the filter() function from the dplyr package to select "functional" rows only:\
+]{.underline}We use the [%in%]{.underline} to denote the membership in the group of strings.
+
+```{r}
+wpt_functional <- wp_nga %>%
+  filter(status_cle %in%
+           c("Functional",
+             "Functional but not in use",
+             "Functional but needs repair"))
+```
+
+[Then we will plot with freq() function from funModeling to show the distribution:]{.underline}
+
+```{r}
+freq(data=wpt_functional, 
+     input = 'status_cle')
+```
+
+## Filter for non-functional
+
+[Filter for non-functional rows:]{.underline}\
+Use %in% for to select rows that fall into the specific categories.
+
+```{r}
+wpt_nonfunctional <- wp_nga %>%
+  filter(status_cle %in%
+           c("Abandoned/Decommissioned", 
+             "Abandoned",
+             "Non-Functional",
+             "Non functional due to dry season",
+             "Non-Functional due to dry season"))
+```
+
+[Plot the distribution with the freq() function:]{.underline}
+
+```{r}
+freq(data=wpt_nonfunctional, 
+     input = 'status_cle')
+```
+
+## Filter for unknown:
+
+[Lastly we filter for the rows that have unknown status:]{.underline}
+
+```{r}
+wpt_unknown <- wp_nga %>%
+  filter(status_cle == "Unknown")
+```
+
+## Perform data manipulation (Point-In-Polygon):
+
+Using st_intersects, we will be able to create a list of rows from wp_nga that intersects each row of nga.\
+For the intersection to work, st_intersect will check if each point falls within the polygon of nga.\
+Next we use the lengths() function to count the number of instances. Then we append to a new column.
+
+[We repeat this step across all 3 categories of Functional, Non-Functional & Unknown:]{.underline}
+
+```{r}
+nga_wp <- nga %>%
+  mutate(`total wpt` = lengths(
+    st_intersects(nga, wp_nga))) %>%
+  mutate(`wpt functional` = lengths(
+    st_intersects(nga, wpt_functional))) %>%
+  mutate(`wpt non-functional` = lengths(
+    st_intersects(nga, wpt_nonfunctional))) %>%
+  mutate(`wpt unknown` = lengths(
+    st_intersects(nga, wpt_unknown)))
+```
+
+[Next, using the mutate() function of dplyr, we will create 2 new columns:]{.underline}
+
+-   pct_functional = \`wpt functional\`/\`total wpt\`
+
+-   pct_non-functional = \`wpt non-functional\`/\`total wpt\`
+
+We will then use select() of dplyr to retain the fields that we require.
+
+```{r}
+nga_wp <- nga_wp %>%
+  mutate(pct_functional = `wpt functional`/`total wpt`) %>%
+  mutate(`pct_non-functional` = `wpt non-functional`/`total wpt`) 
+```
+
+[We will then create a save file path:]{.underline}
+
+```{r}
+savefile_path <- here("data", "dataNigeria", "geospatial", "nga_wp.rds")
+savefile_path
+```
+
+[Next we will save this final dataframe using write_rds() of tidyverse package:]{.underline}
+
+```{r}
+write_rds(nga_wp, savefile_path)
+```
+
+# Step 4: Plot the initial distribution
+
+[Plot the distribution of the water points using qtm() package of tmap:\
+]{.underline}Here we will add the additional settings to better adjust the size of the legend.\
+This is done via the tm_layout() function.
+
+```{r}
+nga_wp <- read_rds(savefile_path)
+
+total <- qtm(nga_wp, fill = "total wpt") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+wp_functional <- qtm(nga_wp, fill = "wpt functional") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+wp_nonfunctional <- qtm(nga_wp, fill = "wpt non-functional") +
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+unknown <- qtm(nga_wp, fill = "wpt unknown") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+tmap_arrange(total, wp_functional, wp_nonfunctional, unknown, asp=2, ncol=2)
+```
+
+# Step 5: Prepare the Spatial Weights
+
+Usually for geospatial weights preparation, there are 2 options:
+
+-   Contiguity based weights
+
+    -   Useful when the polygons are of similar size
+
+-   Distance based weights
+
+    -   Fixed distance
+
+    -   K-nearest neighbors (Adaptive distance)
+
+    -   Inversed-Distance
+
+For our analysis, we will consider using the distance based weights because the polygons size is not spread evenly across the map of Nigeria.
+
+## Prepare the coordinates
+
+In order to work with fixed distance weight matrix, we need to prepare the coordinates of the center of gravity (COG) for all the polygons.
+
+To achieve this, we will need to pass the column "geometry" into the function st_centroid() from the sf package. This function will calculate the COG and return us the coordinates accordingly. We will also make use of the map_dbl() function from the purrr package to apply the st_centroid() function to row.
+
+[Longitude:]{.underline}
+
+```{r}
+longitude <- map_dbl(nga_wp$geometry, ~st_centroid(.x)[[1]])
+```
+
+[Latitude:]{.underline}
+
+```{r}
+latitude <- map_dbl(nga_wp$geometry, ~st_centroid(.x)[[2]])
+```
+
+Next, we will use the function of cbind() from the base package to bind our coordinates together.
+
+[Bind long & lat:]{.underline}
+
+```{r}
+coords <- cbind(longitude, latitude)
+```
+
+[Check if output is correct:]{.underline}
+
+```{r}
+head(coords)
+```
+
+## Determine cut off distance:
+
+In order to ensure that each polygon has at least 1 neighbor, we need to determine the cut off distance. To do this, we will first run the k-nearest neighbor with k=1. This is achieved with the function of knearneigh() of the spdep package.
+
+[We run the code as follow:]{.underline}
+
+```{r}
+k1 <- knn2nb(knearneigh(coords))
+```
+
+After obtaining k1, a list of 774 polygons where each row shows the nearest neighbor polygon ID, we next need to calculate the distance between all of them using nbdists() of spdep.
+
+Next, in order to calculate the summary, we need then to unlist() the output of nbdists(). This is then followed by using the summary() function which reports to us the max distance for us to use.
+
+[We run the code as follow:]{.underline}
+
+```{r}
+k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
+summary(k1dists)
+```
+
+From the above summary, it shows that the minimum distance for every polygon to have a neighbor is 71.661, thus we will use the value 72.
+
+## Compute the fixed distance weight matrix:
+
+With the above information, we will then compute the fixed distance weight matrix using dnearneigh() function from spdep. For this to work, we will need the coordinate of the polygons, min dist & max dist.
+
+We will run the code as follow:
+
+```{r}
+wm_d72 <- dnearneigh(coords, 0, 72, longlat = TRUE)
+wm_d72
+```
+
+[Next, we will display our results for viewing:]{.underline}
+
+```{r}
+str(wm_d72)
+```
+
+## Plot the fixed distance weight matrix:
+
+Using the plot() function, we will then visualize the neighbors that we have identified.
+
+```{r}
+plot(nga_wp$geometry, border="black")
+plot(wm_d72, coords, add=TRUE, col="red")
+```
+
+```{r}
+rswm_q <- nb2listw(wm_d72, 
+                   style="W", 
+                   zero.policy = TRUE)
+rswm_q
+```
+
+```{r}
+moran.test(nga_wp$`wpt functional`, 
+           listw=rswm_q, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+# Plan: 
+
+-   Lagged variables ?
+
+-   Moran's I test
+
+-   Geary C Test
+
+-   Correlogram
+
+-   Local Moran I test
+
+-   LISA
+
+-   Getis ORD
