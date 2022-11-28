@@ -211,13 +211,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#perform-data-manipulation-point-in-polygon" id="toc-perform-data-manipulation-point-in-polygon" class="nav-link" data-scroll-target="#perform-data-manipulation-point-in-polygon">Perform data manipulation (Point-In-Polygon):</a></li>
   </ul></li>
   <li><a href="#step-4-plot-the-initial-distribution" id="toc-step-4-plot-the-initial-distribution" class="nav-link" data-scroll-target="#step-4-plot-the-initial-distribution">Step 4: Plot the initial distribution</a></li>
-  <li><a href="#step-5-prepare-the-spatial-weights" id="toc-step-5-prepare-the-spatial-weights" class="nav-link" data-scroll-target="#step-5-prepare-the-spatial-weights">Step 5: Prepare the Spatial Weights</a>
+  <li><a href="#step-5-transform-to-epsg-26391" id="toc-step-5-transform-to-epsg-26391" class="nav-link" data-scroll-target="#step-5-transform-to-epsg-26391">Step 5: Transform to EPSG 26391</a></li>
+  <li><a href="#step-6-prepare-the-spatial-weights" id="toc-step-6-prepare-the-spatial-weights" class="nav-link" data-scroll-target="#step-6-prepare-the-spatial-weights">Step 6: Prepare the Spatial Weights</a>
   <ul class="collapse">
   <li><a href="#prepare-the-coordinates" id="toc-prepare-the-coordinates" class="nav-link" data-scroll-target="#prepare-the-coordinates">Prepare the coordinates</a></li>
   <li><a href="#determine-cut-off-distance" id="toc-determine-cut-off-distance" class="nav-link" data-scroll-target="#determine-cut-off-distance">Determine cut off distance:</a></li>
   <li><a href="#compute-the-fixed-distance-weight-matrix" id="toc-compute-the-fixed-distance-weight-matrix" class="nav-link" data-scroll-target="#compute-the-fixed-distance-weight-matrix">Compute the fixed distance weight matrix:</a></li>
   <li><a href="#plot-the-fixed-distance-weight-matrix" id="toc-plot-the-fixed-distance-weight-matrix" class="nav-link" data-scroll-target="#plot-the-fixed-distance-weight-matrix">Plot the fixed distance weight matrix:</a></li>
   </ul></li>
+  <li><a href="#step-7" id="toc-step-7" class="nav-link" data-scroll-target="#step-7">Step 7:</a></li>
   <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan:</a></li>
   </ul>
 </nav>
@@ -553,8 +555,116 @@ This is done via the tm_layout() function.</p>
 </div>
 </div>
 </section>
-<section id="step-5-prepare-the-spatial-weights" class="level1">
-<h1>Step 5: Prepare the Spatial Weights</h1>
+<section id="step-5-transform-to-epsg-26391" class="level1">
+<h1>Step 5: Transform to EPSG 26391</h1>
+<p><u>We will use the st_crs() function to check the current EPSG of the sf datafile:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(nga_wp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:4326 
+  wkt:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+<p><u>Next, we will use st_transform() to project to the new crs 26391:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>nga_wp_26391 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(nga_wp, <span class="at">crs =</span> <span class="dv">26391</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u>We then check the new CRS:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(nga_wp_26391)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:26391 
+  wkt:
+PROJCRS["Minna / Nigeria West Belt",
+    BASEGEOGCRS["Minna",
+        DATUM["Minna",
+            ELLIPSOID["Clarke 1880 (RGS)",6378249.145,293.465,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4263]],
+    CONVERSION["Nigeria West Belt",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",4,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",4.5,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",0.99975,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",230738.26,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Engineering survey, topographic mapping."],
+        AREA["Nigeria - onshore west of 6°30'E, onshore and offshore shelf."],
+        BBOX[3.57,2.69,13.9,6.5]],
+    ID["EPSG",26391]]</code></pre>
+</div>
+</div>
+<p><u>Once again, we will plot the map to check if everything has been projected correctly:</u></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>total <span class="ot">&lt;-</span> <span class="fu">qtm</span>(nga_wp_26391, <span class="at">fill =</span> <span class="st">"total wpt"</span>) <span class="sc">+</span> </span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">legend.height =</span> <span class="fl">0.4</span>,<span class="at">legend.width =</span> <span class="fl">0.4</span>)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>wp_functional <span class="ot">&lt;-</span> <span class="fu">qtm</span>(nga_wp_26391, <span class="at">fill =</span> <span class="st">"wpt functional"</span>) <span class="sc">+</span> </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">legend.height =</span> <span class="fl">0.4</span>,<span class="at">legend.width =</span> <span class="fl">0.4</span>)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>wp_nonfunctional <span class="ot">&lt;-</span> <span class="fu">qtm</span>(nga_wp_26391, <span class="at">fill =</span> <span class="st">"wpt non-functional"</span>) <span class="sc">+</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">legend.height =</span> <span class="fl">0.4</span>,<span class="at">legend.width =</span> <span class="fl">0.4</span>)</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>unknown <span class="ot">&lt;-</span> <span class="fu">qtm</span>(nga_wp_26391, <span class="at">fill =</span> <span class="st">"wpt unknown"</span>) <span class="sc">+</span> </span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">legend.height =</span> <span class="fl">0.4</span>,<span class="at">legend.width =</span> <span class="fl">0.4</span>)</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(total, wp_functional, wp_nonfunctional, unknown, <span class="at">asp=</span><span class="dv">2</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="ex_1_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="step-6-prepare-the-spatial-weights" class="level1">
+<h1>Step 6: Prepare the Spatial Weights</h1>
 <p>Usually for geospatial weights preparation, there are 2 options:</p>
 <ul>
 <li><p>Contiguity based weights</p>
@@ -575,28 +685,28 @@ This is done via the tm_layout() function.</p>
 <p>To achieve this, we will need to pass the column “geometry” into the function st_centroid() from the sf package. This function will calculate the COG and return us the coordinates accordingly. We will also make use of the map_dbl() function from the purrr package to apply the st_centroid() function to row.</p>
 <p><u>Longitude:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>longitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">1</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>longitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp_26391<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">1</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><u>Latitude:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>latitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">2</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>latitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(nga_wp_26391<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">2</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we will use the function of cbind() from the base package to bind our coordinates together.</p>
 <p><u>Bind long &amp; lat:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">cbind</span>(longitude, latitude)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">cbind</span>(longitude, latitude)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><u>Check if output is correct:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(coords)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(coords)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     longitude  latitude
-[1,]  7.372450  5.113107
-[2,]  7.352131  5.083219
-[3,] 13.322900 13.428835
-[4,]  6.847325  8.825812
-[5,]  7.771541  5.022061
-[6,]  8.219654  6.259845</code></pre>
+[1,]  549364.0  123694.9
+[2,]  547123.4  120376.5
+[3,] 1189496.9 1059770.9
+[4,]  489057.4  534262.6
+[5,]  593718.2  113824.1
+[6,]  642618.7  251222.3</code></pre>
 </div>
 </div>
 </section>
@@ -605,17 +715,17 @@ This is done via the tm_layout() function.</p>
 <p>In order to ensure that each polygon has at least 1 neighbor, we need to determine the cut off distance. To do this, we will first run the k-nearest neighbor with k=1. This is achieved with the function of knearneigh() of the spdep package.</p>
 <p><u>We run the code as follow:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">&lt;-</span> <span class="fu">knn2nb</span>(<span class="fu">knearneigh</span>(coords))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>k1 <span class="ot">&lt;-</span> <span class="fu">knn2nb</span>(<span class="fu">knearneigh</span>(coords))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>After obtaining k1, a list of 774 polygons where each row shows the nearest neighbor polygon ID, we next need to calculate the distance between all of them using nbdists() of spdep.</p>
 <p>Next, in order to calculate the summary, we need then to unlist() the output of nbdists(). This is then followed by using the summary() function which reports to us the max distance for us to use.</p>
 <p><u>We run the code as follow:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>k1dists <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">nbdists</span>(k1, coords, <span class="at">longlat =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(k1dists)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>k1dists <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">nbdists</span>(k1, coords, <span class="at">longlat =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(k1dists)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  2.662  12.815  20.242  22.031  27.706  71.661 </code></pre>
+   2669   12834   20304   22084   27783   72139 </code></pre>
 </div>
 </div>
 <p>From the above summary, it shows that the minimum distance for every polygon to have a neighbor is 71.661, thus we will use the value 72.</p>
@@ -623,21 +733,21 @@ This is done via the tm_layout() function.</p>
 <section id="compute-the-fixed-distance-weight-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="compute-the-fixed-distance-weight-matrix">Compute the fixed distance weight matrix:</h2>
 <p>With the above information, we will then compute the fixed distance weight matrix using dnearneigh() function from spdep. For this to work, we will need the coordinate of the polygons, min dist &amp; max dist.</p>
-<p>We will run the code as follow:</p>
+<p>We will run the code as follow, this will give us a nb (neighbor) object data wm_d72:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>wm_d72 <span class="ot">&lt;-</span> <span class="fu">dnearneigh</span>(coords, <span class="dv">0</span>, <span class="dv">72</span>, <span class="at">longlat =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>wm_d72</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>wm_d72 <span class="ot">&lt;-</span> <span class="fu">dnearneigh</span>(coords, <span class="dv">0</span>, <span class="dv">72140</span>, <span class="at">longlat =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>wm_d72</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Neighbour list object:
 Number of regions: 774 
-Number of nonzero links: 18112 
-Percentage nonzero weights: 3.023323 
-Average number of links: 23.40052 </code></pre>
+Number of nonzero links: 18130 
+Percentage nonzero weights: 3.026327 
+Average number of links: 23.42377 </code></pre>
 </div>
 </div>
 <p><u>Next, we will display our results for viewing:</u></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(wm_d72)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(wm_d72)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 774
  $ : int [1:63] 2 5 10 25 55 66 68 103 122 181 ...
@@ -649,7 +759,7 @@ Average number of links: 23.40052 </code></pre>
  $ : int [1:19] 8 15 22 176 177 214 281 282 283 295 ...
  $ : int [1:32] 7 15 22 49 176 177 214 275 276 277 ...
  $ : int [1:26] 6 18 19 56 66 77 103 104 217 218 ...
- $ : int [1:63] 1 2 23 25 66 103 181 191 203 204 ...
+ $ : int [1:64] 1 2 23 25 66 103 181 190 191 203 ...
  $ : int [1:22] 26 27 43 68 126 157 190 191 204 336 ...
  $ : int [1:11] 4 135 257 263 401 417 429 446 454 690 ...
  $ : int [1:13] 31 37 38 40 94 211 320 393 436 471 ...
@@ -674,7 +784,7 @@ Average number of links: 23.40052 </code></pre>
  $ : int [1:28] 15 22 49 51 62 82 177 196 207 214 ...
  $ : int [1:29] 47 111 130 142 145 155 166 219 227 233 ...
  $ : int [1:11] 42 86 104 136 137 213 375 553 559 733 ...
- $ : int [1:32] 17 28 29 172 173 178 179 182 275 276 ...
+ $ : int [1:33] 17 28 29 72 172 173 178 179 182 275 ...
  $ : int [1:8] 50 107 247 408 432 455 681 759
  $ : int [1:21] 13 31 38 39 40 41 186 192 197 198 ...
  $ : int [1:25] 13 16 30 37 39 40 41 44 186 192 ...
@@ -696,7 +806,7 @@ Average number of links: 23.40052 </code></pre>
  $ : int [1:58] 23 25 52 53 56 57 58 77 78 79 ...
  $ : int [1:33] 1 2 5 68 122 157 169 184 190 208 ...
  $ : int [1:51] 6 9 18 19 23 25 54 66 77 78 ...
- $ : int [1:34] 52 53 54 58 78 79 80 165 189 197 ...
+ $ : int [1:35] 52 53 54 58 78 79 80 165 189 197 ...
  $ : int [1:37] 23 52 53 54 57 78 79 165 189 197 ...
  $ : int [1:5] 128 129 493 700 748
  $ : int [1:14] 21 61 158 269 310 311 561 563 578 589 ...
@@ -706,12 +816,12 @@ Average number of links: 23.40052 </code></pre>
  $ : int [1:7] 48 65 74 113 131 265 407
  $ : int [1:11] 48 64 74 109 113 265 386 407 683 701 ...
  $ : int [1:47] 1 2 5 9 10 18 19 25 56 103 ...
- $ : int [1:25] 72 120 124 179 182 304 305 346 347 348 ...
+ $ : int [1:26] 72 120 124 179 182 304 305 339 346 347 ...
  $ : int [1:30] 1 2 11 26 27 43 55 122 157 190 ...
  $ : int [1:8] 140 146 248 274 473 500 512 513
  $ : int [1:44] 16 28 29 44 45 71 120 124 172 173 ...
- $ : int [1:49] 16 28 29 70 120 124 172 173 175 178 ...
- $ : int [1:18] 17 67 182 361 374 378 404 566 567 568 ...
+ $ : int [1:50] 16 28 29 70 120 124 172 173 175 178 ...
+ $ : int [1:19] 17 35 67 182 361 374 378 404 566 567 ...
  $ : int [1:6] 361 374 377 404 665 666
  $ : int [1:14] 48 64 65 109 113 116 251 265 672 683 ...
  $ : int [1:15] 110 229 255 258 272 373 382 398 422 433 ...
@@ -728,7 +838,7 @@ Average number of links: 23.40052 </code></pre>
  $ : int [1:17] 34 42 136 137 184 202 285 286 499 538 ...
  $ : int [1:19] 147 149 151 221 226 245 267 399 410 415 ...
  $ : int [1:5] 150 489 648 700 714
- $ : int [1:12] 100 107 159 260 408 458 463 542 674 676 ...
+ $ : int [1:11] 100 107 159 260 408 463 542 674 676 681 ...
  $ : int 237
  $ : int [1:3] 160 271 406
  $ : int [1:11] 95 119 390 391 392 423 487 642 656 668 ...
@@ -742,8 +852,8 @@ Average number of links: 23.40052 </code></pre>
   [list output truncated]
  - attr(*, "class")= chr "nb"
  - attr(*, "region.id")= chr [1:774] "1" "2" "3" "4" ...
- - attr(*, "call")= language dnearneigh(x = coords, d1 = 0, d2 = 72, longlat = TRUE)
- - attr(*, "dnn")= num [1:2] 0 72
+ - attr(*, "call")= language dnearneigh(x = coords, d1 = 0, d2 = 72140, longlat = FALSE)
+ - attr(*, "dnn")= num [1:2] 0 72140
  - attr(*, "bounds")= chr [1:2] "GE" "LE"
  - attr(*, "nbtype")= chr "distance"
  - attr(*, "sym")= logi TRUE</code></pre>
@@ -754,62 +864,60 @@ Average number of links: 23.40052 </code></pre>
 <h2 class="anchored" data-anchor-id="plot-the-fixed-distance-weight-matrix">Plot the fixed distance weight matrix:</h2>
 <p>Using the plot() function, we will then visualize the neighbors that we have identified.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(nga_wp<span class="sc">$</span>geometry, <span class="at">border=</span><span class="st">"black"</span>)</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wm_d72, coords, <span class="at">add=</span><span class="cn">TRUE</span>, <span class="at">col=</span><span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(nga_wp_26391<span class="sc">$</span>geometry, <span class="at">border=</span><span class="st">"black"</span>)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wm_d72, coords, <span class="at">add=</span><span class="cn">TRUE</span>, <span class="at">col=</span><span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="ex_1_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>rswm_q <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(wm_d72, </span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">style=</span><span class="st">"W"</span>, </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>rswm_q</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Characteristics of weights list object:
-Neighbour list object:
-Number of regions: 774 
-Number of nonzero links: 18112 
-Percentage nonzero weights: 3.023323 
-Average number of links: 23.40052 
-
-Weights style: W 
-Weights constants summary:
-    n     nn  S0       S1       S2
-W 774 599076 774 129.7549 3127.064</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.test</span>(nga_wp<span class="sc">$</span><span class="st">`</span><span class="at">wpt functional</span><span class="st">`</span>, </span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">listw=</span>rswm_q, </span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">zero.policy =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">na.action=</span>na.omit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Moran I test under randomisation
-
-data:  nga_wp$`wpt functional`  
-weights: rswm_q    
-
-Moran I statistic standard deviate = 34.98, p-value &lt; 2.2e-16
-alternative hypothesis: greater
-sample estimates:
-Moran I statistic       Expectation          Variance 
-     0.5039949963     -0.0012936611      0.0002086652 </code></pre>
+<p><img src="ex_1_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
+</section>
+<section id="step-7" class="level1">
+<h1>Step 7:</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rswm_q &lt;- nb2listw(wm_d72, </span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="co">#                    style="W", </span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                    zero.policy = TRUE)</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="co"># rswm_q</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># moran.test(nga_wp_26391$`wpt functional`, </span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="co">#            listw=rswm_q, </span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="co">#            zero.policy = TRUE, </span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="co">#            na.action=na.omit)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plays &lt;- nb2listw(wm_d72, </span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="co">#                    style="B", </span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="co">#                    zero.policy = TRUE)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># globalG.test(nga_wp$`wpt functional`, plays)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="plan" class="level1">
 <h1>Plan:</h1>
 <ul>
 <li><p>Lagged variables ?</p></li>
 <li><p>Moran’s I test</p></li>
+<li><p>Monte carlo</p></li>
 <li><p>Geary C Test</p></li>
-<li><p>Correlogram</p></li>
-<li><p>Local Moran I test</p></li>
+<li><p>Correlogram</p>
+<ul>
+<li><a href="https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html" class="uri">https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html</a></li>
+</ul></li>
 <li><p>LISA</p></li>
-<li><p>Getis ORD</p></li>
+<li><p>Local Moran I test</p></li>
+<li><p>Local Moran I scatter plot</p></li>
+<li><p>G (Local, non-self) , Gstari(Local, self)</p></li>
+<li><p>Getis ORD global G test / General G</p>
+<ul>
+<li><a href="https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/h-how-high-low-clustering-getis-ord-general-g-spat.htm#:~:text=Interpretation-,The%20High%2FLow%20Clustering%20(Getis%2DOrd%20General%20G),spatial%20clustering%20of%20feature%20values." class="uri">https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/h-how-high-low-clustering-getis-ord-general-g-spat.htm#:~:text=Interpretation-,The%20High%2FLow%20Clustering%20(Getis%2DOrd%20General%20G),spatial%20clustering%20of%20feature%20values.</a></li>
+</ul></li>
+<li><p>Questions:</p>
+<ul>
+<li>W vs B ? How does it work ? &gt;&gt; it appears binary or not, the equations take care of themselves</li>
+</ul></li>
 </ul>
 
 

@@ -271,7 +271,45 @@ unknown <- qtm(nga_wp, fill = "wpt unknown") +
 tmap_arrange(total, wp_functional, wp_nonfunctional, unknown, asp=2, ncol=2)
 ```
 
-# Step 5: Prepare the Spatial Weights
+# Step 5: Transform to EPSG 26391
+
+[We will use the st_crs() function to check the current EPSG of the sf datafile:]{.underline}
+
+```{r}
+st_crs(nga_wp)
+```
+
+[Next, we will use st_transform() to project to the new crs 26391:]{.underline}
+
+```{r}
+nga_wp_26391 <- st_transform(nga_wp, crs = 26391)
+```
+
+[We then check the new CRS:]{.underline}
+
+```{r}
+st_crs(nga_wp_26391)
+```
+
+[Once again, we will plot the map to check if everything has been projected correctly:]{.underline}
+
+```{r}
+total <- qtm(nga_wp_26391, fill = "total wpt") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+wp_functional <- qtm(nga_wp_26391, fill = "wpt functional") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+wp_nonfunctional <- qtm(nga_wp_26391, fill = "wpt non-functional") +
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+unknown <- qtm(nga_wp_26391, fill = "wpt unknown") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
+
+tmap_arrange(total, wp_functional, wp_nonfunctional, unknown, asp=2, ncol=2)
+```
+
+# Step 6: Prepare the Spatial Weights
 
 Usually for geospatial weights preparation, there are 2 options:
 
@@ -298,13 +336,13 @@ To achieve this, we will need to pass the column "geometry" into the function st
 [Longitude:]{.underline}
 
 ```{r}
-longitude <- map_dbl(nga_wp$geometry, ~st_centroid(.x)[[1]])
+longitude <- map_dbl(nga_wp_26391$geometry, ~st_centroid(.x)[[1]])
 ```
 
 [Latitude:]{.underline}
 
 ```{r}
-latitude <- map_dbl(nga_wp$geometry, ~st_centroid(.x)[[2]])
+latitude <- map_dbl(nga_wp_26391$geometry, ~st_centroid(.x)[[2]])
 ```
 
 Next, we will use the function of cbind() from the base package to bind our coordinates together.
@@ -338,7 +376,7 @@ Next, in order to calculate the summary, we need then to unlist() the output of 
 [We run the code as follow:]{.underline}
 
 ```{r}
-k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
+k1dists <- unlist(nbdists(k1, coords, longlat = FALSE))
 summary(k1dists)
 ```
 
@@ -348,10 +386,10 @@ From the above summary, it shows that the minimum distance for every polygon to 
 
 With the above information, we will then compute the fixed distance weight matrix using dnearneigh() function from spdep. For this to work, we will need the coordinate of the polygons, min dist & max dist.
 
-We will run the code as follow:
+We will run the code as follow, this will give us a nb (neighbor) object data wm_d72:
 
 ```{r}
-wm_d72 <- dnearneigh(coords, 0, 72, longlat = TRUE)
+wm_d72 <- dnearneigh(coords, 0, 72140, longlat = FALSE)
 wm_d72
 ```
 
@@ -366,36 +404,62 @@ str(wm_d72)
 Using the plot() function, we will then visualize the neighbors that we have identified.
 
 ```{r}
-plot(nga_wp$geometry, border="black")
+plot(nga_wp_26391$geometry, border="black")
 plot(wm_d72, coords, add=TRUE, col="red")
 ```
 
+# Step 7:
+
 ```{r}
-rswm_q <- nb2listw(wm_d72, 
-                   style="W", 
-                   zero.policy = TRUE)
-rswm_q
+# rswm_q <- nb2listw(wm_d72, 
+#                    style="W", 
+#                    zero.policy = TRUE)
+# rswm_q
 ```
 
 ```{r}
-moran.test(nga_wp$`wpt functional`, 
-           listw=rswm_q, 
-           zero.policy = TRUE, 
-           na.action=na.omit)
+# moran.test(nga_wp_26391$`wpt functional`, 
+#            listw=rswm_q, 
+#            zero.policy = TRUE, 
+#            na.action=na.omit)
 ```
 
-# Plan: 
+```{r}
+# plays <- nb2listw(wm_d72, 
+#                    style="B", 
+#                    zero.policy = TRUE)
+```
+
+```{r}
+# globalG.test(nga_wp$`wpt functional`, plays)
+```
+
+# Plan:
 
 -   Lagged variables ?
 
 -   Moran's I test
 
+-   Monte carlo
+
 -   Geary C Test
 
 -   Correlogram
 
--   Local Moran I test
+    -   <https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html>
 
 -   LISA
 
--   Getis ORD
+-   Local Moran I test
+
+-   Local Moran I scatter plot
+
+-   G (Local, non-self) , Gstari(Local, self)
+
+-   Getis ORD global G test / General G
+
+    -   <https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/h-how-high-low-clustering-getis-ord-general-g-spat.htm#:~:text=Interpretation-,The%20High%2FLow%20Clustering%20(Getis%2DOrd%20General%20G),spatial%20clustering%20of%20feature%20values.>
+
+-   Questions:
+
+    -   W vs B ? How does it work ? \>\> it appears binary or not, the equations take care of themselves
