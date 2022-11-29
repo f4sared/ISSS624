@@ -608,9 +608,9 @@ tmap_arrange(non_func, lag_non_func, asp=1, ncol=2)
 
 # Step 9: Measure Global Spatial Auto Correlation
 
-## Global Moran's I 
+## Global Moran's I
 
-To get an indication of the global spatial clustering auto-correlation, we will perform the Moran's I test.
+To get an indication of the global spatial clustering auto-correlation, we will perform the Moran's I test. This is an analytic approach.
 
 [WPT Non-Functional Moran's I test:]{.underline}
 
@@ -638,13 +638,127 @@ The global Moran's I statistic is \>\> 0 and the p-value is statistically signif
 
 ------------------------------------------------------------------------
 
+## Monte Carlo Moran's I
+
+While the Moran's I test is fast since it works analytically, we will need to perform Monte Carlo Moran's I. This method allows us to perform simulation by generating many random datasets across multiple simulations.
+
+Our Moran's I should fall to either extremes of the Moran's I histogram from the simulation. This shows that our Moran's I value did not occur because of randomization.
+
+For the Monte Carlo Moran's I test, we will use the moran.mc() function from the spdep package.
+
+[WPT Non-Functional Moran's I test:]{.underline}
+
+```{r}
+set.seed(1234)
+bperm_NF= moran.mc(nga_wp_26391$`wpt non-functional`, 
+                listw=swm_d72, 
+                nsim=999, 
+                zero.policy = TRUE, 
+                na.action=na.omit)
+bperm_NF
+```
+
+Here we can see that our results are statistically significant with p value of 0.001. Also the Moran's I calculated is similar to the analytic test.
+
+[We will visualize the simulation results from Monte Carlo as follow:]{.underline}
+
+```{r}
+hist(bperm_NF$res, 
+     freq=TRUE, 
+     breaks=20, 
+     xlab="Simulated Moran's I for Non-Functional")
+abline(v=0, 
+       col="red") 
+```
+
+------------------------------------------------------------------------
+
+[WPT Functional Moran's I test:]{.underline}
+
+```{r}
+set.seed(1234)
+bperm_F= moran.mc(nga_wp_26391$`wpt functional`, 
+                listw=swm_d72, 
+                nsim=999, 
+                zero.policy = TRUE, 
+                na.action=na.omit)
+bperm_F
+```
+
+Here we can see that our results are statistically significant with p value of 0.001. Also the Moran's I calculated is similar to the analytic test.
+
+[We will visualize the simulation results from Monte Carlo as follow:]{.underline}
+
+```{r}
+hist(bperm_F$res, 
+     freq=TRUE, 
+     breaks=20, 
+     xlab="Simulated Moran's I for Non-Functional")
+abline(v=0, 
+       col="red") 
+```
+
+# Step 10: Correlogram
+
+In the earlier section, we did the computation for Moran's I and Monte Carlo Moran's I. Both of them are a global measure of spatial autocorrelation. For both the non-functional and functional water point, we observe the presence of spatial correlation.
+
+Another way for us to examine the spatial autocorrelation is by using correlogram. These diagram provide useful insights to how the Moran's I or Geary's C changes as the spatial lag/distance increase.
+
+With the increase of spatial lad / distance, more neighbors are now included within the weight matrix. This then have further impact on the measure of spatial correlation.
+
+For this section, we will use sp.correlogram() of spdep package. This function will require the neighbor object that we have calculated precious in step 7. We also need to state the style input. We will choose "W" for row-standardization.
+
+[We run the correlogram for the non-functional water point as follow:]{.underline}
+
+```{r}
+MI_corr_NF <- sp.correlogram(nb_d72, 
+                          nga_wp_26391$`wpt non-functional`, 
+                          order=6, 
+                          method="I", 
+                          style="W",
+                          zero.policy=TRUE)
+plot(MI_corr_NF)
+```
+
+[We check the output for statistical significance:]{.underline}
+
+```{r}
+print(MI_corr_NF)
+```
+
+For the non-functional water points, our Moran's I decrease with increase lag order. The p values for the first 3 rows are statistically significant.
+
+------------------------------------------------------------------------
+
+[We run the correlogram for the functional water point as follow:]{.underline}
+
+```{r}
+MI_corr_F <- sp.correlogram(nb_d72, 
+                          nga_wp_26391$`wpt functional`, 
+                          order=10, 
+                          method="I", 
+                          style="W",
+                          zero.policy=TRUE)
+plot(MI_corr_F)
+```
+
+[We check the output for statistical significance:]{.underline}
+
+```{r}
+print(MI_corr_F)
+```
+
+For the functional water points, our Moran's I decrease more slowly lag order. The p values for the first 6 rows are statistically significant.
+
+------------------------------------------------------------------------
+
 # Plan:
 
 -   Lagged variables ? \>\>
 
 -   Moran's I test \>\>
 
--   Monte carlo
+-   Monte carlo \>\>
 
 -   Geary C Test
 
