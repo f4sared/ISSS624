@@ -247,7 +247,7 @@ savefile_path
 write_rds(nga_wp, savefile_path)
 ```
 
-# Step 4: Plot the initial distribution
+# Step 4: Plot distribution of water point types
 
 [Plot the distribution of the water points using qtm() package of tmap:\
 ]{.underline}Here we will add the additional settings to better adjust the size of the legend.\
@@ -325,7 +325,9 @@ qtm(nga_wp_26391,
 
 ## Plotting with tmap()
 
-### Equal: 
+### Jenks:
+
+Jenks: Identify groups with similar values and maximizes the difference between them.
 
 [Using interactive tmap(), we will plot using "equal" classification:]{.underline}
 
@@ -333,7 +335,7 @@ qtm(nga_wp_26391,
 tmap_mode("view")
 tm_shape(nga_wp_26391)+
   tm_fill(c("wpt non-functional", "wpt functional"),
-          style = "equal") +
+          style = "jenks") +
   tm_borders(alpha = 0.5) +
   tmap_style("white")
 ```
@@ -341,6 +343,8 @@ tm_shape(nga_wp_26391)+
 ------------------------------------------------------------------------
 
 ### Quantile:
+
+Splits variables in quantiles, Consequently there are same number of observations in each interval.
 
 [Using interactive tmap(), we will plot using "quantile" classification:]{.underline}
 
@@ -352,45 +356,72 @@ tm_shape(nga_wp_26391)+
   tmap_style("white")
 ```
 
+------------------------------------------------------------------------
+
+We will use bbox to get better visuals: \
+<https://stackoverflow.com/questions/60892033/how-do-you-position-the-title-and-legend-in-tmap>
+
 ```{r}
 tmap_mode("plot")
-tm_shape(nga_wp_26391)+
+
+# make some bbox magic
+bbox_new <- st_bbox(nga_wp_26391)
+xrange <- bbox_new$xmax - bbox_new$xmin # range of x values
+yrange <- bbox_new$ymax - bbox_new$ymin # range of y values
+# bbox_new[1] <- bbox_new[1] - (0.25 * xrange) # xmin - left
+bbox_new[3] <- bbox_new[3] + (0.75 * xrange) # xmax - right
+# bbox_new[2] <- bbox_new[2] - (0.25 * yrange) # ymin - bottom
+bbox_new[4] <- bbox_new[4] + (0.01 * yrange) # ymax - top
+bbox_new <- bbox_new %>%  # take the bounding box ...
+  st_as_sfc() # ... and make it a sf polygon
+
+
+tm_shape(nga_wp_26391, bbox = bbox_new)+
   tm_fill("wpt non-functional", 
           style = "quantile", 
           legend.hist = TRUE, 
           legend.is.portrait = TRUE,
           legend.hist.z = 0.5) +
   tm_borders(alpha = 0.5) + 
-  tm_layout(main.title = "Title",
+  tm_layout(main.title = "Quantile Plot of WPT Non-Functional",
             main.title.position = "center",
             main.title.size = 1,
-            legend.outside = TRUE,
-            legend.outside.size = 0.5,
-            # legend.position = c("right", "bottom"),
-            frame = FALSE) + 
+            legend.position = c("right", "center"),
+            frame = TRUE) + 
   tm_compass(type="8star", size = 2) +
-  tm_scale_bar(width = 0.2) +
+  tm_scale_bar(width = 0.2, position= c("center", "bottom")) +
   tm_grid(lwd = 0.1, alpha = 0.2) 
 ```
 
 ```{r}
 tmap_mode("plot")
-tm_shape(nga_wp_26391)+
+
+# make some bbox magic
+bbox_new <- st_bbox(nga_wp_26391)
+xrange <- bbox_new$xmax - bbox_new$xmin # range of x values
+yrange <- bbox_new$ymax - bbox_new$ymin # range of y values
+# bbox_new[1] <- bbox_new[1] - (0.25 * xrange) # xmin - left
+bbox_new[3] <- bbox_new[3] + (0.75 * xrange) # xmax - right
+# bbox_new[2] <- bbox_new[2] - (0.25 * yrange) # ymin - bottom
+bbox_new[4] <- bbox_new[4] + (0.01 * yrange) # ymax - top
+bbox_new <- bbox_new %>%  # take the bounding box ...
+  st_as_sfc() # ... and make it a sf polygon
+
+
+tm_shape(nga_wp_26391, bbox = bbox_new)+
   tm_fill("wpt functional", 
           style = "quantile", 
           legend.hist = TRUE, 
           legend.is.portrait = TRUE,
           legend.hist.z = 0.5) +
   tm_borders(alpha = 0.5) + 
-  tm_layout(main.title = "Title",
+  tm_layout(main.title = "Quantile Plot of WPT Non-Functional",
             main.title.position = "center",
             main.title.size = 1,
-            legend.outside = TRUE,
-            legend.outside.size = 0.5,
-            # legend.position = c("right", "bottom"),
-            frame = FALSE)+
+            legend.position = c("right", "center"),
+            frame = TRUE) + 
   tm_compass(type="8star", size = 2) +
-  tm_scale_bar(width = 0.2) +
+  tm_scale_bar(width = 0.2, position= c("center", "bottom")) +
   tm_grid(lwd = 0.1, alpha = 0.2) 
 ```
 
@@ -533,11 +564,11 @@ plot(wm_d72, coords, add=TRUE, col="red")
 
     -   <https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html>
 
--   LISA
-
 -   Local Moran I test
 
 -   Local Moran I scatter plot
+
+-   LISA
 
 -   G (Local, non-self) , Gstari(Local, self)
 
