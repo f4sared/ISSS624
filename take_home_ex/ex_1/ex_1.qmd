@@ -358,7 +358,7 @@ tm_shape(nga_wp_26391)+
 
 ------------------------------------------------------------------------
 
-We will use bbox to get better visuals: \
+We will use bbox to get better visuals:\
 <https://stackoverflow.com/questions/60892033/how-do-you-position-the-title-and-legend-in-tmap>
 
 ```{r}
@@ -498,63 +498,151 @@ k1dists <- unlist(nbdists(k1, coords, longlat = FALSE))
 summary(k1dists)
 ```
 
-From the above summary, it shows that the minimum distance for every polygon to have a neighbor is 71.661, thus we will use the value 72.
+From the above summary, it shows that the minimum distance for every polygon to have a neighbor is 71.661, thus we will use the value 72140.
 
-## Compute the fixed distance weight matrix:
+## Compute the fixed distance neighbor list:
 
 With the above information, we will then compute the fixed distance weight matrix using dnearneigh() function from spdep. For this to work, we will need the coordinate of the polygons, min dist & max dist.
 
 We will run the code as follow, this will give us a nb (neighbor) object data wm_d72:
 
 ```{r}
-wm_d72 <- dnearneigh(coords, 0, 72140, longlat = FALSE)
-wm_d72
+nb_d72 <- dnearneigh(coords, 0, 72140, longlat = FALSE)
+nb_d72
 ```
 
 [Next, we will display our results for viewing:]{.underline}
 
 ```{r}
-str(wm_d72)
+str(nb_d72)
 ```
 
-## Plot the fixed distance weight matrix:
+## Plot the fixed distance neighbor list:
 
 Using the plot() function, we will then visualize the neighbors that we have identified.
 
 ```{r}
-plot(nga_wp_26391$geometry, border="black")
-plot(wm_d72, coords, add=TRUE, col="red")
+plot(nga_wp_26391$geometry, border="black", axes = TRUE)
+plot(nb_d72, coords, add=TRUE, col="red")
+```
+
+# Step 8: Plotting Spatial Lag
+
+## Create row standardized weight matrix
+
+We will use the nb2listw() function of spdep package to convert the nb list to weights. We set the style to "W" in order to perform the row-standardized steps.
+
+[We run the code as follow:]{.underline}
+
+```{r}
+swm_d72<- nb2listw(nb_d72, style="W", zero.policy = TRUE)
+```
+
+## Compute spatial lag with row-standardized weights
+
+Now we will use the lag.listw() function from spdep to return us the lag list. As an input, we will provide the row-standardized weight matrix and the variables "wpt non-functional" & wpt functional.
+
+### Lag for non-functional
+
+[We run the code as follow:]{.underline}
+
+```{r}
+lag.list <- list(nga_wp_26391$shapeName, lag.listw(swm_d72, nga_wp_26391$`wpt non-functional`))
+lag.res_NF <- as.data.frame(lag.list)
+colnames(lag.res_NF) <- c("shapeName", "lag_NF")
+nga_wp_26391$lag_NF <- lag.res_NF$lag_NF
+```
+
+[We will then plot the lagged variable:]{.underline}
+
+```{r}
+non_func <- qtm(nga_wp_26391, "wpt non-functional") +
+tm_layout(main.title = "WPT Non-Functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            legend.width = 0.3,
+            legend.height = 0.25,
+            frame = TRUE)
+lag_non_func <- qtm(nga_wp_26391, "lag_NF")+
+tm_layout(main.title = "Lagged WPT Non-Functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            legend.width = 0.3,
+            legend.height = 0.25,
+            frame = TRUE)
+tmap_arrange(non_func, lag_non_func, asp=1, ncol=2)
+```
+
+### Lag for functional
+
+[We run the code as follow:]{.underline}
+
+```{r}
+lag.list <- list(nga_wp_26391$shapeName, lag.listw(swm_d72, nga_wp_26391$`wpt functional`))
+lag.res_F <- as.data.frame(lag.list)
+colnames(lag.res_F) <- c("shapeName", "lag_F")
+nga_wp_26391$lag_F <- lag.res_F$lag_F
 ```
 
 ```{r}
-# rswm_q <- nb2listw(wm_d72, 
-#                    style="W", 
-#                    zero.policy = TRUE)
-# rswm_q
+non_func <- qtm(nga_wp_26391, "wpt functional") +
+tm_layout(main.title = "WPT Functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            legend.width = 0.3,
+            legend.height = 0.25,
+            frame = TRUE)
+lag_non_func <- qtm(nga_wp_26391, "lag_F")+
+tm_layout(main.title = "Lagged WPT Functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            legend.width = 0.3,
+            legend.height = 0.25,
+            frame = TRUE)
+tmap_arrange(non_func, lag_non_func, asp=1, ncol=2)
 ```
 
-```{r}
-# moran.test(nga_wp_26391$`wpt functional`, 
-#            listw=rswm_q, 
-#            zero.policy = TRUE, 
-#            na.action=na.omit)
-```
+# Step 9: Measure Global Spatial Auto Correlation
+
+## Global Moran's I 
+
+To get an indication of the global spatial clustering auto-correlation, we will perform the Moran's I test.
+
+[WPT Non-Functional Moran's I test:]{.underline}
 
 ```{r}
-# plays <- nb2listw(wm_d72, 
-#                    style="B", 
-#                    zero.policy = TRUE)
+moran.test(nga_wp_26391$`wpt non-functional`,
+           listw=swm_d72,
+           zero.policy = TRUE,
+           na.action=na.omit)
 ```
 
+The global Moran's I statistic is \>\> 0 and the p-value is statistically significant. This shows that there is indication of clustering of the non-functional water point.
+
+------------------------------------------------------------------------
+
+[WPT Functional Moran's I test:]{.underline}
+
 ```{r}
-# globalG.test(nga_wp$`wpt functional`, plays)
+moran.test(nga_wp_26391$`wpt functional`,
+           listw=swm_d72,
+           zero.policy = TRUE,
+           na.action=na.omit)
 ```
+
+The global Moran's I statistic is \>\> 0 and the p-value is statistically significant. This shows that there is indication of clustering of the functional water point.
+
+------------------------------------------------------------------------
 
 # Plan:
 
--   Lagged variables ?
+-   Lagged variables ? \>\>
 
--   Moran's I test
+-   Moran's I test \>\>
 
 -   Monte carlo
 
