@@ -606,7 +606,7 @@ tm_layout(main.title = "Lagged WPT Functional",
 tmap_arrange(non_func, lag_non_func, asp=1, ncol=2)
 ```
 
-# Step 9: Measure Global Spatial Auto Correlation
+# Step 9: Global Measure of Spatial Auto Correlation
 
 ## Global Moran's I
 
@@ -698,7 +698,7 @@ abline(v=0,
        col="red") 
 ```
 
-# Step 10: Correlogram
+# Step 10: Correlogram for Global Moran's I
 
 In the earlier section, we did the computation for Moran's I and Monte Carlo Moran's I. Both of them are a global measure of spatial autocorrelation. For both the non-functional and functional water point, we observe the presence of spatial correlation.
 
@@ -752,6 +752,100 @@ For the functional water points, our Moran's I decrease more slowly lag order. T
 
 ------------------------------------------------------------------------
 
+# Step 11: Local Measure of Spatial Auto Correlation
+
+While global Moran's I is a useful statistic to tell us the presence of spatial auto-correlation across the map, it provides little info about the locality of the auto correlation.
+
+The is where local Moran's I come in to save the day. A high local Moran's I statistic indicates similar values clustering around a polygon which is a good indication of spatial auto correlation.
+
+## Non-Functional Water Points (Local Moran's I)
+
+We will use the function order() to create an ordered name list of the areas. This is then followed by the function localmoran() from spdep. Our variable of interest and row-standardized weight matrix is required.
+
+```{r}
+localMI_NF <- localmoran(nga_wp_26391$`wpt non-functional`, swm_d72)
+head(localMI_NF)
+```
+
+```{r}
+localMI_NF <- data.frame(localMI_NF)
+colnames(localMI_NF)[5] ="Pr"
+nga_wp_26391$lc_Ii_NF <- localMI_NF$'Ii'
+nga_wp_26391$lc_Pr_NF <- localMI_NF$'Pr'
+```
+
+```{r}
+localMI.map_NF <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "lc_Ii_NF", 
+          style = "jenks", 
+          title = "local moran statistics") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "Plot of Local Moran's I",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+pvalue.map_NF <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "lc_Pr_NF", 
+          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+          palette="-Blues", 
+          title = "local Moran's I p-values") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "Plot of Local Moran's I P-Value",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+tmap_arrange(localMI.map_NF, pvalue.map_NF, asp=1, ncol=2)
+```
+
+## Functional Water Points (Local Moran's I)
+
+We perform the same steps for Functional water points:
+
+```{r}
+localMI_F <- localmoran(nga_wp_26391$`wpt functional`, swm_d72)
+head(localMI_F)
+```
+
+```{r}
+localMI_F <- data.frame(localMI_F)
+colnames(localMI_F)[5] ="Pr"
+nga_wp_26391$lc_Ii_F <- localMI_F$'Ii'
+nga_wp_26391$lc_Pr_F <- localMI_F$'Pr'
+```
+
+```{r}
+localMI.map_F <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "lc_Ii_F", 
+          style = "jenks", 
+          title = "local moran statistics") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "Plot of Local Moran's I",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+pvalue.map_F <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "lc_Pr_F", 
+          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+          palette="-Blues", 
+          title = "local Moran's I p-values") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "Plot of Local Moran's I P-Value",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+tmap_arrange(localMI.map_F, pvalue.map_F, asp=1, ncol=2)
+```
+
+# Step 12: Moran Scatterplot
+
 # Plan:
 
 -   Lagged variables ? \>\>
@@ -762,11 +856,11 @@ For the functional water points, our Moran's I decrease more slowly lag order. T
 
 -   Geary C Test
 
--   Correlogram
+-   Correlogram \>\>
 
     -   <https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html>
 
--   Local Moran I test
+-   Local Moran I test \>\>
 
 -   Local Moran I scatter plot
 
