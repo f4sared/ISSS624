@@ -914,9 +914,140 @@ F_scatter_scaled <- moran.plot(nga_wp_26391$scaled_F, swm_d72,
 
 We see here significant number of points in the top-left and bottom right quadrant which is indicative of the spatial auto correlation and clustering. Similarly, we also see outliers in the plot.
 
-# LISA map
+# Step 13: LISA map
 
-Text
+While Moran's I scatterplot provides a useful insight into the distribution of the points over 4 different types of quadrant, we have no idea about the location of each point relative to space. Thus it makes sense to indicate this on the map which then allows us to identify regions with significant spatial correlation and clustering.
+
+## LISA: Non-Functional water point
+
+To achieve this, we will first create a vector to hold the different categories. We do this with a the function vector(), there should be 774 reflecting 774 polygons:
+
+```{r}
+quadrant_NF <- vector(mode="numeric",length=nrow(localMI_NF))
+```
+
+Previously in step 8, we have already computed the spatial lag based on row-standardized weight matrix. We view the value once more:
+
+```{r}
+nga_wp_26391$lag_NF[1:20]
+```
+
+We then prepare a numeric vector to hold variable of interest that is mean adjusted:
+
+```{r}
+DV_NF <- nga_wp_26391$`wpt non-functional` - mean(nga_wp_26391$`wpt non-functional`) 
+```
+
+We also prepare a numeric vector of the local Moran's I value:
+
+```{r}
+LM_I_NF <- localMI_NF[,1] - mean(localMI_NF[,1])  
+```
+
+We will also set the significance level, that help us filter away rows with non-significant P values:
+
+```{r}
+signif <- 0.05  
+```
+
+Next we will work to fill up the value of the quadrant_NF:
+
+```{r}
+quadrant_NF[DV_NF <0 & LM_I_NF>0] <- 1
+quadrant_NF[DV_NF >0 & LM_I_NF<0] <- 2
+quadrant_NF[DV_NF <0 & LM_I_NF<0] <- 3  
+quadrant_NF[DV_NF >0 & LM_I_NF>0] <- 4   
+```
+
+For rows that are not statistically significant, we will set to 0:
+
+```{r}
+quadrant_NF[localMI_NF[,5]>signif] <- 0
+```
+
+Finally we will add our vector quadrant_NF to our main sf data object nga_wp_26391. We then follow this with a tmap plot taking note to use the style of category this time.
+
+In addition, we will make use of the earlier plotted local Moran's I map for comparison, we do this by calling the function tamp_arrange:
+
+```{r}
+nga_wp_26391$quadrant_NF <- quadrant_NF
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISA_NF <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "quadrant_NF", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant_NF)))+1], 
+          labels = clusters[c(sort(unique(quadrant_NF)))+1],
+          popup.vars = c("")) +
+  tm_borders(alpha=0.5) +
+  tm_layout(main.title = "Plot of LISA Non Functional WP",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+  tm_view(set.zoom.limits = c(11,17)) #This line is not needed since not using interactive
+
+tmap_arrange(LISA_NF, localMI.map_NF, asp=1, ncol=2)
+```
+
+From this LISA plot above, we can see a clear relationship between the local Moran's I plot earlier and the newly plotted LISA plot. We can see 5 hots spots in red, these 5 regions correspond to areas with high local Moran's I value.
+
+------------------------------------------------------------------------
+
+## LISA: Functional Water Point
+
+Same as above, we create a vector:
+
+```{r}
+quadrant_F <- vector(mode="numeric",length=nrow(localMI_F))
+```
+
+We check the earlier calculated lag values:
+
+```{r}
+nga_wp_26391$lag_F[1:20]
+```
+
+We combine the earlier steps into a single chunk of code:
+
+```{r}
+DV_F <- nga_wp_26391$`wpt functional` - mean(nga_wp_26391$`wpt functional`) 
+LM_I_F <- localMI_F[,1] - mean(localMI_F[,1])  
+quadrant_F[DV_F <0 & LM_I_F>0] <- 1
+quadrant_F[DV_F >0 & LM_I_F<0] <- 2
+quadrant_F[DV_F <0 & LM_I_F<0] <- 3  
+quadrant_F[DV_F >0 & LM_I_F>0] <- 4   
+quadrant_F[localMI_F[,5]>signif] <- 0
+```
+
+Once again, we will plot the value:
+
+```{r}
+nga_wp_26391$quadrant_F <- quadrant_F
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISA_F <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "quadrant_F", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant_F)))+1], 
+          labels = clusters[c(sort(unique(quadrant_F)))+1],
+          popup.vars = c("")) +
+  tm_borders(alpha=0.5) +
+  tm_layout(main.title = "Plot of LISA Functional WP",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+  tm_view(set.zoom.limits = c(11,17)) #This line is not needed since not using interactive
+# 
+tmap_arrange(LISA_F, localMI.map_F, asp=1, ncol=2)
+```
+
+Again, we see that the hotpsots from the LISA map matches the regions of high local Moran's I for the functional water points.
+
+------------------------------------------------------------------------
 
 # Plan:
 
