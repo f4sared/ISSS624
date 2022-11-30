@@ -846,7 +846,15 @@ tmap_arrange(localMI.map_F, pvalue.map_F, asp=1, ncol=2)
 
 # Step 12: Moran Scatterplot
 
+Moran's scatterplot is a useful tool for us to visualize the grouping of the polygons when we plot their variable of interest against the lagged variables. In the case there we observe spatial clustering of the variables across a cluster of polygons, we will expect the individual value of each polygon to be highly similar to the lagged variable. The lagged variable in this case refers to the average of the variable across the neighbors of the polygon.
+
+Thus, points in the top-right and bottom-left of the Moran's scatter plot represent polygons whose variable is highly similar with that of their neighbors. This is a good indication of spatial autocorrelation and clustering. On the other hand, points in the top-left and bottom-right of the scatter plot show polygon whose variable is significantly different from the average variable across the neighbors. This is an indication of negative autocorrelation or outlier.
+
+The slope of the repression line in the Moran's scatterplot represents the estimation of the global Moran's I
+
 ## Scatterplot for Non-Functional water points
+
+To plot the Moran's I scatterplot, we will use the moran.plot() function from spdep. We will need to provide the sf dataframe with the variable column along with the weight matrix. In this case, we will use our row-standardized weight matrix.
 
 ```{r}
 NF_scatter <- moran.plot(nga_wp_26391$`wpt non-functional`, swm_d72,
@@ -855,14 +863,60 @@ NF_scatter <- moran.plot(nga_wp_26391$`wpt non-functional`, swm_d72,
                   ylab="Spatially lagged wpt non-functional")
 ```
 
+To help with comparison and ease of reading the scatterplot, it helps to perform some scaling. For this we will use the scale() function with divides the column by the largest value. We then use the piping function to save it as a vector before adding it to our dataframe.
+
+We perform the following step:
+
+```{r}
+scaled_NF <- scale(nga_wp_26391$`wpt non-functional`) %>% as.vector 
+nga_wp_26391$scaled_NF <- scaled_NF
+```
+
+We then plot the scatterplot once more:
+
+```{r}
+NF_scatter_scaled <- moran.plot(nga_wp_26391$scaled_NF, swm_d72,
+                  labels=as.character(nga_wp_26391$shapeName), 
+                  xlab="wpt non-functional", 
+                  ylab="Spatially lagged wpt non-functional")
+```
+
+After scaling, we can see now that the axis is re-positioned to (0,0). From this scatterplot, we can see easily that there groups of polygons whose value exhibit clustering behavior. Interestingly, there are quite a number of outliers in the top-left and bottom right quadrant.
+
+------------------------------------------------------------------------
+
 ## Scatterplot for Functional water points
+
+We do the same for Functional water pints:
 
 ```{r}
 F_scatter <- moran.plot(nga_wp_26391$`wpt functional`, swm_d72,
-                  labels=as.character(nga_wp_26391$shapeName), 
-                  xlab="wpt functional", 
+                  labels=as.character(nga_wp_26391$shapeName),
+                  xlab="wpt functional",
                   ylab="Spatially lagged wpt functional")
 ```
+
+We perform scaling as follow:
+
+```{r}
+scaled_F <- scale(nga_wp_26391$`wpt functional`) %>% as.vector 
+nga_wp_26391$scaled_F <- scaled_F
+```
+
+We plot the scaled Moran's I scatterplot as follow:
+
+```{r}
+F_scatter_scaled <- moran.plot(nga_wp_26391$scaled_F, swm_d72,
+                  labels=as.character(nga_wp_26391$shapeName), 
+                  xlab="wpt non-functional", 
+                  ylab="Spatially lagged wpt non-functional")
+```
+
+We see here significant number of points in the top-left and bottom right quadrant which is indicative of the spatial auto correlation and clustering. Similarly, we also see outliers in the plot.
+
+# LISA map
+
+Text
 
 # Plan:
 
