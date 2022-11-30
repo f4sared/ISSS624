@@ -467,5 +467,19 @@
     "title": "Take Home Ex-1",
     "section": "Functional Water Points (Local Moran’s I)",
     "text": "Functional Water Points (Local Moran’s I)\nWe perform the same steps for Functional water points:\n\nlocalMI_F <- localmoran(nga_wp_26391$`wpt functional`, swm_d72)\nhead(localMI_F)\n\n          Ii          E.Ii      Var.Ii      Z.Ii Pr(z != E(Ii))\n1 0.43151603 -7.191834e-04 0.008120236 4.7966255   1.613609e-06\n2 0.27475350 -2.904635e-04 0.003338620 4.7601280   1.934703e-06\n3 0.69235062 -8.956670e-04 0.345864093 1.1787856   2.384836e-01\n4 0.05590525 -3.884365e-04 0.029702941 0.3266329   7.439455e-01\n5 0.33277612 -3.884365e-04 0.004984321 4.7190630   2.369335e-06\n6 0.05909213 -4.231402e-05 0.001519106 1.5172126   1.292130e-01\n\n\n\nlocalMI_F <- data.frame(localMI_F)\ncolnames(localMI_F)[5] =\"Pr\"\nnga_wp_26391$lc_Ii_F <- localMI_F$'Ii'\nnga_wp_26391$lc_Pr_F <- localMI_F$'Pr'\n\n\nlocalMI.map_F <- tm_shape(nga_wp_26391) +\n  tm_fill(col = \"lc_Ii_F\", \n          style = \"jenks\", \n          title = \"local moran statistics\") +\n  tm_borders(alpha = 0.5)+\n  tm_layout(main.title = \"Plot of Local Moran's I\",\n            main.title.position = \"center\",\n            main.title.size = 1,\n            legend.position = c(\"right\", \"bottom\"),\n            frame = TRUE)\n\npvalue.map_F <- tm_shape(nga_wp_26391) +\n  tm_fill(col = \"lc_Pr_F\", \n          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),\n          palette=\"-Blues\", \n          title = \"local Moran's I p-values\") +\n  tm_borders(alpha = 0.5)+\n  tm_layout(main.title = \"Plot of Local Moran's I P-Value\",\n            main.title.position = \"center\",\n            main.title.size = 1,\n            legend.position = c(\"right\", \"bottom\"),\n            frame = TRUE)\n\ntmap_arrange(localMI.map_F, pvalue.map_F, asp=1, ncol=2)\n\nVariable(s) \"lc_Ii_F\" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette."
+  },
+  {
+    "objectID": "take_home_ex/ex_1/ex_1.html#scatterplot-for-non-functional-water-points",
+    "href": "take_home_ex/ex_1/ex_1.html#scatterplot-for-non-functional-water-points",
+    "title": "Take Home Ex-1",
+    "section": "Scatterplot for Non-Functional water points",
+    "text": "Scatterplot for Non-Functional water points\n\nNF_scatter <- moran.plot(nga_wp_26391$`wpt non-functional`, swm_d72,\n                  labels=as.character(nga_wp_26391$shapeName), \n                  xlab=\"wpt non-functional\", \n                  ylab=\"Spatially lagged wpt non-functional\")"
+  },
+  {
+    "objectID": "take_home_ex/ex_1/ex_1.html#scatterplot-for-functional-water-points",
+    "href": "take_home_ex/ex_1/ex_1.html#scatterplot-for-functional-water-points",
+    "title": "Take Home Ex-1",
+    "section": "Scatterplot for Functional water points",
+    "text": "Scatterplot for Functional water points\n\nF_scatter <- moran.plot(nga_wp_26391$`wpt functional`, swm_d72,\n                  labels=as.character(nga_wp_26391$shapeName), \n                  xlab=\"wpt functional\", \n                  ylab=\"Spatially lagged wpt functional\")"
   }
 ]

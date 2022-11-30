@@ -846,6 +846,24 @@ tmap_arrange(localMI.map_F, pvalue.map_F, asp=1, ncol=2)
 
 # Step 12: Moran Scatterplot
 
+## Scatterplot for Non-Functional water points
+
+```{r}
+NF_scatter <- moran.plot(nga_wp_26391$`wpt non-functional`, swm_d72,
+                  labels=as.character(nga_wp_26391$shapeName), 
+                  xlab="wpt non-functional", 
+                  ylab="Spatially lagged wpt non-functional")
+```
+
+## Scatterplot for Functional water points
+
+```{r}
+F_scatter <- moran.plot(nga_wp_26391$`wpt functional`, swm_d72,
+                  labels=as.character(nga_wp_26391$shapeName), 
+                  xlab="wpt functional", 
+                  ylab="Spatially lagged wpt functional")
+```
+
 # Plan:
 
 -   Lagged variables ? \>\>
@@ -862,7 +880,7 @@ tmap_arrange(localMI.map_F, pvalue.map_F, asp=1, ncol=2)
 
 -   Local Moran I test \>\>
 
--   Local Moran I scatter plot
+-   Local Moran I scatter plot \>\>
 
 -   LISA
 
