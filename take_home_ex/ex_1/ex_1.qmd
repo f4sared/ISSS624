@@ -329,7 +329,7 @@ qtm(nga_wp_26391,
 
 Jenks: Identify groups with similar values and maximizes the difference between them.
 
-[Using interactive tmap(), we will plot using "equal" classification:]{.underline}
+[Using interactive tmap(), we will plot using "jenks" classification:]{.underline}
 
 ```{r}
 tmap_mode("view")
@@ -339,6 +339,8 @@ tm_shape(nga_wp_26391)+
   tm_borders(alpha = 0.5) +
   tmap_style("white")
 ```
+
+Using the "jenks" style, we are able to identify visually some areas with high value already.
 
 ------------------------------------------------------------------------
 
@@ -355,6 +357,24 @@ tm_shape(nga_wp_26391)+
   tm_borders(alpha = 0.5) +
   tmap_style("white")
 ```
+
+When using "quantile" style, we observed a surge in the darker area. Having a closer look at the quantile, we can see that the last quantile has a much bigger band, this mean that quantile may not be too suitable.
+
+------------------------------------------------------------------------
+
+### Equal:
+
+We will then consider an alternative "equal":
+
+```{r}
+tm_shape(nga_wp_26391)+
+  tm_fill(c("wpt non-functional", "wpt functional"),
+          style = "equal") +
+  tm_borders(alpha = 0.5) +
+  tmap_style("white")
+```
+
+This distribution above matches that of the "jenks" style. We can spot similar patterns on the plot.
 
 ------------------------------------------------------------------------
 
@@ -378,12 +398,12 @@ bbox_new <- bbox_new %>%  # take the bounding box ...
 
 tm_shape(nga_wp_26391, bbox = bbox_new)+
   tm_fill("wpt non-functional", 
-          style = "quantile", 
+          style = "jenks", 
           legend.hist = TRUE, 
           legend.is.portrait = TRUE,
           legend.hist.z = 0.5) +
   tm_borders(alpha = 0.5) + 
-  tm_layout(main.title = "Quantile Plot of WPT Non-Functional",
+  tm_layout(main.title = "Jenks Plot of WPT Non-Functional",
             main.title.position = "center",
             main.title.size = 1,
             legend.position = c("right", "center"),
@@ -410,12 +430,12 @@ bbox_new <- bbox_new %>%  # take the bounding box ...
 
 tm_shape(nga_wp_26391, bbox = bbox_new)+
   tm_fill("wpt functional", 
-          style = "quantile", 
+          style = "jenks", 
           legend.hist = TRUE, 
           legend.is.portrait = TRUE,
           legend.hist.z = 0.5) +
   tm_borders(alpha = 0.5) + 
-  tm_layout(main.title = "Quantile Plot of WPT Non-Functional",
+  tm_layout(main.title = "Jenks Plot of WPT Non-Functional",
             main.title.position = "center",
             main.title.size = 1,
             legend.position = c("right", "center"),
@@ -443,7 +463,7 @@ Usually for geospatial weights preparation, there are 2 options:
 
     -   Inversed-Distance
 
-For our analysis, we will consider using the distance based weights because the polygons size is not spread evenly across the map of Nigeria.
+For our analysis, we will consider using the fixed distance based weights because the polygons size is not spread evenly across the map of Nigeria.
 
 ## Prepare the coordinates
 
@@ -1059,16 +1079,22 @@ Getis & Ord thus swoops in to save the day. This is also another local measure o
 
 One of the key requirements to calculate the G\* will be to obtain the distance based weight matrix. We have prepared this matrix earlier in step 8.
 
-## Non-Functional water point G\* 
+## Non-Functional water point G\*
+
+We compute the G\* statistics using localG() function from spdep:
 
 ```{r}
 gi_NF <- localG(nga_wp_26391$`wpt non-functional`, swm_d72)
 head(gi_NF)
 ```
 
+Next we will append the calculated values to the main sf dataframe:
+
 ```{r}
 nga_wp_26391$gi_NF <- gi_NF
 ```
+
+Lastly, we will use the tmap package to plot the G\* statistics along side the non-functioning water point. Here we will use the "jenks" style as it group values that are most similar together:
 
 ```{r}
 gdppc_NF <- tm_shape(nga_wp_26391) +
@@ -1097,4 +1123,46 @@ Gimap_NF <-tm_shape(nga_wp_26391) +
 tmap_arrange(gdppc_NF, Gimap_NF, asp=1, ncol=2)
 ```
 
-## Functional water point G\* 
+When compared to the plot on the number of non-functioning waterpoints, we see that the G\* captures the hotspot patterns greatly. In addition, it also pinpointed the region of cold spots on the map.
+
+------------------------------------------------------------------------
+
+## Functional water point G\*
+
+Here we will perform the same steps as above into 1 code chunk:
+
+```{r}
+gi_F <- localG(nga_wp_26391$`wpt functional`, swm_d72)
+nga_wp_26391$gi_F <- gi_F
+```
+
+We till then plot the G\* for Functional water point as follow:
+
+```{r}
+gdppc_F <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "wpt functional", 
+          style = "jenks", 
+          title = "No. of wpt functional") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "wpt functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+Gimap_F <-tm_shape(nga_wp_26391) +
+  tm_fill(col = "gi_F",
+          style = "jenks",
+          palette="-RdBu",
+          title = "local G*") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "wpt functional G*",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
+
+tmap_arrange(gdppc_F, Gimap_F, asp=1, ncol=2)
+```
+
+From this plot, we can see a clear hotspot at the top of the map. Interestingly we also observe a outer area with lower hotspot intensity.
