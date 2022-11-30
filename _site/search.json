@@ -495,5 +495,19 @@
     "title": "Take Home Ex-1",
     "section": "LISA: Functional Water Point",
     "text": "LISA: Functional Water Point\nSame as above, we create a vector:\n\nquadrant_F <- vector(mode=\"numeric\",length=nrow(localMI_F))\n\nWe check the earlier calculated lag values:\n\nnga_wp_26391$lag_F[1:20]\n\n [1] 20.50794 20.41935  0.00000 59.10000 18.19643 93.80952 37.36842 43.56250\n [9] 61.03846 17.04688 25.31818 58.63636 41.53846 50.29167 35.48148 63.18919\n[17] 67.73529 48.44828 40.53659 87.85714\n\n\nWe combine the earlier steps into a single chunk of code:\n\nDV_F <- nga_wp_26391$`wpt functional` - mean(nga_wp_26391$`wpt functional`) \nLM_I_F <- localMI_F[,1] - mean(localMI_F[,1])  \nquadrant_F[DV_F <0 & LM_I_F>0] <- 1\nquadrant_F[DV_F >0 & LM_I_F<0] <- 2\nquadrant_F[DV_F <0 & LM_I_F<0] <- 3  \nquadrant_F[DV_F >0 & LM_I_F>0] <- 4   \nquadrant_F[localMI_F[,5]>signif] <- 0\n\nOnce again, we will plot the value:\n\nnga_wp_26391$quadrant_F <- quadrant_F\ncolors <- c(\"#ffffff\", \"#2c7bb6\", \"#abd9e9\", \"#fdae61\", \"#d7191c\")\nclusters <- c(\"insignificant\", \"low-low\", \"low-high\", \"high-low\", \"high-high\")\n\nLISA_F <- tm_shape(nga_wp_26391) +\n  tm_fill(col = \"quadrant_F\", \n          style = \"cat\", \n          palette = colors[c(sort(unique(quadrant_F)))+1], \n          labels = clusters[c(sort(unique(quadrant_F)))+1],\n          popup.vars = c(\"\")) +\n  tm_borders(alpha=0.5) +\n  tm_layout(main.title = \"Plot of LISA Functional WP\",\n            main.title.position = \"center\",\n            main.title.size = 1,\n            legend.position = c(\"right\", \"bottom\"),\n            frame = TRUE)\n  tm_view(set.zoom.limits = c(11,17)) #This line is not needed since not using interactive\n\n$tm_layout\n$tm_layout$set.zoom.limits\n[1] 11 17\n\n$tm_layout$style\n[1] NA\n\n\nattr(,\"class\")\n[1] \"tm\"\n\n# \ntmap_arrange(LISA_F, localMI.map_F, asp=1, ncol=2)\n\nVariable(s) \"lc_Ii_F\" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette.\n\n\n\n\n\nAgain, we see that the hotpsots from the LISA map matches the regions of high local Moran’s I for the functional water points."
+  },
+  {
+    "objectID": "take_home_ex/ex_1/ex_1.html#non-functional-water-point-g",
+    "href": "take_home_ex/ex_1/ex_1.html#non-functional-water-point-g",
+    "title": "Take Home Ex-1",
+    "section": "Non-Functional water point G*",
+    "text": "Non-Functional water point G*\n\ngi_NF <- localG(nga_wp_26391$`wpt non-functional`, swm_d72)\nhead(gi_NF)\n\n[1] -3.4117747 -3.4325327 -1.5896655  0.1024036 -1.4372021  2.8392431\n\n\n\nnga_wp_26391$gi_NF <- gi_NF\n\n\ngdppc_NF <- tm_shape(nga_wp_26391) +\n  tm_fill(col = \"wpt non-functional\", \n          style = \"jenks\", \n          title = \"No. of wpt non-functional\") +\n  tm_borders(alpha = 0.5)+\n  tm_layout(main.title = \"wpt non-functional\",\n            main.title.position = \"center\",\n            main.title.size = 1,\n            legend.position = c(\"right\", \"bottom\"),\n            frame = TRUE)\n\nGimap_NF <-tm_shape(nga_wp_26391) +\n  tm_fill(col = \"gi_NF\",\n          style = \"jenks\",\n          palette=\"-RdBu\",\n          title = \"local G*\") +\n  tm_borders(alpha = 0.5)+\n  tm_layout(main.title = \"wpt non-functional G*\",\n            main.title.position = \"center\",\n            main.title.size = 1,\n            legend.position = c(\"right\", \"bottom\"),\n            frame = TRUE)\n\ntmap_arrange(gdppc_NF, Gimap_NF, asp=1, ncol=2)\n\nVariable(s) \"gi_NF\" contains positive and negative values, so midpoint is set to 0. Set midpoint = NA to show the full spectrum of the color palette."
+  },
+  {
+    "objectID": "take_home_ex/ex_1/ex_1.html#functional-water-point-g",
+    "href": "take_home_ex/ex_1/ex_1.html#functional-water-point-g",
+    "title": "Take Home Ex-1",
+    "section": "Functional water point G*",
+    "text": "Functional water point G*"
   }
 ]

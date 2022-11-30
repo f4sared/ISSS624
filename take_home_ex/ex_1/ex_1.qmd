@@ -1049,32 +1049,52 @@ Again, we see that the hotpsots from the LISA map matches the regions of high lo
 
 ------------------------------------------------------------------------
 
-# Plan:
+# Step 14: Hot spot and Cold Spot with Getis & Ord's G-Statistics G\*
 
--   Lagged variables ? \>\>
+In the earlier steps, the Local Moran's I help us to get a feel of the spatial correlation and clustering behavior. This is normally calculated with the value of the polygon itself excluded.
 
--   Moran's I test \>\>
+However sometimes besides clustering, it is also useful to know the hot spot and cold spot. This is because 2 groups of polygons can exhibit the same intensity of clustering, but the intensity of their value is different.
 
--   Monte carlo \>\>
+Getis & Ord thus swoops in to save the day. This is also another local measure of spatial correlation but this time it takes into account the value inside the polygon it self. Thus a polygon with a high intensity value will be now less affected by neighboring polygon's with less intensive values.
 
--   Geary C Test
+One of the key requirements to calculate the G\* will be to obtain the distance based weight matrix. We have prepared this matrix earlier in step 8.
 
--   Correlogram \>\>
+## Non-Functional water point G\* 
 
-    -   <https://stat.ethz.ch/pipermail/r-sig-geo/2007-August/002467.html>
+```{r}
+gi_NF <- localG(nga_wp_26391$`wpt non-functional`, swm_d72)
+head(gi_NF)
+```
 
--   Local Moran I test \>\>
+```{r}
+nga_wp_26391$gi_NF <- gi_NF
+```
 
--   Local Moran I scatter plot \>\>
+```{r}
+gdppc_NF <- tm_shape(nga_wp_26391) +
+  tm_fill(col = "wpt non-functional", 
+          style = "jenks", 
+          title = "No. of wpt non-functional") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "wpt non-functional",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
 
--   LISA
+Gimap_NF <-tm_shape(nga_wp_26391) +
+  tm_fill(col = "gi_NF",
+          style = "jenks",
+          palette="-RdBu",
+          title = "local G*") +
+  tm_borders(alpha = 0.5)+
+  tm_layout(main.title = "wpt non-functional G*",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.position = c("right", "bottom"),
+            frame = TRUE)
 
--   G (Local, non-self) , Gstari(Local, self)
+tmap_arrange(gdppc_NF, Gimap_NF, asp=1, ncol=2)
+```
 
--   Getis ORD global G test / General G
-
-    -   <https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/h-how-high-low-clustering-getis-ord-general-g-spat.htm#:~:text=Interpretation-,The%20High%2FLow%20Clustering%20(Getis%2DOrd%20General%20G),spatial%20clustering%20of%20feature%20values.>
-
--   Questions:
-
-    -   W vs B ? How does it work ? \>\> it appears binary or not, the equations take care of themselves
+## Functional water point G\* 
