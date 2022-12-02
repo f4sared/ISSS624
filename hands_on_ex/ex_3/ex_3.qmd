@@ -206,7 +206,7 @@ We will then do a quick plot of the radio penetration level with qtm() of the tm
 qtm(shan_sf, "RADIO_PR")
 ```
 
-Next using the "Jenks" classification, we will plot 2 maps. \
+Next using the "Jenks" classification, we will plot 2 maps.\
 One for number of houses, the other for the number of radios:
 
 ```{r}
@@ -288,7 +288,7 @@ head(shan_ict, 10)
 
 Since different variables are used, their range is different. Thus we need to standardize them.
 
-### Min Max 
+### Min Max
 
 We do min-max 0-1 as follow:
 
@@ -364,7 +364,7 @@ We can then plot the result as follow:
 plot(hclust_ward, cex = 0.6)
 ```
 
-## Determine optimal clustering algorithm 
+## Determine optimal clustering algorithm
 
 Since there are many algorithms, it makes sense to try them all. We will get the agglomeration coefficient which measures the amount of clustering structure found.
 
@@ -389,7 +389,7 @@ map_dbl(m, ac)
 
 Gap statistic compares the intra-cluster variation for different numbers of clusters k.
 
-We will compute the gap statistic using clusGap() of cluster package: \
+We will compute the gap statistic using clusGap() of cluster package:\
 "hcut" is from factoextra package.
 
 ```{r}
@@ -424,4 +424,170 @@ Question: How does the algorithm know which cluster to break up ?
 
 ------------------------------------------------------------------------
 
-## Visually driven hierarchical clustering analysis: 
+## Visually driven hierarchical clustering analysis:
+
+Using the function heatmaply() we will build a cluster heat map.
+
+First we need to transform the dataframe into a matrix in order to be able to plot:
+
+```{r}
+shan_ict_mat <- data.matrix(shan_ict)
+```
+
+Next we will use function heatmaply() of heatmaply to plot:
+
+```{r}
+heatmaply(normalize(shan_ict_mat),
+          Colv=NA,
+          dist_method = "euclidean",
+          hclust_method = "ward.D",
+          seriate = "OLO",
+          colors = Blues,
+          k_row = 6,
+          margins = c(NA,200,60,NA),
+          fontsize_row = 4,
+          fontsize_col = 5,
+          main="Geographic Segmentation of Shan State by ICT indicators",
+          xlab = "ICT Indicators",
+          ylab = "Townships of Shan State"
+          )
+```
+
+Question:
+
+Why do you show all 5 variables ? Is the segmentation based on all 5 variables ?
+
+------------------------------------------------------------------------
+
+## Mapping the cluster formed
+
+We will use cutree() of R to prune the tree to that we have 6 cluster:
+
+```{r}
+groups <- as.factor(cutree(hclust_ward, k=6))
+```
+
+Next, we will convert the groups into a matrix before combining it to shan_sf:
+
+```{r}
+shan_sf_cluster <- cbind(shan_sf, as.matrix(groups)) %>%
+  rename(`CLUSTER`=`as.matrix.groups.`)
+```
+
+Finally, we will plot the outcome:
+
+```{r}
+qtm(shan_sf_cluster, "CLUSTER")
+```
+
+As shown from the output above, we see that all our cluster appear to be fragmented. This is because a non-spatial method is being used.
+
+------------------------------------------------------------------------
+
+# Step 8: Spatially constrained clustering - SKATER Approach
+
+In the earlier section, the clusters are not influenced by space, instead they are simply derived based just on the variables alone.
+
+## Convert to spatial polygons dataframe
+
+First we need to convert the shan_sf from sf object to the sp object.\
+We do this via the as_spatial() of sf package:
+
+```{r}
+shan_sp <- as_Spatial(shan_sf)
+```
+
+## Compute the neighbor list
+
+Using poly2nd() of spdep, we will then compute the neighbor list:
+
+```{r}
+shan.nb <- poly2nb(shan_sp)
+summary(shan.nb)
+```
+
+Question: How is the neighbor computed here ? Queen ???
+
+------------------------------------------------------------------------
+
+## Plot the neighbors relationship on a map
+
+```{r}
+plot(shan_sp, 
+     border=grey(.5))
+plot(shan.nb, 
+     coordinates(shan_sp), 
+     col="blue", 
+     add=TRUE)
+```
+
+## Compute the minimum spanning tree
+
+### Compute the edge cost 
+
+To compute the edge cost , we will use nbcosts() of the spdep package:
+
+```{r}
+lcosts <- nbcosts(shan.nb, shan_ict)
+```
+
+What happens above is that the pairwise dissimilarity is calculated for the five variables between the 2 neighbors. This is the notion of a generalized weight for a spatial weight matrix.
+
+------------------------------------------------------------------------
+
+Next, we will get the spatial weight matrix using nb2list(). This time we will input the neighbor list from above along with the "lcost" take note that we have to use "binary" and not row-standardization.
+
+We run the code as follow:
+
+```{r}
+shan.w <- nb2listw(shan.nb, 
+                   lcosts, 
+                   style="B")
+summary(shan.w)
+```
+
+### Compute the Minimum Spanning Tree
+
+We compute the tree using mstree() of the spdep package:
+
+```{r}
+shan.mst <- mstree(shan.w)
+```
+
+We then check the class and dimension:
+
+```{r}
+class(shan.mst)
+```
+
+Note the dimension is 54 instead of 55 since minimum spanning tree consist of n-1 edges.
+
+------------------------------------------------------------------------
+
+Next, we will display the head:
+
+```{r}
+head(shan.mst)
+```
+
+Finally, we can visualize the plot as follow:
+
+```{r}
+plot(shan_sp, border=gray(.5))
+plot.mst(shan.mst, 
+         coordinates(shan_sp), 
+         col="blue", 
+         cex.lab=0.7, 
+         cex.circles=0.005, 
+         add=TRUE)
+```
+
+Note: As you can see, all the ploygons here are now part of the tree and connected in some way.
+
+------------------------------------------------------------------------
+
+## Computing spatially constrained clusters using the SKATER method
+
+```{r}
+
+```
