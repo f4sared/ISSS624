@@ -19,6 +19,8 @@ website:
             href: in_class/ex_2/ex_2.qmd
           - text: Take-Home Ex 1 
             href: take_home_ex/ex_1/ex_1.qmd
+          - text: Hands-on Ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques
+            href: hands_on_ex/ex_3/ex_3.qmd            
             
     right:
       - href: index.qmd

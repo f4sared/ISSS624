@@ -1,0 +1,73 @@
+---
+title: "Hand on ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques"
+editor: visual
+---
+
+# Overview
+
+# Step 1: Loading the required packages
+
+We load the required packages as follow:
+
+```{r}
+pacman::p_load(sf, rgdal, spdep,
+               tidyverse,
+               tmap,
+               corrplot, ggpubr, heatmaply,
+               cluster, 
+               factoextra, NbClust, psych,
+               here)
+```
+
+Next we generate the link to the file:
+
+```{r}
+shapefile_path <- here("data", "dataMyanmar", "geospatial")
+shapefile_path
+```
+
+Now we load the shapefile: \
+(question: why never set the CRS here ?)
+
+```{r}
+shan_sf <- st_read(dsn = shapefile_path, 
+                   layer = "myanmar_township_boundaries") %>% 
+           filter(ST %in% c("Shan (East)", "Shan (North)", "Shan (South)"))
+```
+
+We check the CRS as follow:
+
+```{r}
+st_crs(shan_sf)
+```
+
+We also get a view of the data:
+
+```{r}
+glimpse(shan_sf)
+```
+
+# Step 2: Import Aspatial Data
+
+Create the link:
+
+```{r}
+aspatial_path <- here("data", "dataMyanmar", "aspatial", "Shan-ICT.csv")
+aspatial_path
+```
+
+Load the CSV file using read_csv() from readr package:
+
+```{r}
+ict <- read_csv (aspatial_path)
+```
+
+Note: the file is saved in the tibble file format. Which is different from sf format.
+
+------------------------------------------------------------------------
+
+Next we get the summary statistics:
+
+```{r}
+summary(ict)
+```
