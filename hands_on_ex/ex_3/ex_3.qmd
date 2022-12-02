@@ -363,3 +363,65 @@ We can then plot the result as follow:
 ```{r}
 plot(hclust_ward, cex = 0.6)
 ```
+
+## Determine optimal clustering algorithm 
+
+Since there are many algorithms, it makes sense to try them all. We will get the agglomeration coefficient which measures the amount of clustering structure found.
+
+First we will make a simple list:
+
+```{r}
+m <- c( "average", "single", "complete", "ward")
+names(m) <- c( "average", "single", "complete", "ward")
+```
+
+We will use the agnes() function of cluster package as follow:
+
+```{r}
+ac <- function(x) {
+  agnes(shan_ict, method = x)$ac
+}
+
+map_dbl(m, ac)
+```
+
+## Determine optimal clusters
+
+Gap statistic compares the intra-cluster variation for different numbers of clusters k.
+
+We will compute the gap statistic using clusGap() of cluster package: \
+"hcut" is from factoextra package.
+
+```{r}
+set.seed(12345)
+gap_stat <- clusGap(shan_ict, 
+                    FUN = hcut, 
+                    nstart = 25, 
+                    K.max = 10, 
+                    B = 50)
+# Print the result
+print(gap_stat, method = "firstmax")
+```
+
+Now, using fviz_gap_stat() of factoextra package to find the optimal cluster:
+
+```{r}
+fviz_gap_stat(gap_stat)
+```
+
+## Interpreting the dendrograms
+
+Next we will redraw the dendrograms with the optimal number of clusters. This is done using rect.hclust() of R:
+
+```{r}
+plot(hclust_ward, cex = 0.6)
+rect.hclust(hclust_ward, 
+            k = 6, 
+            border = 2:5)
+```
+
+Question: How does the algorithm know which cluster to break up ?
+
+------------------------------------------------------------------------
+
+## Visually driven hierarchical clustering analysis: 

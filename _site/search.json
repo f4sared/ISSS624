@@ -189,6 +189,34 @@
     "text": "Compute Hierarchical Clustering\nUsing hclust() of R stats, we will input the proximity matrix. The putout is a class of hclust that describes a tree that is produced:\n\nhclust_ward <- hclust(proxmat, method = 'ward.D')\n\nWe can then plot the result as follow:\n\nplot(hclust_ward, cex = 0.6)"
   },
   {
+    "objectID": "hands_on_ex/ex_3/ex_3.html#determine-optimal-clustering-algorithm",
+    "href": "hands_on_ex/ex_3/ex_3.html#determine-optimal-clustering-algorithm",
+    "title": "Hand on ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Determine optimal clustering algorithm",
+    "text": "Determine optimal clustering algorithm\nSince there are many algorithms, it makes sense to try them all. We will get the agglomeration coefficient which measures the amount of clustering structure found.\nFirst we will make a simple list:\n\nm <- c( \"average\", \"single\", \"complete\", \"ward\")\nnames(m) <- c( \"average\", \"single\", \"complete\", \"ward\")\n\nWe will use the agnes() function of cluster package as follow:\n\nac <- function(x) {\n  agnes(shan_ict, method = x)$ac\n}\n\nmap_dbl(m, ac)\n\n  average    single  complete      ward \n0.8131144 0.6628705 0.8950702 0.9427730"
+  },
+  {
+    "objectID": "hands_on_ex/ex_3/ex_3.html#determine-optimal-clusters",
+    "href": "hands_on_ex/ex_3/ex_3.html#determine-optimal-clusters",
+    "title": "Hand on ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Determine optimal clusters",
+    "text": "Determine optimal clusters\nGap statistic compares the intra-cluster variation for different numbers of clusters k.\nWe will compute the gap statistic using clusGap() of cluster package:\n“hcut” is from factoextra package.\n\nset.seed(12345)\ngap_stat <- clusGap(shan_ict, \n                    FUN = hcut, \n                    nstart = 25, \n                    K.max = 10, \n                    B = 50)\n# Print the result\nprint(gap_stat, method = \"firstmax\")\n\nClustering Gap statistic [\"clusGap\"] from call:\nclusGap(x = shan_ict, FUNcluster = hcut, K.max = 10, B = 50, nstart = 25)\nB=50 simulated reference sets, k = 1..10; spaceH0=\"scaledPCA\"\n --> Number of clusters (method 'firstmax'): 1\n          logW   E.logW       gap     SE.sim\n [1,] 8.407129 8.680794 0.2736651 0.04460994\n [2,] 8.130029 8.350712 0.2206824 0.03880130\n [3,] 7.992265 8.202550 0.2102844 0.03362652\n [4,] 7.862224 8.080655 0.2184311 0.03784781\n [5,] 7.756461 7.978022 0.2215615 0.03897071\n [6,] 7.665594 7.887777 0.2221833 0.03973087\n [7,] 7.590919 7.806333 0.2154145 0.04054939\n [8,] 7.526680 7.731619 0.2049390 0.04198644\n [9,] 7.458024 7.660795 0.2027705 0.04421874\n[10,] 7.377412 7.593858 0.2164465 0.04540947\n\n\nNow, using fviz_gap_stat() of factoextra package to find the optimal cluster:\n\nfviz_gap_stat(gap_stat)"
+  },
+  {
+    "objectID": "hands_on_ex/ex_3/ex_3.html#interpreting-the-dendrograms",
+    "href": "hands_on_ex/ex_3/ex_3.html#interpreting-the-dendrograms",
+    "title": "Hand on ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Interpreting the dendrograms",
+    "text": "Interpreting the dendrograms\nNext we will redraw the dendrograms with the optimal number of clusters. This is done using rect.hclust() of R:\n\nplot(hclust_ward, cex = 0.6)\nrect.hclust(hclust_ward, \n            k = 6, \n            border = 2:5)\n\n\n\n\nQuestion: How does the algorithm know which cluster to break up ?"
+  },
+  {
+    "objectID": "hands_on_ex/ex_3/ex_3.html#visually-driven-hierarchical-clustering-analysis",
+    "href": "hands_on_ex/ex_3/ex_3.html#visually-driven-hierarchical-clustering-analysis",
+    "title": "Hand on ex 3 - Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Visually driven hierarchical clustering analysis:",
+    "text": "Visually driven hierarchical clustering analysis:"
+  },
+  {
     "objectID": "Hands_on_ex1.html",
     "href": "Hands_on_ex1.html",
     "title": "Hands-on Exercise 1",
