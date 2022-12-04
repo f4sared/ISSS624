@@ -1,0 +1,101 @@
+---
+title: "Take Home Ex 2"
+editor: visual
+---
+
+# Overview
+
+[**Files required for Take Home Ex 2:**]{.underline}
+
+Water point attribute data (exported as CSV file):\
+<https://www.waterpointdata.org/access-data/>\
+Click on the button "Access WPdx+ Global Data Repository"\
+Then click export button & download as CSV file
+
+Nigeria Administrative Level 2 Boundary File:\
+<https://www.geoboundaries.org/>\
+Enter "Nigeria" in the name filter column.\
+Download Nigeria-NGA-ADM2-2022 under the column "geoBoundaries"
+
+Column Description can be found at:\
+<https://www.waterpointdata.org/wp-content/uploads/2021/04/WPDx_Data_Standard.pdf>
+
+# Step 1: Importing the required packages
+
+The following packages are imported:
+
+-   here: We use this to generate a path to the file stored at the root directory
+
+-   tidyverse (<https://www.tidyverse.org/>)
+
+    -   ggplot2
+
+    -   dplyr
+
+    -   readr: We use this for reading rectangular data like csv
+
+-   text
+
+```{r}
+pacman::p_load(here,
+               tidyverse
+               )
+```
+
+# Step 2: Shrinking the CSV file
+
+Using the here() function, we will generate a path to where the large csv file is stored:
+
+```{r}
+#| eval: true
+csv_path <- here("data", "dataNigeria_2", "waterpoint", "wpdx.csv")
+csv_path
+```
+
+We will use the read_csv() of the readr package to ingest the CSV file:
+
+```{r}
+#| eval: false
+wp_nga <- read_csv(csv_path) %>% filter(`#clean_country_name` == "Nigeria")
+```
+
+We will use the select() to keep only columns of interest:
+
+```{r}
+#| eval: false
+wp_nga_out <- wp_nga %>% select(7:10, 13:14, 57, 46:47, 62)
+```
+
+Using st_as_sfc() of the sf package, we add a new "Geometry" column:
+
+```{r}
+#| eval: false
+wp_nga_out$Geometry = st_as_sfc(wp_nga_out$`New Georeferenced Column`)
+```
+
+Next using st_sf() of the sf package, we will convert the current object to sf dataframe:
+
+```{r}
+#| eval: false
+wp_nga_out <- st_sf(wp_nga_out, crs=4326) 
+```
+
+Since the column \`New Georeferenced Column\` is no longer needed, we exclude it:
+
+```{r}
+#| eval: false
+wp_nga_out <- wp_nga_out %>% select(1:9, 11)
+```
+
+To save the file, we need to generate a save path:
+
+```{r}
+#| eval: true
+savefile_path <- here("data", "dataNigeria_2", "waterpoint", "wp_nga_v2.rds")
+savefile_path
+```
+
+```{r}
+#| eval: false
+write_rds(wp_nga_out, savefile_path)
+```
