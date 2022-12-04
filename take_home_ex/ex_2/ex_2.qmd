@@ -28,11 +28,13 @@ The following packages are imported:
 
 -   sf: We use this for manipulation of simple features
 
+-   tmap: We use for thematic plotting
+
 -   tidyverse (<https://www.tidyverse.org/>)
 
     -   ggplot2
 
-    -   dplyr
+    -   dplyr: Used for data manipulation
 
     -   readr: We use this for reading rectangular data like csv
 
@@ -40,8 +42,8 @@ The following packages are imported:
 
 ```{r}
 pacman::p_load(here,
-               sf, tidyverse,
-               funModeling
+               sf, tidyverse, dplyr, 
+               funModeling, tmap
                )
 ```
 
@@ -150,8 +152,72 @@ nga <- st_read(dsn = boundary_path,
                crs = 4326) %>% select(shapeName)
 ```
 
-Step 4: Data Wrangling
+# Step 4: Data Wrangling 
+
+## Status of water point
+
+Using the freq() from funModeling, we will check the distribution of status of the water points:
 
 ```{r}
 freq(data=wp_nga, input = 'status')
+```
+
+### Functional water point
+
+```{r}
+wpt_functional <- wp_nga %>%
+  filter(status %in%
+           c("Functional",
+             "Functional but not in use",
+             "Functional but needs repair"))
+```
+
+```{r}
+#| eval: false
+freq(data=wpt_functional, 
+     input = 'status')
+```
+
+### Non Functional water point 
+
+```{r}
+wpt_nonfunctional <- wp_nga %>%
+  filter(status %in%
+           c("Abandoned/Decommissioned", 
+             "Abandoned",
+             "Non-Functional",
+             "Non functional due to dry season",
+             "Non-Functional due to dry season"))
+```
+
+```{r}
+#| eval: false
+freq(data=wpt_nonfunctional, 
+     input = 'status')
+```
+
+### Unknown
+
+```{r}
+wpt_unknown <- wp_nga %>% filter(status == "Unknown")
+```
+
+## Point-in-Polygon 
+
+```{r}
+nga_wp <- nga %>%
+  mutate(`total wpt` = lengths(
+    st_intersects(nga, wp_nga))) %>%
+  mutate(`wpt functional` = lengths(
+    st_intersects(nga, wpt_functional))) %>%
+  mutate(`wpt non-functional` = lengths(
+    st_intersects(nga, wpt_nonfunctional))) %>%
+  mutate(`wpt unknown` = lengths(
+    st_intersects(nga, wpt_unknown)))
+```
+
+```{r}
+#| eval: false
+qtm(nga_wp, fill = "total wpt") + 
+    tm_layout(legend.height = 0.4,legend.width = 0.4)
 ```
