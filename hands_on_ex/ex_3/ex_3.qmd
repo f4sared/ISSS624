@@ -104,7 +104,7 @@ We will make use of the ggplot for EDA.
 
 We plot the histogram of the radio as follow:
 
-```{r}
+```{r, fig.width=4, fig.height=3}
 ggplot(data=ict_derived, 
        aes(x=`RADIO`)) +
   geom_histogram(bins=20, 
@@ -134,6 +134,7 @@ ggplot(data=ict_derived,
 We will check the outlier of the Radio Penetration as follow:
 
 ```{r}
+#| eval: true
 ggplot(data=ict_derived, 
        aes(x=`RADIO_PR`)) +
   geom_boxplot(color="black", 
@@ -361,7 +362,7 @@ hclust_ward <- hclust(proxmat, method = 'ward.D')
 We can then plot the result as follow:
 
 ```{r}
-plot(hclust_ward, cex = 0.6)
+plot(hclust_ward, cex = 0.8)
 ```
 
 ## Determine optimal clustering algorithm
@@ -523,7 +524,7 @@ plot(shan.nb,
 
 ## Compute the minimum spanning tree
 
-### Compute the edge cost 
+### Compute the edge cost
 
 To compute the edge cost , we will use nbcosts() of the spdep package:
 
@@ -593,7 +594,7 @@ Earlier we plotted the minimum spanning tree, now we will make use of it further
 We will compute the spatially compute cluster using skater() of spdep package:
 
 ```{r}
-clust6 <- skater(edges = shan.mst[,1:2], 
+clust6 <- spdep::skater(edges = shan.mst[,1:2], 
                  data = shan_ict, 
                  method = "euclidean", 
                  ncuts = 5)
