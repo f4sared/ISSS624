@@ -26,6 +26,8 @@ The following packages are imported:
 
 -   here: We use this to generate a path to the file stored at the root directory
 
+-   sf: We use this for manipulation of simple features
+
 -   tidyverse (<https://www.tidyverse.org/>)
 
     -   ggplot2
@@ -38,11 +40,13 @@ The following packages are imported:
 
 ```{r}
 pacman::p_load(here,
-               tidyverse
+               sf, tidyverse
                )
 ```
 
 # Step 2: Shrinking the CSV file
+
+Since the CSV file is really huge, we need to shrink it down first so we can store a copy of it on github. To do this, we will import the CSV file and then only select the rows that we are keen to keep using the select() function. The CSV will initially be imported as a tibble file format, thereafter once we select our referred columns, we also need to convert geometry coordinate before finally saving it as a rds file.
 
 Using the here() function, we will generate a path to where the large csv file is stored:
 
@@ -66,7 +70,9 @@ We will use the select() to keep only columns of interest:
 wp_nga_out <- wp_nga %>% select(7:10, 13:14, 57, 46:47, 62)
 ```
 
-Using st_as_sfc() of the sf package, we add a new "Geometry" column:
+Using st_as_sfc() of the sf package, we derive a new "Geometry" column based on \`New Georeferenced Column\`. This is because the column is as actually holding data in textual format.
+
+We run the code as follow:
 
 ```{r}
 #| eval: false
@@ -95,7 +101,50 @@ savefile_path <- here("data", "dataNigeria_2", "waterpoint", "wp_nga_v2.rds")
 savefile_path
 ```
 
+We then save the dataframe as a rds file:
+
 ```{r}
 #| eval: false
 write_rds(wp_nga_out, savefile_path)
+```
+
+# Step 3: Loading the data 
+
+## Load the water point data: 
+
+Now, using the read_rds of the readr package, we load the data as follow: \
+(we will rename all the columns for ease of work) \
+(we will also replace all N/A values of the status with "Unknown")
+
+```{r}
+wp_nga <- read_rds(savefile_path) %>%
+    rename(`status`=`#status`) %>%
+    rename(`adm1`=`#clean_adm1`) %>%
+    rename(`adm2`=`#clean_adm2`) %>% 
+    rename(`tech_clean`=`#water_tech_clean`) %>%
+    rename(`tech_category`=`#water_tech_category`) %>%
+    mutate(status_cle = replace_na(status, "Unknown"))
+```
+
+We will now use the st_geometry of the sf package to look at our data info:
+
+```{r}
+st_geometry(wp_nga)
+```
+
+## Load the Geo Boundary data: 
+
+Once again, we need to generate the path as follow:
+
+```{r}
+boundary_path <- here("data", "dataNigeria_2", "boundary")
+boundary_path
+```
+
+Text
+
+```{r}
+nga <- st_read(dsn = boundary_path,
+               layer = "geoBoundaries-NGA-ADM2",
+               crs = 4326) %>% select(shapeName)
 ```

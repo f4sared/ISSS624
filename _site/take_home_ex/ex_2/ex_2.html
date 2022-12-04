@@ -209,6 +209,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#step-1-importing-the-required-packages" id="toc-step-1-importing-the-required-packages" class="nav-link" data-scroll-target="#step-1-importing-the-required-packages">Step 1: Importing the required packages</a></li>
   <li><a href="#step-2-shrinking-the-csv-file" id="toc-step-2-shrinking-the-csv-file" class="nav-link" data-scroll-target="#step-2-shrinking-the-csv-file">Step 2: Shrinking the CSV file</a></li>
+  <li><a href="#step-3-loading-the-data" id="toc-step-3-loading-the-data" class="nav-link" data-scroll-target="#step-3-loading-the-data">Step 3: Loading the data</a>
+  <ul class="collapse">
+  <li><a href="#load-the-water-point-data" id="toc-load-the-water-point-data" class="nav-link" data-scroll-target="#load-the-water-point-data">Load the water point data:</a></li>
+  <li><a href="#load-the-geo-boundary-data" id="toc-load-the-geo-boundary-data" class="nav-link" data-scroll-target="#load-the-geo-boundary-data">Load the Geo Boundary data:</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -250,6 +255,7 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <p>The following packages are imported:</p>
 <ul>
 <li><p>here: We use this to generate a path to the file stored at the root directory</p></li>
+<li><p>sf: We use this for manipulation of simple features</p></li>
 <li><p>tidyverse (<a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>)</p>
 <ul>
 <li><p>ggplot2</p></li>
@@ -260,12 +266,13 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               tidyverse</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-2-shrinking-the-csv-file" class="level1">
 <h1>Step 2: Shrinking the CSV file</h1>
+<p>Since the CSV file is really huge, we need to shrink it down first so we can store a copy of it on github. To do this, we will import the CSV file and then only select the rows that we are keen to keep using the select() function. The CSV will initially be imported as a tibble file format, thereafter once we select our referred columns, we also need to convert geometry coordinate before finally saving it as a rds file.</p>
 <p>Using the here() function, we will generate a path to where the large csv file is stored:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>csv_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"dataNigeria_2"</span>, <span class="st">"waterpoint"</span>, <span class="st">"wpdx.csv"</span>)</span>
@@ -282,7 +289,8 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wp_nga_out <span class="ot">&lt;-</span> wp_nga <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="dv">7</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">13</span><span class="sc">:</span><span class="dv">14</span>, <span class="dv">57</span>, <span class="dv">46</span><span class="sc">:</span><span class="dv">47</span>, <span class="dv">62</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Using st_as_sfc() of the sf package, we add a new “Geometry” column:</p>
+<p>Using st_as_sfc() of the sf package, we derive a new “Geometry” column based on `New Georeferenced Column`. This is because the column is as actually holding data in textual format.</p>
+<p>We run the code as follow:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>wp_nga_out<span class="sc">$</span>Geometry <span class="ot">=</span> <span class="fu">st_as_sfc</span>(wp_nga_out<span class="sc">$</span><span class="st">`</span><span class="at">New Georeferenced Column</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -302,11 +310,83 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <pre><code>[1] "D:/f4sared/ISSS624/data/dataNigeria_2/waterpoint/wp_nga_v2.rds"</code></pre>
 </div>
 </div>
+<p>We then save the dataframe as a rds file:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(wp_nga_out, savefile_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="step-3-loading-the-data" class="level1">
+<h1>Step 3: Loading the data</h1>
+<section id="load-the-water-point-data" class="level2">
+<h2 class="anchored" data-anchor-id="load-the-water-point-data">Load the water point data:</h2>
+<p>Now, using the read_rds of the readr package, we load the data as follow:<br>
+(we will rename all the columns for ease of work)<br>
+(we will also replace all N/A values of the status with “Unknown”)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>wp_nga <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(savefile_path) <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">status</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#status</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">adm1</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#clean_adm1</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">adm2</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#clean_adm2</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">tech_clean</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#water_tech_clean</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">tech_category</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#water_tech_category</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">status_cle =</span> <span class="fu">replace_na</span>(status, <span class="st">"Unknown"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will now use the st_geometry of the sf package to look at our data info:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_geometry</span>(wp_nga)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Geometry set for 95008 features 
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 2.707441 ymin: 4.301812 xmax: 14.21828 ymax: 13.86568
+Geodetic CRS:  WGS 84
+First 5 geometries:</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>POINT (5.12 7.98)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>POINT (3.597668 6.964532)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>POINT (7.92972 6.48694)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>POINT (7.64867 6.72757)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>POINT (7.66485 6.7799)</code></pre>
+</div>
+</div>
+</section>
+<section id="load-the-geo-boundary-data" class="level2">
+<h2 class="anchored" data-anchor-id="load-the-geo-boundary-data">Load the Geo Boundary data:</h2>
+<p>Once again, we need to generate the path as follow:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>boundary_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"dataNigeria_2"</span>, <span class="st">"boundary"</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>boundary_path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "D:/f4sared/ISSS624/data/dataNigeria_2/boundary"</code></pre>
+</div>
+</div>
+<p>Text</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>nga <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> boundary_path,</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">layer =</span> <span class="st">"geoBoundaries-NGA-ADM2"</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">%&gt;%</span> <span class="fu">select</span>(shapeName)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `geoBoundaries-NGA-ADM2' from data source 
+  `D:\f4sared\ISSS624\data\dataNigeria_2\boundary' using driver `ESRI Shapefile'
+Simple feature collection with 774 features and 5 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 2.668534 ymin: 4.273007 xmax: 14.67882 ymax: 13.89442
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
