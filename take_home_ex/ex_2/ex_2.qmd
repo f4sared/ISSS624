@@ -40,7 +40,8 @@ The following packages are imported:
 
 ```{r}
 pacman::p_load(here,
-               sf, tidyverse
+               sf, tidyverse,
+               funModeling
                )
 ```
 
@@ -67,7 +68,7 @@ We will use the select() to keep only columns of interest:
 
 ```{r}
 #| eval: false
-wp_nga_out <- wp_nga %>% select(7:10, 13:14, 57, 46:47, 62)
+wp_nga_out <- wp_nga %>% select(7:10, 13:14, 22, 46:47, 62)
 ```
 
 Using st_as_sfc() of the sf package, we derive a new "Geometry" column based on \`New Georeferenced Column\`. This is because the column is as actually holding data in textual format.
@@ -118,12 +119,12 @@ Now, using the read_rds of the readr package, we load the data as follow: \
 
 ```{r}
 wp_nga <- read_rds(savefile_path) %>%
-    rename(`status`=`#status`) %>%
+    rename(`status`=`#status_clean`) %>%
     rename(`adm1`=`#clean_adm1`) %>%
     rename(`adm2`=`#clean_adm2`) %>% 
     rename(`tech_clean`=`#water_tech_clean`) %>%
     rename(`tech_category`=`#water_tech_category`) %>%
-    mutate(status_cle = replace_na(status, "Unknown"))
+    mutate(status = replace_na(status, "Unknown"))
 ```
 
 We will now use the st_geometry of the sf package to look at our data info:
@@ -141,10 +142,16 @@ boundary_path <- here("data", "dataNigeria_2", "boundary")
 boundary_path
 ```
 
-Text
+Using the st_read() function of the sf package, we will load the boundary file:
 
 ```{r}
 nga <- st_read(dsn = boundary_path,
                layer = "geoBoundaries-NGA-ADM2",
                crs = 4326) %>% select(shapeName)
+```
+
+Step 4: Data Wrangling
+
+```{r}
+freq(data=wp_nga, input = 'status')
 ```

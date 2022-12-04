@@ -266,8 +266,9 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               funModeling</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-2-shrinking-the-csv-file" class="level1">
@@ -287,7 +288,7 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 </div>
 <p>We will use the select() to keep only columns of interest:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wp_nga_out <span class="ot">&lt;-</span> wp_nga <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="dv">7</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">13</span><span class="sc">:</span><span class="dv">14</span>, <span class="dv">57</span>, <span class="dv">46</span><span class="sc">:</span><span class="dv">47</span>, <span class="dv">62</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wp_nga_out <span class="ot">&lt;-</span> wp_nga <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="dv">7</span><span class="sc">:</span><span class="dv">10</span>, <span class="dv">13</span><span class="sc">:</span><span class="dv">14</span>, <span class="dv">22</span>, <span class="dv">46</span><span class="sc">:</span><span class="dv">47</span>, <span class="dv">62</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Using st_as_sfc() of the sf package, we derive a new “Geometry” column based on `New Georeferenced Column`. This is because the column is as actually holding data in textual format.</p>
 <p>We run the code as follow:</p>
@@ -324,12 +325,12 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 (we will also replace all N/A values of the status with “Unknown”)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>wp_nga <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(savefile_path) <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">status</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#status</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">status</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#status_clean</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">adm1</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#clean_adm1</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">adm2</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#clean_adm2</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">tech_clean</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#water_tech_clean</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">tech_category</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">#water_tech_category</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">status_cle =</span> <span class="fu">replace_na</span>(status, <span class="st">"Unknown"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">status =</span> <span class="fu">replace_na</span>(status, <span class="st">"Unknown"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will now use the st_geometry of the sf package to look at our data info:</p>
 <div class="cell">
@@ -369,7 +370,7 @@ First 5 geometries:</code></pre>
 <pre><code>[1] "D:/f4sared/ISSS624/data/dataNigeria_2/boundary"</code></pre>
 </div>
 </div>
-<p>Text</p>
+<p>Using the st_read() function of the sf package, we will load the boundary file:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>nga <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> boundary_path,</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">layer =</span> <span class="st">"geoBoundaries-NGA-ADM2"</span>,</span>
@@ -382,6 +383,31 @@ Geometry type: MULTIPOLYGON
 Dimension:     XY
 Bounding box:  xmin: 2.668534 ymin: 4.273007 xmax: 14.67882 ymax: 13.89442
 Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<p>Step 4: Data Wrangling</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(<span class="at">data=</span>wp_nga, <span class="at">input =</span> <span class="st">'status'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `&lt;scale&gt;` argument of `guides()` cannot be `FALSE`. Use "none" instead as
+of ggplot2 3.3.4.
+ℹ The deprecated feature was likely used in the funModeling package.
+  Please report the issue at &lt;https://github.com/pablo14/funModeling/issues&gt;.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="ex_2_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            status frequency percentage cumulative_perc
+1                       Functional     45883      48.29           48.29
+2                   Non-Functional     29385      30.93           79.22
+3                          Unknown     10656      11.22           90.44
+4      Functional but needs repair      4579       4.82           95.26
+5 Non-Functional due to dry season      2403       2.53           97.79
+6        Functional but not in use      1686       1.77           99.56
+7         Abandoned/Decommissioned       234       0.25           99.81
+8                        Abandoned       175       0.18           99.99
+9 Non functional due to dry season         7       0.01          100.00</code></pre>
 </div>
 </div>
 
