@@ -16,7 +16,8 @@ pacman::p_load(sf, rgdal, spdep,
                corrplot, ggpubr, heatmaply,
                cluster, 
                factoextra, NbClust, psych,
-               here)
+               here,
+               ClustGeo)
 ```
 
 Next we generate the link to the file:
@@ -661,4 +662,88 @@ shclust.map <- qtm(shan_sf_spatialcluster,
 
 tmap_arrange(hclust.map, shclust.map,
              asp=NA, ncol=2)
+```
+
+# Step 9: Ward-like hierarchical clustering: ClustGeo
+
+## Ward-like hierarchical clustering: ClustGeo
+
+Using the hclustgeo() of the ClustGeo package, we will create a cluster with the earlier proximity matrix:
+
+```{r}
+nongeo_cluster <- hclustgeo(proxmat)
+```
+
+Next, we will plot the deprogram as follow: \
+(we will set k=6 for 6 clusters)
+
+```{r}
+plot(nongeo_cluster, cex = 0.5)
+rect.hclust(nongeo_cluster, 
+            k = 6, 
+            border = 2:5)
+```
+
+We create a group factor as follow:
+
+```{r}
+groups <- as.factor(cutree(nongeo_cluster, k=6))
+```
+
+Next we will convert the earlier created object to a matrix and add it to the main data:
+
+```{r}
+shan_sf_ngeo_cluster <- cbind(shan_sf, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+We can then plot the cluster as follow:
+
+```{r}
+qtm(shan_sf_ngeo_cluster, "CLUSTER")
+```
+
+## Spatially constrained Hierarchical Clustering: 
+
+We first need to derive a spatial distance matrix with the st_distance() of the sf package:
+
+```{r}
+dist <- st_distance(shan_sf, shan_sf)
+```
+
+Next, we will convert the earlier output to a matrix:
+
+```{r}
+distmat <- as.dist(dist)
+```
+
+Next, we will use the choicealpha() to determine the optimal "alpha" value to be used:
+
+```{r}
+cr <- choicealpha(proxmat, distmat, range.alpha = seq(0, 1, 0.1), K=6, graph = TRUE)
+```
+
+Once we have chosen the alpha = 0.3, we will use hclustgeo() once more:
+
+```{r}
+clustG <- hclustgeo(proxmat, distmat, alpha = 0.3)
+```
+
+Then we derive the cluster object:
+
+```{r}
+groups <- as.factor(cutree(clustG, k=6))
+```
+
+We then join the value back to the dataframe:
+
+```{r}
+shan_sf_Gcluster <- cbind(shan_sf, as.matrix(groups)) %>%
+  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+We can then plot the newly delineated spatially constrained clusters:
+
+```{r}
+qtm(shan_sf_Gcluster, "CLUSTER")
 ```

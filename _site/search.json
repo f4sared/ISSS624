@@ -539,6 +539,20 @@
     "text": "Visualizing the clusters in choropleth map\nThe newly derived cluster is then visualized as follow:\n\ngroups_mat <- as.matrix(clust6$groups)\nshan_sf_spatialcluster <- cbind(shan_sf_cluster, as.factor(groups_mat)) %>%\n  rename(`SP_CLUSTER`=`as.factor.groups_mat.`)\nqtm(shan_sf_spatialcluster, \"SP_CLUSTER\")\n\n\n\n\nFor comparison, we will place it alongside the earlier map:\n\nhclust.map <- qtm(shan_sf_cluster,\n                  \"CLUSTER\") + \n  tm_borders(alpha = 0.5) \n\nshclust.map <- qtm(shan_sf_spatialcluster,\n                   \"SP_CLUSTER\") + \n  tm_borders(alpha = 0.5) \n\ntmap_arrange(hclust.map, shclust.map,\n             asp=NA, ncol=2)\n\nWarning: One tm layer group has duplicated layer types, which are omitted. To\ndraw multiple layers of the same type, use multiple layer groups (i.e. specify\ntm_shape prior to each of them).\n\nWarning: One tm layer group has duplicated layer types, which are omitted. To\ndraw multiple layers of the same type, use multiple layer groups (i.e. specify\ntm_shape prior to each of them)."
   },
   {
+    "objectID": "in_class/ex_3/ex_3.html#ward-like-hierarchical-clustering-clustgeo",
+    "href": "in_class/ex_3/ex_3.html#ward-like-hierarchical-clustering-clustgeo",
+    "title": "In-Class ex 3 - Adding in ClustGeo for Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Ward-like hierarchical clustering: ClustGeo",
+    "text": "Ward-like hierarchical clustering: ClustGeo\nUsing the hclustgeo() of the ClustGeo package, we will create a cluster with the earlier proximity matrix:\n\nnongeo_cluster <- hclustgeo(proxmat)\n\nNext, we will plot the deprogram as follow:\n(we will set k=6 for 6 clusters)\n\nplot(nongeo_cluster, cex = 0.5)\nrect.hclust(nongeo_cluster, \n            k = 6, \n            border = 2:5)\n\n\n\n\nWe create a group factor as follow:\n\ngroups <- as.factor(cutree(nongeo_cluster, k=6))\n\nNext we will convert the earlier created object to a matrix and add it to the main data:\n\nshan_sf_ngeo_cluster <- cbind(shan_sf, as.matrix(groups)) %>%\n  rename(`CLUSTER` = `as.matrix.groups.`)\n\nWe can then plot the cluster as follow:\n\nqtm(shan_sf_ngeo_cluster, \"CLUSTER\")"
+  },
+  {
+    "objectID": "in_class/ex_3/ex_3.html#spatially-constrained-hierarchical-clustering",
+    "href": "in_class/ex_3/ex_3.html#spatially-constrained-hierarchical-clustering",
+    "title": "In-Class ex 3 - Adding in ClustGeo for Chap 5 Geographical Segmentation with Spatially Constrained Clustering Techniques",
+    "section": "Spatially constrained Hierarchical Clustering:",
+    "text": "Spatially constrained Hierarchical Clustering:\nWe first need to derive a spatial distance matrix with the st_distance() of the sf package:\n\ndist <- st_distance(shan_sf, shan_sf)\n\nNext, we will convert the earlier output to a matrix:\n\ndistmat <- as.dist(dist)\n\nNext, we will use the choicealpha() to determine the optimal “alpha” value to be used:\n\ncr <- choicealpha(proxmat, distmat, range.alpha = seq(0, 1, 0.1), K=6, graph = TRUE)\n\n\n\n\n\n\n\nOnce we have chosen the alpha = 0.3, we will use hclustgeo() once more:\n\nclustG <- hclustgeo(proxmat, distmat, alpha = 0.3)\n\nThen we derive the cluster object:\n\ngroups <- as.factor(cutree(clustG, k=6))\n\nWe then join the value back to the dataframe:\n\nshan_sf_Gcluster <- cbind(shan_sf, as.matrix(groups)) %>%\n  rename(`CLUSTER` = `as.matrix.groups.`)\n\nWe can then plot the newly delineated spatially constrained clusters:\n\nqtm(shan_sf_Gcluster, \"CLUSTER\")"
+  },
+  {
     "objectID": "take_home_ex/ex_1/ex_1.html#import-nigeria-water-point-data-file",
     "href": "take_home_ex/ex_1/ex_1.html#import-nigeria-water-point-data-file",
     "title": "Take Home Ex-1",
