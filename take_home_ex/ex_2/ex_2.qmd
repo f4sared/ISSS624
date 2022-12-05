@@ -111,12 +111,12 @@ We then save the dataframe as a rds file:
 write_rds(wp_nga_out, savefile_path)
 ```
 
-# Step 3: Loading the data 
+# Step 3: Loading the data
 
-## Load the water point data: 
+## Load the water point data:
 
-Now, using the read_rds of the readr package, we load the data as follow: \
-(we will rename all the columns for ease of work) \
+Now, using the read_rds of the readr package, we load the data as follow:\
+(we will rename all the columns for ease of work)\
 (we will also replace all N/A values of the status with "Unknown")
 
 ```{r}
@@ -126,7 +126,9 @@ wp_nga <- read_rds(savefile_path) %>%
     rename(`adm2`=`#clean_adm2`) %>% 
     rename(`tech_clean`=`#water_tech_clean`) %>%
     rename(`tech_category`=`#water_tech_category`) %>%
-    mutate(status = replace_na(status, "Unknown"))
+    mutate(status = replace_na(status, "Unknown")) %>%
+    mutate(tech_category = replace_na(tech_category, "Unknown")) %>% 
+    mutate(tech_clean = replace_na(tech_clean, "Unknown"))
 ```
 
 We will now use the st_geometry of the sf package to look at our data info:
@@ -135,7 +137,7 @@ We will now use the st_geometry of the sf package to look at our data info:
 st_geometry(wp_nga)
 ```
 
-## Load the Geo Boundary data: 
+## Load the Geo Boundary data:
 
 Once again, we need to generate the path as follow:
 
@@ -152,7 +154,7 @@ nga <- st_read(dsn = boundary_path,
                crs = 4326) %>% select(shapeName)
 ```
 
-# Step 4: Data Wrangling 
+# Step 4: Data Wrangling
 
 ## Status of water point
 
@@ -178,7 +180,7 @@ freq(data=wpt_functional,
      input = 'status')
 ```
 
-### Non Functional water point 
+### Non Functional water point
 
 ```{r}
 wpt_nonfunctional <- wp_nga %>%
@@ -202,22 +204,99 @@ freq(data=wpt_nonfunctional,
 wpt_unknown <- wp_nga %>% filter(status == "Unknown")
 ```
 
-## Point-in-Polygon 
+## Water point Technology
 
 ```{r}
-nga_wp <- nga %>%
-  mutate(`total wpt` = lengths(
-    st_intersects(nga, wp_nga))) %>%
-  mutate(`wpt functional` = lengths(
-    st_intersects(nga, wpt_functional))) %>%
-  mutate(`wpt non-functional` = lengths(
-    st_intersects(nga, wpt_nonfunctional))) %>%
-  mutate(`wpt unknown` = lengths(
-    st_intersects(nga, wpt_unknown)))
+wpt_hand_pump <- wp_nga %>% filter(tech_category == "Hand Pump")
 ```
 
 ```{r}
 #| eval: false
-qtm(nga_wp, fill = "total wpt") + 
+freq(data=wp_nga, input = 'tech_category')
+```
+
+## Usage Capacity 
+
+```{r}
+wpt_less_1000 <- wp_nga %>% filter(usage_capacity < 1000)
+```
+
+```{r}
+#| eval: false
+freq(data=wp_nga, input = 'usage_capacity')
+```
+
+## Rural waterpoints 
+
+```{r}
+wpt_rural <- wp_nga %>% filter(is_urban == FALSE)
+```
+
+```{r}
+#| eval: false
+freq(data=wp_nga, input = 'is_urban')
+```
+
+## Point-in-Polygon
+
+Point in polygon
+
+```{r}
+#| eval: true
+nga_wp <- nga %>%
+  mutate(`total_wpt` = lengths(
+    st_intersects(nga, wp_nga))) %>%
+  mutate(`wpt_functional` = lengths(
+    st_intersects(nga, wpt_functional))) %>%
+  mutate(`wpt_non_functional` = lengths(
+    st_intersects(nga, wpt_nonfunctional))) %>%
+  mutate(`wpt_unknown` = lengths(
+    st_intersects(nga, wpt_unknown))) %>% 
+  mutate(`wpt_hand_pump` = lengths(
+    st_intersects(nga, wpt_hand_pump))) %>%
+  mutate(`wpt_less_1000` = lengths(
+    st_intersects(nga, wpt_less_1000))) %>% 
+  mutate(`wpt_rural` = lengths(
+    st_intersects(nga, wpt_rural))) 
+```
+
+Calculate Percentage
+
+```{r}
+#| eval: true
+nga_wp <- nga_wp %>%
+  mutate(pct_functional = `wpt_functional`/`total_wpt`) %>%
+  mutate(`pct_non_functional` = `wpt_non_functional`/`total_wpt`) %>% 
+  mutate(`pct_hand_pump` = `wpt_hand_pump`/`total_wpt`) %>% 
+  mutate(`pct_less_1000` = `wpt_less_1000`/`total_wpt`) %>%
+  mutate(`pct_rural` = `wpt_rural`/`total_wpt`)
+```
+
+Replace NaN with 0
+
+```{r}
+#| eval: true
+NaN_list <- is.nan(nga_wp$pct_functional)
+nga_wp$pct_functional[NaN_list] <- 0
+
+NaN_list <- is.nan(nga_wp$pct_non_functional)
+nga_wp$pct_non_functional[NaN_list] <- 0
+
+NaN_list <- is.nan(nga_wp$pct_hand_pump)
+nga_wp$pct_hand_pump[NaN_list] <- 0
+
+NaN_list <- is.nan(nga_wp$pct_hand_pump)
+nga_wp$pct_hand_pump[NaN_list] <- 0
+
+NaN_list <- is.nan(nga_wp$pct_less_1000)
+nga_wp$pct_less_1000[NaN_list] <- 0
+
+NaN_list <- is.nan(nga_wp$pct_rural)
+nga_wp$pct_rural[NaN_list] <- 0
+```
+
+```{r}
+#| eval: false
+qtm(nga_wp, fill = "wpt hand pump") + 
     tm_layout(legend.height = 0.4,legend.width = 0.4)
 ```

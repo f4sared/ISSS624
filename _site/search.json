@@ -746,7 +746,7 @@
     "href": "take_home_ex/ex_2/ex_2.html#load-the-water-point-data",
     "title": "Take Home Ex 2",
     "section": "Load the water point data:",
-    "text": "Load the water point data:\nNow, using the read_rds of the readr package, we load the data as follow:\n(we will rename all the columns for ease of work)\n(we will also replace all N/A values of the status with “Unknown”)\n\nwp_nga <- read_rds(savefile_path) %>%\n    rename(`status`=`#status_clean`) %>%\n    rename(`adm1`=`#clean_adm1`) %>%\n    rename(`adm2`=`#clean_adm2`) %>% \n    rename(`tech_clean`=`#water_tech_clean`) %>%\n    rename(`tech_category`=`#water_tech_category`) %>%\n    mutate(status = replace_na(status, \"Unknown\"))\n\nWe will now use the st_geometry of the sf package to look at our data info:\n\nst_geometry(wp_nga)\n\nGeometry set for 95008 features \nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 2.707441 ymin: 4.301812 xmax: 14.21828 ymax: 13.86568\nGeodetic CRS:  WGS 84\nFirst 5 geometries:\n\n\nPOINT (5.12 7.98)\n\n\nPOINT (3.597668 6.964532)\n\n\nPOINT (7.92972 6.48694)\n\n\nPOINT (7.64867 6.72757)\n\n\nPOINT (7.66485 6.7799)"
+    "text": "Load the water point data:\nNow, using the read_rds of the readr package, we load the data as follow:\n(we will rename all the columns for ease of work)\n(we will also replace all N/A values of the status with “Unknown”)\n\nwp_nga <- read_rds(savefile_path) %>%\n    rename(`status`=`#status_clean`) %>%\n    rename(`adm1`=`#clean_adm1`) %>%\n    rename(`adm2`=`#clean_adm2`) %>% \n    rename(`tech_clean`=`#water_tech_clean`) %>%\n    rename(`tech_category`=`#water_tech_category`) %>%\n    mutate(status = replace_na(status, \"Unknown\")) %>%\n    mutate(tech_category = replace_na(tech_category, \"Unknown\")) %>% \n    mutate(tech_clean = replace_na(tech_clean, \"Unknown\"))\n\nWe will now use the st_geometry of the sf package to look at our data info:\n\nst_geometry(wp_nga)\n\nGeometry set for 95008 features \nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 2.707441 ymin: 4.301812 xmax: 14.21828 ymax: 13.86568\nGeodetic CRS:  WGS 84\nFirst 5 geometries:\n\n\nPOINT (5.12 7.98)\n\n\nPOINT (3.597668 6.964532)\n\n\nPOINT (7.92972 6.48694)\n\n\nPOINT (7.64867 6.72757)\n\n\nPOINT (7.66485 6.7799)"
   },
   {
     "objectID": "take_home_ex/ex_2/ex_2.html#load-the-geo-boundary-data",
@@ -763,10 +763,31 @@
     "text": "Status of water point\nUsing the freq() from funModeling, we will check the distribution of status of the water points:\n\nfreq(data=wp_nga, input = 'status')\n\nWarning: The `<scale>` argument of `guides()` cannot be `FALSE`. Use \"none\" instead as\nof ggplot2 3.3.4.\nℹ The deprecated feature was likely used in the funModeling package.\n  Please report the issue at <https://github.com/pablo14/funModeling/issues>.\n\n\n\n\n\n                            status frequency percentage cumulative_perc\n1                       Functional     45883      48.29           48.29\n2                   Non-Functional     29385      30.93           79.22\n3                          Unknown     10656      11.22           90.44\n4      Functional but needs repair      4579       4.82           95.26\n5 Non-Functional due to dry season      2403       2.53           97.79\n6        Functional but not in use      1686       1.77           99.56\n7         Abandoned/Decommissioned       234       0.25           99.81\n8                        Abandoned       175       0.18           99.99\n9 Non functional due to dry season         7       0.01          100.00\n\n\n\nFunctional water point\n\nwpt_functional <- wp_nga %>%\n  filter(status %in%\n           c(\"Functional\",\n             \"Functional but not in use\",\n             \"Functional but needs repair\"))\n\n\nfreq(data=wpt_functional, \n     input = 'status')\n\n\n\nNon Functional water point\n\nwpt_nonfunctional <- wp_nga %>%\n  filter(status %in%\n           c(\"Abandoned/Decommissioned\", \n             \"Abandoned\",\n             \"Non-Functional\",\n             \"Non functional due to dry season\",\n             \"Non-Functional due to dry season\"))\n\n\nfreq(data=wpt_nonfunctional, \n     input = 'status')\n\n\n\nUnknown\n\nwpt_unknown <- wp_nga %>% filter(status == \"Unknown\")"
   },
   {
+    "objectID": "take_home_ex/ex_2/ex_2.html#water-point-technology",
+    "href": "take_home_ex/ex_2/ex_2.html#water-point-technology",
+    "title": "Take Home Ex 2",
+    "section": "Water point Technology",
+    "text": "Water point Technology\n\nwpt_hand_pump <- wp_nga %>% filter(tech_category == \"Hand Pump\")\n\n\nfreq(data=wp_nga, input = 'tech_category')"
+  },
+  {
+    "objectID": "take_home_ex/ex_2/ex_2.html#usage-capacity",
+    "href": "take_home_ex/ex_2/ex_2.html#usage-capacity",
+    "title": "Take Home Ex 2",
+    "section": "Usage Capacity",
+    "text": "Usage Capacity\n\nwpt_less_1000 <- wp_nga %>% filter(usage_capacity < 1000)\n\n\nfreq(data=wp_nga, input = 'usage_capacity')"
+  },
+  {
+    "objectID": "take_home_ex/ex_2/ex_2.html#rural-waterpoints",
+    "href": "take_home_ex/ex_2/ex_2.html#rural-waterpoints",
+    "title": "Take Home Ex 2",
+    "section": "Rural waterpoints",
+    "text": "Rural waterpoints\n\nwpt_rural <- wp_nga %>% filter(is_urban == FALSE)\n\n\nfreq(data=wp_nga, input = 'is_urban')"
+  },
+  {
     "objectID": "take_home_ex/ex_2/ex_2.html#point-in-polygon",
     "href": "take_home_ex/ex_2/ex_2.html#point-in-polygon",
     "title": "Take Home Ex 2",
     "section": "Point-in-Polygon",
-    "text": "Point-in-Polygon\n\nnga_wp <- nga %>%\n  mutate(`total wpt` = lengths(\n    st_intersects(nga, wp_nga))) %>%\n  mutate(`wpt functional` = lengths(\n    st_intersects(nga, wpt_functional))) %>%\n  mutate(`wpt non-functional` = lengths(\n    st_intersects(nga, wpt_nonfunctional))) %>%\n  mutate(`wpt unknown` = lengths(\n    st_intersects(nga, wpt_unknown)))\n\n\nqtm(nga_wp, fill = \"total wpt\") + \n    tm_layout(legend.height = 0.4,legend.width = 0.4)"
+    "text": "Point-in-Polygon\nPoint in polygon\n\nnga_wp <- nga %>%\n  mutate(`total_wpt` = lengths(\n    st_intersects(nga, wp_nga))) %>%\n  mutate(`wpt_functional` = lengths(\n    st_intersects(nga, wpt_functional))) %>%\n  mutate(`wpt_non_functional` = lengths(\n    st_intersects(nga, wpt_nonfunctional))) %>%\n  mutate(`wpt_unknown` = lengths(\n    st_intersects(nga, wpt_unknown))) %>% \n  mutate(`wpt_hand_pump` = lengths(\n    st_intersects(nga, wpt_hand_pump))) %>%\n  mutate(`wpt_less_1000` = lengths(\n    st_intersects(nga, wpt_less_1000))) %>% \n  mutate(`wpt_rural` = lengths(\n    st_intersects(nga, wpt_rural))) \n\nCalculate Percentage\n\nnga_wp <- nga_wp %>%\n  mutate(pct_functional = `wpt_functional`/`total_wpt`) %>%\n  mutate(`pct_non_functional` = `wpt_non_functional`/`total_wpt`) %>% \n  mutate(`pct_hand_pump` = `wpt_hand_pump`/`total_wpt`) %>% \n  mutate(`pct_less_1000` = `wpt_less_1000`/`total_wpt`) %>%\n  mutate(`pct_rural` = `wpt_rural`/`total_wpt`)\n\nReplace NaN with 0\n\nNaN_list <- is.nan(nga_wp$pct_functional)\nnga_wp$pct_functional[NaN_list] <- 0\n\nNaN_list <- is.nan(nga_wp$pct_non_functional)\nnga_wp$pct_non_functional[NaN_list] <- 0\n\nNaN_list <- is.nan(nga_wp$pct_hand_pump)\nnga_wp$pct_hand_pump[NaN_list] <- 0\n\nNaN_list <- is.nan(nga_wp$pct_hand_pump)\nnga_wp$pct_hand_pump[NaN_list] <- 0\n\nNaN_list <- is.nan(nga_wp$pct_less_1000)\nnga_wp$pct_less_1000[NaN_list] <- 0\n\nNaN_list <- is.nan(nga_wp$pct_rural)\nnga_wp$pct_rural[NaN_list] <- 0\n\n\nqtm(nga_wp, fill = \"wpt hand pump\") + \n    tm_layout(legend.height = 0.4,legend.width = 0.4)"
   }
 ]
