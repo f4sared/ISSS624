@@ -154,6 +154,55 @@ nga <- st_read(dsn = boundary_path,
                crs = 4326) %>% select(shapeName)
 ```
 
+## Handling Repeated Names
+
+We refer to our classmates' method:\
+<https://jordan-isss624-geospatial.netlify.app/posts/geo/geospatial_exercise/#data-wrangling>
+
+Get the index of the rows that are duplicated
+
+```{r}
+bool_list <- duplicated(nga$shapeName)
+duplicated_names <- nga$shapeName[bool_list]
+index_rows <- which(nga$shapeName %in% duplicated_names)
+index_rows
+```
+
+Select rows that are duplicated
+
+```{r}
+dup_rows <- nga %>% filter(nga$shapeName %in% duplicated_names)
+dup_rows$shapeName
+```
+
+Plot the areas that are duplicated:
+
+```{r}
+#| eval: false
+tmap_mode("view")
+tm_shape(dup_rows) + tm_polygons()
+```
+
+Rename the duplicated areas
+
+```{r}
+nga$shapeName[index_rows] <- c("Bassa_1", "Bassa_2", 
+                               "Ifelodun_1", "Ifelodun_2",
+                               "Irepodun_1", "Irepodun_2",
+                               "Nasarawa_1", "Nasarawa_2",
+                               "Obi_1", "Obi_2",
+                               "Surulere_1","Surulere_2")
+```
+
+Check to see if there are any repeated rows again:
+
+```{r}
+bool_list <- duplicated(nga$shapeName)
+duplicated_names <- nga$shapeName[bool_list]
+index_rows <- which(nga$shapeName %in% duplicated_names)
+index_rows
+```
+
 # Step 4: Data Wrangling
 
 ## Status of water point
@@ -215,7 +264,7 @@ wpt_hand_pump <- wp_nga %>% filter(tech_category == "Hand Pump")
 freq(data=wp_nga, input = 'tech_category')
 ```
 
-## Usage Capacity 
+## Usage Capacity
 
 ```{r}
 wpt_less_1000 <- wp_nga %>% filter(usage_capacity < 1000)
@@ -226,7 +275,7 @@ wpt_less_1000 <- wp_nga %>% filter(usage_capacity < 1000)
 freq(data=wp_nga, input = 'usage_capacity')
 ```
 
-## Rural waterpoints 
+## Rural waterpoints
 
 ```{r}
 wpt_rural <- wp_nga %>% filter(is_urban == FALSE)
