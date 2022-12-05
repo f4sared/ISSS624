@@ -38,12 +38,13 @@ The following packages are imported:
 
     -   readr: We use this for reading rectangular data like csv
 
--   text
+-   corrplot
 
 ```{r}
 pacman::p_load(here,
                sf, tidyverse, dplyr, 
-               funModeling, tmap
+               funModeling, tmap,
+               corrplot
                )
 ```
 
@@ -348,4 +349,38 @@ nga_wp$pct_rural[NaN_list] <- 0
 #| eval: false
 qtm(nga_wp, fill = "wpt hand pump") + 
     tm_layout(legend.height = 0.4,legend.width = 0.4)
+```
+
+# Playing Test
+
+get the clustering variables
+
+```{r}
+#| eval: true
+cluster_vars <- nga_wp %>%
+  st_set_geometry(NULL) %>%
+  select("shapeName", "wpt_functional", "wpt_non_functional",
+         "pct_functional", "pct_non_functional", 
+         "pct_hand_pump", )
+head(cluster_vars,10)
+```
+
+```{r}
+row.names(cluster_vars) <- cluster_vars$"shapeName"
+head(cluster_vars,10)
+```
+
+```{r}
+cluster_vars_o <- select(cluster_vars, c(2:6))
+head(cluster_vars_o, 10)
+```
+
+```{r}
+fun <- cor(cluster_vars_o)
+corrplot.mixed(fun,
+         lower = "ellipse", 
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               tl.col = "black")
 ```

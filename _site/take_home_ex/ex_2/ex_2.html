@@ -228,6 +228,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#rural-waterpoints" id="toc-rural-waterpoints" class="nav-link" data-scroll-target="#rural-waterpoints">Rural waterpoints</a></li>
   <li><a href="#point-in-polygon" id="toc-point-in-polygon" class="nav-link" data-scroll-target="#point-in-polygon">Point-in-Polygon</a></li>
   </ul></li>
+  <li><a href="#playing-test" id="toc-playing-test" class="nav-link" data-scroll-target="#playing-test">Playing Test</a></li>
   </ul>
 </nav>
     </div>
@@ -277,13 +278,14 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <li><p>dplyr: Used for data manipulation</p></li>
 <li><p>readr: We use this for reading rectangular data like csv</p></li>
 </ul></li>
-<li><p>text</p></li>
+<li><p>corrplot</p></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse, dplyr, </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               funModeling, tmap</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               funModeling, tmap,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               corrplot</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-2-shrinking-the-csv-file" class="level1">
@@ -598,9 +600,113 @@ of ggplot2 3.3.4.
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qtm</span>(nga_wp, <span class="at">fill =</span> <span class="st">"wpt hand pump"</span>) <span class="sc">+</span> </span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">legend.height =</span> <span class="fl">0.4</span>,<span class="at">legend.width =</span> <span class="fl">0.4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-
-
 </section>
+</section>
+<section id="playing-test" class="level1">
+<h1>Playing Test</h1>
+<p>get the clustering variables</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        shapeName wpt_functional wpt_non_functional pct_functional
+1       Aba North              7                  9      0.4117647
+2       Aba South             29                 35      0.4084507
+3          Abadam              0                  0      0.0000000
+4           Abaji             23                 34      0.4035088
+5            Abak             23                 25      0.4791667
+6       Abakaliki             82                 42      0.3519313
+7  Abeokuta North             16                 15      0.4705882
+8  Abeokuta South             72                 33      0.6050420
+9             Abi             79                 62      0.5197368
+10    Aboh-Mbaise             18                 26      0.2727273
+   pct_non_functional pct_hand_pump
+1           0.5294118    0.11764706
+2           0.4929577    0.09859155
+3           0.0000000    0.00000000
+4           0.5964912    0.40350877
+5           0.5208333    0.08333333
+6           0.1802575    0.43776824
+7           0.4411765    0.14705882
+8           0.2773109    0.16806723
+9           0.4078947    0.59868421
+10          0.3939394    0.01515152</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                    shapeName wpt_functional wpt_non_functional pct_functional
+Aba North           Aba North              7                  9      0.4117647
+Aba South           Aba South             29                 35      0.4084507
+Abadam                 Abadam              0                  0      0.0000000
+Abaji                   Abaji             23                 34      0.4035088
+Abak                     Abak             23                 25      0.4791667
+Abakaliki           Abakaliki             82                 42      0.3519313
+Abeokuta North Abeokuta North             16                 15      0.4705882
+Abeokuta South Abeokuta South             72                 33      0.6050420
+Abi                       Abi             79                 62      0.5197368
+Aboh-Mbaise       Aboh-Mbaise             18                 26      0.2727273
+               pct_non_functional pct_hand_pump
+Aba North               0.5294118    0.11764706
+Aba South               0.4929577    0.09859155
+Abadam                  0.0000000    0.00000000
+Abaji                   0.5964912    0.40350877
+Abak                    0.5208333    0.08333333
+Abakaliki               0.1802575    0.43776824
+Abeokuta North          0.4411765    0.14705882
+Abeokuta South          0.2773109    0.16806723
+Abi                     0.4078947    0.59868421
+Aboh-Mbaise             0.3939394    0.01515152</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_o <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars_o, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               wpt_functional wpt_non_functional pct_functional
+Aba North                   7                  9      0.4117647
+Aba South                  29                 35      0.4084507
+Abadam                      0                  0      0.0000000
+Abaji                      23                 34      0.4035088
+Abak                       23                 25      0.4791667
+Abakaliki                  82                 42      0.3519313
+Abeokuta North             16                 15      0.4705882
+Abeokuta South             72                 33      0.6050420
+Abi                        79                 62      0.5197368
+Aboh-Mbaise                18                 26      0.2727273
+               pct_non_functional pct_hand_pump
+Aba North               0.5294118    0.11764706
+Aba South               0.4929577    0.09859155
+Abadam                  0.0000000    0.00000000
+Abaji                   0.5964912    0.40350877
+Abak                    0.5208333    0.08333333
+Abakaliki               0.1802575    0.43776824
+Abeokuta North          0.4411765    0.14705882
+Abeokuta South          0.2773109    0.16806723
+Abi                     0.4078947    0.59868421
+Aboh-Mbaise             0.3939394    0.01515152</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="ex_2_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+
+
 </section>
 
 </main> <!-- /main -->
