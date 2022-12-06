@@ -228,6 +228,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#rural-waterpoints" id="toc-rural-waterpoints" class="nav-link" data-scroll-target="#rural-waterpoints">Rural waterpoints</a></li>
   <li><a href="#point-in-polygon" id="toc-point-in-polygon" class="nav-link" data-scroll-target="#point-in-polygon">Point-in-Polygon</a></li>
   </ul></li>
+  <li><a href="#step-6-correlation-analysis" id="toc-step-6-correlation-analysis" class="nav-link" data-scroll-target="#step-6-correlation-analysis">Step 6: Correlation Analysis</a></li>
+  <li><a href="#step-7-hierarchy-cluster-analysis" id="toc-step-7-hierarchy-cluster-analysis" class="nav-link" data-scroll-target="#step-7-hierarchy-cluster-analysis">Step 7: Hierarchy Cluster Analysis</a></li>
   <li><a href="#playing-test" id="toc-playing-test" class="nav-link" data-scroll-target="#playing-test">Playing Test</a></li>
   </ul>
 </nav>
@@ -275,10 +277,10 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <li><p>tidyverse (<a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>)</p>
 <ul>
 <li><p>ggplot2</p></li>
-<li><p>dplyr: Used for data manipulation</p></li>
+<li><p>dplyr: Used for data manipulation (e.g.&nbsp;mutate() )</p></li>
 <li><p>readr: We use this for reading rectangular data like csv</p></li>
 </ul></li>
-<li><p>corrplot</p></li>
+<li><p>corrplot: For plotting of the correlation object</p></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
@@ -532,7 +534,7 @@ of ggplot2 3.3.4.
 <section id="usage-capacity" class="level2">
 <h2 class="anchored" data-anchor-id="usage-capacity">Usage Capacity</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>wpt_less_1000 <span class="ot">&lt;-</span> wp_nga <span class="sc">%&gt;%</span> <span class="fu">filter</span>(usage_capacity <span class="sc">&lt;</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>wpt_1000 <span class="ot">&lt;-</span> wp_nga <span class="sc">%&gt;%</span> <span class="fu">filter</span>(usage_capacity <span class="sc">&lt;</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(<span class="at">data=</span>wp_nga, <span class="at">input =</span> <span class="st">'usage_capacity'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -562,8 +564,8 @@ of ggplot2 3.3.4.
 <span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(nga, wpt_unknown))) <span class="sc">%&gt;%</span> </span>
 <span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">wpt_hand_pump</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">lengths</span>(</span>
 <span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(nga, wpt_hand_pump))) <span class="sc">%&gt;%</span></span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">wpt_less_1000</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">lengths</span>(</span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(nga, wpt_less_1000))) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">wpt_1000</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">lengths</span>(</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(nga, wpt_1000))) <span class="sc">%&gt;%</span> </span>
 <span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">wpt_rural</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">lengths</span>(</span>
 <span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_intersects</span>(nga, wpt_rural))) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -573,7 +575,7 @@ of ggplot2 3.3.4.
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct_functional =</span> <span class="st">`</span><span class="at">wpt_functional</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_non_functional</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt_non_functional</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_hand_pump</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt_hand_pump</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_less_1000</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt_less_1000</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_1000</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt_1000</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">pct_rural</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">wpt_rural</span><span class="st">`</span><span class="sc">/</span><span class="st">`</span><span class="at">total_wpt</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Replace NaN with 0</p>
@@ -591,7 +593,7 @@ of ggplot2 3.3.4.
 <span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>nga_wp<span class="sc">$</span>pct_hand_pump[NaN_list] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>NaN_list <span class="ot">&lt;-</span> <span class="fu">is.nan</span>(nga_wp<span class="sc">$</span>pct_less_1000)</span>
-<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>nga_wp<span class="sc">$</span>pct_less_1000[NaN_list] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>nga_wp<span class="sc">$</span>pct_1000[NaN_list] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>NaN_list <span class="ot">&lt;-</span> <span class="fu">is.nan</span>(nga_wp<span class="sc">$</span>pct_rural)</span>
 <span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a>nga_wp<span class="sc">$</span>pct_rural[NaN_list] <span class="ot">&lt;-</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -602,108 +604,55 @@ of ggplot2 3.3.4.
 </div>
 </section>
 </section>
+<section id="step-6-correlation-analysis" class="level1">
+<h1>Step 6: Correlation Analysis</h1>
+<p>Get correlation variables as follow:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>corr_data <span class="ot">&lt;-</span> nga_wp[,<span class="fu">c</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">10</span><span class="sc">:</span><span class="dv">14</span>)] <span class="sc">%&gt;%</span> <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In order to perform correlation analysis, we need to get the correlation matrix using cor() from the base R package, then we can plot it using the corrplot.mixed() function from corrplot package.</p>
+<p>Perform correlation analysis:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>cluster_vars.cor <span class="ot">=</span> <span class="fu">cor</span>(corr_data)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(cluster_vars.cor,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>From the correlation plot above, we notice that the percentage of hand pump is highly negatively correlated with the percentage of well with 1000 capacity. Because the value is not that high extremely high, we always include it in the analysis at another time.</p>
+</section>
+<section id="step-7-hierarchy-cluster-analysis" class="level1">
+<h1>Step 7: Hierarchy Cluster Analysis</h1>
+</section>
 <section id="playing-test" class="level1">
 <h1>Playing Test</h1>
 <p>get the clustering variables</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
-<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>        shapeName wpt_functional wpt_non_functional pct_functional
-1       Aba North              7                  9      0.4117647
-2       Aba South             29                 35      0.4084507
-3          Abadam              0                  0      0.0000000
-4           Abaji             23                 34      0.4035088
-5            Abak             23                 25      0.4791667
-6       Abakaliki             82                 42      0.3519313
-7  Abeokuta North             16                 15      0.4705882
-8  Abeokuta South             72                 33      0.6050420
-9             Abi             79                 62      0.5197368
-10    Aboh-Mbaise             18                 26      0.2727273
-   pct_non_functional pct_hand_pump
-1           0.5294118    0.11764706
-2           0.4929577    0.09859155
-3           0.0000000    0.00000000
-4           0.5964912    0.40350877
-5           0.5208333    0.08333333
-6           0.1802575    0.43776824
-7           0.4411765    0.14705882
-8           0.2773109    0.16806723
-9           0.4078947    0.59868421
-10          0.3939394    0.01515152</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                    shapeName wpt_functional wpt_non_functional pct_functional
-Aba North           Aba North              7                  9      0.4117647
-Aba South           Aba South             29                 35      0.4084507
-Abadam                 Abadam              0                  0      0.0000000
-Abaji                   Abaji             23                 34      0.4035088
-Abak                     Abak             23                 25      0.4791667
-Abakaliki           Abakaliki             82                 42      0.3519313
-Abeokuta North Abeokuta North             16                 15      0.4705882
-Abeokuta South Abeokuta South             72                 33      0.6050420
-Abi                       Abi             79                 62      0.5197368
-Aboh-Mbaise       Aboh-Mbaise             18                 26      0.2727273
-               pct_non_functional pct_hand_pump
-Aba North               0.5294118    0.11764706
-Aba South               0.4929577    0.09859155
-Abadam                  0.0000000    0.00000000
-Abaji                   0.5964912    0.40350877
-Abak                    0.5208333    0.08333333
-Abakaliki               0.1802575    0.43776824
-Abeokuta North          0.4411765    0.14705882
-Abeokuta South          0.2773109    0.16806723
-Abi                     0.4078947    0.59868421
-Aboh-Mbaise             0.3939394    0.01515152</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_o <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>))</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars_o, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>               wpt_functional wpt_non_functional pct_functional
-Aba North                   7                  9      0.4117647
-Aba South                  29                 35      0.4084507
-Abadam                      0                  0      0.0000000
-Abaji                      23                 34      0.4035088
-Abak                       23                 25      0.4791667
-Abakaliki                  82                 42      0.3519313
-Abeokuta North             16                 15      0.4705882
-Abeokuta South             72                 33      0.6050420
-Abi                        79                 62      0.5197368
-Aboh-Mbaise                18                 26      0.2727273
-               pct_non_functional pct_hand_pump
-Aba North               0.5294118    0.11764706
-Aba South               0.4929577    0.09859155
-Abadam                  0.0000000    0.00000000
-Abaji                   0.5964912    0.40350877
-Abak                    0.5208333    0.08333333
-Abakaliki               0.1802575    0.43776824
-Abeokuta North          0.4411765    0.14705882
-Abeokuta South          0.2773109    0.16806723
-Abi                     0.4078947    0.59868421
-Aboh-Mbaise             0.3939394    0.01515152</code></pre>
-</div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
-<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="ex_2_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="672"></p>
-</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

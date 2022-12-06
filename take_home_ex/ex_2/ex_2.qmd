@@ -34,11 +34,11 @@ The following packages are imported:
 
     -   ggplot2
 
-    -   dplyr: Used for data manipulation
+    -   dplyr: Used for data manipulation (e.g. mutate() )
 
     -   readr: We use this for reading rectangular data like csv
 
--   corrplot
+-   corrplot: For plotting of the correlation object
 
 ```{r}
 pacman::p_load(here,
@@ -268,7 +268,7 @@ freq(data=wp_nga, input = 'tech_category')
 ## Usage Capacity
 
 ```{r}
-wpt_less_1000 <- wp_nga %>% filter(usage_capacity < 1000)
+wpt_1000 <- wp_nga %>% filter(usage_capacity < 1000)
 ```
 
 ```{r}
@@ -304,8 +304,8 @@ nga_wp <- nga %>%
     st_intersects(nga, wpt_unknown))) %>% 
   mutate(`wpt_hand_pump` = lengths(
     st_intersects(nga, wpt_hand_pump))) %>%
-  mutate(`wpt_less_1000` = lengths(
-    st_intersects(nga, wpt_less_1000))) %>% 
+  mutate(`wpt_1000` = lengths(
+    st_intersects(nga, wpt_1000))) %>% 
   mutate(`wpt_rural` = lengths(
     st_intersects(nga, wpt_rural))) 
 ```
@@ -318,7 +318,7 @@ nga_wp <- nga_wp %>%
   mutate(pct_functional = `wpt_functional`/`total_wpt`) %>%
   mutate(`pct_non_functional` = `wpt_non_functional`/`total_wpt`) %>% 
   mutate(`pct_hand_pump` = `wpt_hand_pump`/`total_wpt`) %>% 
-  mutate(`pct_less_1000` = `wpt_less_1000`/`total_wpt`) %>%
+  mutate(`pct_1000` = `wpt_1000`/`total_wpt`) %>%
   mutate(`pct_rural` = `wpt_rural`/`total_wpt`)
 ```
 
@@ -339,7 +339,7 @@ NaN_list <- is.nan(nga_wp$pct_hand_pump)
 nga_wp$pct_hand_pump[NaN_list] <- 0
 
 NaN_list <- is.nan(nga_wp$pct_less_1000)
-nga_wp$pct_less_1000[NaN_list] <- 0
+nga_wp$pct_1000[NaN_list] <- 0
 
 NaN_list <- is.nan(nga_wp$pct_rural)
 nga_wp$pct_rural[NaN_list] <- 0
@@ -351,12 +351,39 @@ qtm(nga_wp, fill = "wpt hand pump") +
     tm_layout(legend.height = 0.4,legend.width = 0.4)
 ```
 
+# Step 6: Correlation Analysis
+
+Get correlation variables as follow:
+
+```{r}
+corr_data <- nga_wp[,c(4:5, 10:14)] %>% st_set_geometry(NULL)
+```
+
+In order to perform correlation analysis, we need to get the correlation matrix using cor() from the base R package, then we can plot it using the corrplot.mixed() function from corrplot package.
+
+Perform correlation analysis:
+
+```{r}
+#| eval: false
+cluster_vars.cor = cor(corr_data)
+corrplot.mixed(cluster_vars.cor,
+         lower = "ellipse", 
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               tl.col = "black")
+```
+
+From the correlation plot above, we notice that the percentage of hand pump is highly negatively correlated with the percentage of well with 1000 capacity. Because the value is not that high extremely high, we always include it in the analysis at another time.
+
+# Step 7: Hierarchy Cluster Analysis
+
 # Playing Test
 
 get the clustering variables
 
 ```{r}
-#| eval: true
+#| eval: false
 cluster_vars <- nga_wp %>%
   st_set_geometry(NULL) %>%
   select("shapeName", "wpt_functional", "wpt_non_functional",
@@ -366,16 +393,19 @@ head(cluster_vars,10)
 ```
 
 ```{r}
+#| eval: false
 row.names(cluster_vars) <- cluster_vars$"shapeName"
 head(cluster_vars,10)
 ```
 
 ```{r}
+#| eval: false
 cluster_vars_o <- select(cluster_vars, c(2:6))
 head(cluster_vars_o, 10)
 ```
 
 ```{r}
+#| eval: false
 fun <- cor(cluster_vars_o)
 corrplot.mixed(fun,
          lower = "ellipse", 
