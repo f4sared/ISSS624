@@ -229,8 +229,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#point-in-polygon" id="toc-point-in-polygon" class="nav-link" data-scroll-target="#point-in-polygon">Point-in-Polygon</a></li>
   </ul></li>
   <li><a href="#step-6-correlation-analysis" id="toc-step-6-correlation-analysis" class="nav-link" data-scroll-target="#step-6-correlation-analysis">Step 6: Correlation Analysis</a></li>
-  <li><a href="#step-7-hierarchy-cluster-analysis" id="toc-step-7-hierarchy-cluster-analysis" class="nav-link" data-scroll-target="#step-7-hierarchy-cluster-analysis">Step 7: Hierarchy Cluster Analysis</a></li>
-  <li><a href="#playing-test" id="toc-playing-test" class="nav-link" data-scroll-target="#playing-test">Playing Test</a></li>
+  <li><a href="#step-7-hierarchy-cluster-analysis" id="toc-step-7-hierarchy-cluster-analysis" class="nav-link" data-scroll-target="#step-7-hierarchy-cluster-analysis">Step 7: Hierarchy Cluster Analysis</a>
+  <ul class="collapse">
+  <li><a href="#extract-the-clustering-variables" id="toc-extract-the-clustering-variables" class="nav-link" data-scroll-target="#extract-the-clustering-variables">Extract the clustering variables</a></li>
+  <li><a href="#data-standardization" id="toc-data-standardization" class="nav-link" data-scroll-target="#data-standardization">Data Standardization</a></li>
+  <li><a href="#compute-the-proximity-matrix" id="toc-compute-the-proximity-matrix" class="nav-link" data-scroll-target="#compute-the-proximity-matrix">Compute the proximity matrix</a></li>
+  </ul></li>
+  <li><a href="#test" id="toc-test" class="nav-link" data-scroll-target="#test">Test</a></li>
   </ul>
 </nav>
     </div>
@@ -281,12 +286,13 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <li><p>readr: We use this for reading rectangular data like csv</p></li>
 </ul></li>
 <li><p>corrplot: For plotting of the correlation object</p></li>
+<li><p>heatmaply: For plotting of heatmaps and also for normalize() function</p></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse, dplyr, </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               funModeling, tmap,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               corrplot</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               corrplot, heatmaply</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -606,7 +612,8 @@ of ggplot2 3.3.4.
 </section>
 <section id="step-6-correlation-analysis" class="level1">
 <h1>Step 6: Correlation Analysis</h1>
-<p>Get correlation variables as follow:</p>
+<p>Get correlation variables as follow:<br>
+(we use st_set_geometry(NULL) of sf package to exclude geometric data)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>corr_data <span class="ot">&lt;-</span> nga_wp[,<span class="fu">c</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">10</span><span class="sc">:</span><span class="dv">14</span>)] <span class="sc">%&gt;%</span> <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -625,34 +632,136 @@ of ggplot2 3.3.4.
 </section>
 <section id="step-7-hierarchy-cluster-analysis" class="level1">
 <h1>Step 7: Hierarchy Cluster Analysis</h1>
-</section>
-<section id="playing-test" class="level1">
-<h1>Playing Test</h1>
-<p>get the clustering variables</p>
+<section id="extract-the-clustering-variables" class="level2">
+<h2 class="anchored" data-anchor-id="extract-the-clustering-variables">Extract the clustering variables</h2>
+<p>To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe</p>
+<p>We run the code as follow:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>, </span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, <span class="st">"pct_1000"</span>, <span class="st">"pct_rural"</span>)</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  shapeName wpt_functional wpt_non_functional pct_functional pct_non_functional
+1 Aba North              7                  9      0.4117647          0.5294118
+2 Aba South             29                 35      0.4084507          0.4929577
+3    Abadam              0                  0      0.0000000          0.0000000
+  pct_hand_pump  pct_1000  pct_rural
+1    0.11764706 0.1764706 0.00000000
+2    0.09859155 0.1267606 0.05633803
+3    0.00000000       NaN 0.00000000</code></pre>
+</div>
+</div>
+<p>Next, we need to change the row names using row.name() function from R base:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          shapeName wpt_functional wpt_non_functional pct_functional
+Aba North Aba North              7                  9      0.4117647
+Aba South Aba South             29                 35      0.4084507
+Abadam       Abadam              0                  0      0.0000000
+          pct_non_functional pct_hand_pump  pct_1000  pct_rural
+Aba North          0.5294118    0.11764706 0.1764706 0.00000000
+Aba South          0.4929577    0.09859155 0.1267606 0.05633803
+Abadam             0.0000000    0.00000000       NaN 0.00000000</code></pre>
+</div>
+</div>
+<p>Now, we do not need the column shapeName anymore, so we do the following:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">8</span>))</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          wpt_functional wpt_non_functional pct_functional pct_non_functional
+Aba North              7                  9      0.4117647          0.5294118
+Aba South             29                 35      0.4084507          0.4929577
+Abadam                 0                  0      0.0000000          0.0000000
+          pct_hand_pump  pct_rural
+Aba North    0.11764706 0.00000000
+Aba South    0.09859155 0.05633803
+Abadam       0.00000000 0.00000000</code></pre>
+</div>
+</div>
+</section>
+<section id="data-standardization" class="level2">
+<h2 class="anchored" data-anchor-id="data-standardization">Data Standardization</h2>
+<p>From our dataframe “done_cluster_vars”, we can see that the columns wpt_functional and wpt_non_functional have different ranges since they are counts instead of percentages. Thus we need to perform standardization on these columns. This is because analysis results will be biased towards clustering variables with large values.</p>
+<p>Hence the need for standardization before cluster analysis</p>
+<p>We will therefore perform the min-max standardization using the normalize() of the heatmaply package:<br>
+(we use summary() of base R package to check the outcome)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>std_cluster_vars <span class="ot">&lt;-</span> <span class="fu">normalize</span>(cluster_vars)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(std_cluster_vars)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> wpt_functional    wpt_non_functional pct_functional   pct_non_functional
+ Min.   :0.00000   Min.   :0.00000    Min.   :0.0000   Min.   :0.0000    
+ 1st Qu.:0.02261   1st Qu.:0.04406    1st Qu.:0.3261   1st Qu.:0.2105    
+ Median :0.06051   Median :0.12230    Median :0.4741   Median :0.3505    
+ Mean   :0.08957   Mean   :0.14962    Mean   :0.4984   Mean   :0.3592    
+ 3rd Qu.:0.11669   3rd Qu.:0.21853    3rd Qu.:0.6699   3rd Qu.:0.5076    
+ Max.   :1.00000   Max.   :1.00000    Max.   :1.0000   Max.   :1.0000    
+ pct_hand_pump      pct_rural     
+ Min.   :0.0000   Min.   :0.0000  
+ 1st Qu.:0.1670   1st Qu.:0.5727  
+ Median :0.5099   Median :0.8645  
+ Mean   :0.4873   Mean   :0.7271  
+ 3rd Qu.:0.7778   3rd Qu.:1.0000  
+ Max.   :1.0000   Max.   :1.0000  </code></pre>
+</div>
+</div>
+</section>
+<section id="compute-the-proximity-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="compute-the-proximity-matrix">Compute the proximity matrix</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>proxmat <span class="ot">&lt;-</span> <span class="fu">dist</span>(std_cluster_vars, <span class="at">method =</span> <span class="st">'euclidean'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>hclust_ward <span class="ot">&lt;-</span> <span class="fu">hclust</span>(proxmat, <span class="at">method =</span> <span class="st">'ward.D'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To view the outcome, we save the output as a png:<br>
+<a href="https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r" class="uri">https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r</a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"plotdendogram.png"</span>,<span class="at">width=</span><span class="dv">12800</span>,<span class="at">height=</span><span class="dv">6400</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hclust_ward, <span class="at">cex =</span> <span class="fl">1.0</span>)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+</div>
+<p>Please open the png in a new tab to be able to zoom in:</p>
+<p><img src="plotdendogram.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="test" class="level1">
+<h1>Test</h1>
+<p>get the clustering variables</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_o <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>))</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars_o, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_o <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>))</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars_o, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

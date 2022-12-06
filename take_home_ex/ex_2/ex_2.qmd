@@ -40,11 +40,13 @@ The following packages are imported:
 
 -   corrplot: For plotting of the correlation object
 
+-   heatmaply: For plotting of heatmaps and also for normalize() function
+
 ```{r}
 pacman::p_load(here,
                sf, tidyverse, dplyr, 
                funModeling, tmap,
-               corrplot
+               corrplot, heatmaply
                )
 ```
 
@@ -353,7 +355,8 @@ qtm(nga_wp, fill = "wpt hand pump") +
 
 # Step 6: Correlation Analysis
 
-Get correlation variables as follow:
+Get correlation variables as follow:\
+(we use st_set_geometry(NULL) of sf package to exclude geometric data)
 
 ```{r}
 corr_data <- nga_wp[,c(4:5, 10:14)] %>% st_set_geometry(NULL)
@@ -378,7 +381,73 @@ From the correlation plot above, we notice that the percentage of hand pump is h
 
 # Step 7: Hierarchy Cluster Analysis
 
-# Playing Test
+## Extract the clustering variables
+
+To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe
+
+We run the code as follow:
+
+```{r}
+cluster_vars <- nga_wp %>%
+  st_set_geometry(NULL) %>%
+  select("shapeName", "wpt_functional", "wpt_non_functional", 
+         "pct_functional", "pct_non_functional", 
+         "pct_hand_pump", "pct_1000", "pct_rural")
+head(cluster_vars,3)
+```
+
+Next, we need to change the row names using row.name() function from R base:
+
+```{r}
+row.names(cluster_vars) <- cluster_vars$"shapeName"
+head(cluster_vars,3)
+```
+
+Now, we do not need the column shapeName anymore, so we do the following:
+
+```{r}
+cluster_vars <- select(cluster_vars, c(2:6, 8))
+head(cluster_vars, 3)
+```
+
+## Data Standardization
+
+From our dataframe "done_cluster_vars", we can see that the columns wpt_functional and wpt_non_functional have different ranges since they are counts instead of percentages. Thus we need to perform standardization on these columns. This is because analysis results will be biased towards clustering variables with large values.
+
+Hence the need for standardization before cluster analysis
+
+We will therefore perform the min-max standardization using the normalize() of the heatmaply package:\
+(we use summary() of base R package to check the outcome)
+
+```{r}
+std_cluster_vars <- normalize(cluster_vars)
+summary(std_cluster_vars)
+```
+
+## Compute the proximity matrix
+
+```{r}
+proxmat <- dist(std_cluster_vars, method = 'euclidean')
+```
+
+```{r}
+hclust_ward <- hclust(proxmat, method = 'ward.D')
+```
+
+To view the outcome, we save the output as a png: \
+<https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r>
+
+```{r}
+png("plotdendogram.png",width=12800,height=6400)
+plot(hclust_ward, cex = 1.0)
+dev.off()
+```
+
+Please open the png in a new tab to be able to zoom in:
+
+![](plotdendogram.png)
+
+# Test
 
 get the clustering variables
 
