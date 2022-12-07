@@ -40,6 +40,8 @@ The following packages are imported:
 
     -   readr: We use this for reading rectangular data like csv
 
+-   spdep:
+
 -   corrplot: For plotting of the correlation object
 
 -   heatmaply: For plotting of heatmaps and also for normalize() function
@@ -50,7 +52,7 @@ The following packages are imported:
 
 ```{r}
 pacman::p_load(here,
-               sf, tidyverse,  
+               sf, tidyverse, spdep,
                funModeling, tmap,
                corrplot, heatmaply, cluster, factoextra
                )
@@ -557,7 +559,7 @@ Next, we will plot the Gap Statistics as follow:
 fviz_gap_stat(gap_stat)
 ```
 
-From the graph we see that the gradient of the Gap Statistic decreases greatly from the 4th cluster onwards. Therefor, we will opt to keep 4 clusters.
+From the graph we see that the gradient of the Gap Statistic decreases greatly from the 4th cluster onwards. Therefor, we will opt to keep 4 clusters + 1 more for checking.
 
 ## Interpreting the Dendrograms
 
@@ -594,4 +596,109 @@ heatmaply(mat_std_cluster_vars,
           xlab = "ICT Indicators",
           ylab = "Nigeria LGA"
           )
+```
+
+## Mapping the clusters
+
+```{r}
+groups <- as.factor(cutree(hclust_ward, k=5))
+```
+
+```{r}
+std_cluster_vars_cluster <- cbind(nga, as.matrix(groups)) %>%
+  rename(`CLUSTER`=`as.matrix.groups.`)
+```
+
+```{r}
+qtm(std_cluster_vars_cluster, "CLUSTER")
+```
+
+# Step 8: SKATER
+
+```{r}
+nga_0 <- nga[c(1:85, 87:774),]
+```
+
+```{r}
+nga_sp <- as_Spatial(nga_0)
+```
+
+```{r}
+nb_nga_sp <- poly2nb(nga_sp)
+summary(nb_nga_sp)
+```
+
+```{r}
+plot(nga_sp, 
+     border=grey(.5))
+plot(nb_nga_sp, 
+     coordinates(nga_sp), 
+     col="blue", 
+     add=TRUE)
+```
+
+```{r}
+std_cluster_vars_0 <- std_cluster_vars[c(1:85, 87:774),]
+```
+
+```{r}
+lcosts <- nbcosts(nb_nga_sp, std_cluster_vars_0)
+```
+
+```{r}
+weights <- nb2listw(nb_nga_sp, 
+                   lcosts, 
+                   style="B")
+summary(weights)
+```
+
+```{r}
+nga_mst <- mstree(weights)
+```
+
+```{r}
+class(nga_mst)
+```
+
+```{r}
+dim(nga_mst)
+```
+
+```{r}
+plot(nga_sp, border=gray(.5))
+plot.mst(nga_mst,
+         coordinates(nga_sp),
+         col="blue",
+         cex.lab=0.7,
+         cex.circles=0.005,
+         add=TRUE)
+```
+
+```{r}
+clust6 <- spdep::skater(edges = nga_mst[,1:2], 
+                 data = std_cluster_vars_0, 
+                 method = "euclidean", 
+                 ncuts = 5)
+```
+
+```{r}
+ccs6 <- clust6$groups
+# ccs6
+```
+
+```{r}
+plot(nga_sp, border=gray(.5))
+plot(clust6, 
+     coordinates(nga_sp), 
+     cex.lab=.7,
+     groups.colors=c("red","green","blue", "brown", "pink"),
+     cex.circles=0.005, 
+     add=TRUE)
+```
+
+```{r}
+groups_mat <- as.matrix(clust6$groups)
+nga_sf_spatialcluster <- cbind(nga_0, as.factor(groups_mat)) %>%
+    rename(`SP_CLUSTER`=`as.factor.groups_mat.`)
+qtm(nga_sf_spatialcluster, "SP_CLUSTER")
 ```
