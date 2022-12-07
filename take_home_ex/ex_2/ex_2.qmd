@@ -28,6 +28,8 @@ The following packages are imported:
 
 -   sf: We use this for manipulation of simple features
 
+-   funModeling:
+
 -   tmap: We use for thematic plotting
 
 -   tidyverse (<https://www.tidyverse.org/>)
@@ -42,11 +44,13 @@ The following packages are imported:
 
 -   heatmaply: For plotting of heatmaps and also for normalize() function
 
+-   cluster:
+
 ```{r}
 pacman::p_load(here,
-               sf, tidyverse, dplyr, 
+               sf, tidyverse,  
                funModeling, tmap,
-               corrplot, heatmaply
+               corrplot, heatmaply, cluster
                )
 ```
 
@@ -383,7 +387,7 @@ From the correlation plot above, we notice that the percentage of hand pump is h
 
 ## Extract the clustering variables
 
-To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe
+To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe.
 
 We run the code as follow:
 
@@ -403,7 +407,7 @@ row.names(cluster_vars) <- cluster_vars$"shapeName"
 head(cluster_vars,3)
 ```
 
-Now, we do not need the column shapeName anymore, so we do the following:
+Now, we do not need the column shapeName anymore, so we exclude it with the following:
 
 ```{r}
 cluster_vars <- select(cluster_vars, c(2:6, 8))
@@ -434,52 +438,68 @@ proxmat <- dist(std_cluster_vars, method = 'euclidean')
 hclust_ward <- hclust(proxmat, method = 'ward.D')
 ```
 
-To view the outcome, we save the output as a png: \
+## Plotting the Dendrogram:
+
+To view the outcome, we save the output as a png and then load it as a picture:\
 <https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r>
 
+Each time the code is run, the .png object will be updated. For better resolution, we increase the width and height of the .png file. The "cex" is adjusted such that the names of each region is just visible when we zoom in on the .png object.
+
+Additional parameters:
+
+-   lwd: Line width
+
+-   main: Title
+
+-   line: Position of title
+
+-   cex.main: Size of title
+
+We run the code as follow
+
 ```{r}
-png("plotdendogram.png",width=12800,height=6400)
-plot(hclust_ward, cex = 1.0)
+png("plotdendogram.png",width=12800,height=3200)
+plot(hclust_ward, cex = 1.2, lwd=3.0, main="Dendrogram", line = -20, cex.main=20)
 dev.off()
 ```
 
-Please open the png in a new tab to be able to zoom in:
+Please open the png in a new tab and then zoom in:
 
 ![](plotdendogram.png)
 
-# Test
+## Selecting the optimal clustering algorithm:
 
-get the clustering variables
+In order the measure the strength of the clustering structure, we will need to measure the agglomerative coefficient. If we compare the aforementioned coefficient across various clustering algorithms, we will be able to compare and then select the algorithm that gives us the best clustering structure.
 
-```{r}
-#| eval: false
-cluster_vars <- nga_wp %>%
-  st_set_geometry(NULL) %>%
-  select("shapeName", "wpt_functional", "wpt_non_functional",
-         "pct_functional", "pct_non_functional", 
-         "pct_hand_pump", )
-head(cluster_vars,10)
-```
+Normally, we can do this via the agnes() function from the cluster package:
 
 ```{r}
-#| eval: false
-row.names(cluster_vars) <- cluster_vars$"shapeName"
-head(cluster_vars,10)
+agnes_result <- agnes(std_cluster_vars, method = "average")
+agnes_result$ac
 ```
 
-```{r}
-#| eval: false
-cluster_vars_o <- select(cluster_vars, c(2:6))
-head(cluster_vars_o, 10)
-```
+The results are stored in the output data structure under the name agnes_result\$ac. The higher the magnitude of this value, the better the clustering structure. We will need to test all 4 of the algorithm to determine which is the best to apply.
+
+First, we need to create a data structure to hold the names of the clustering algorithms:
 
 ```{r}
-#| eval: false
-fun <- cor(cluster_vars_o)
-corrplot.mixed(fun,
-         lower = "ellipse", 
-               upper = "number",
-               tl.pos = "lt",
-               diag = "l",
-               tl.col = "black")
+algorithms <- c( "average", "single", "complete", "ward")
+names(algorithms) <- c( "average", "single", "complete", "ward")
+algorithms
 ```
+
+Next we write a simple function "test" that takes in the name of the clustering algorithm and then outputs the score of the clustering structure:
+
+```{r}
+test <- function(x) {
+  agnes(std_cluster_vars, method = x)$ac
+}
+```
+
+Finally, using the map_dbl() function from the purr package, we will map the name of each algorithm to the input of the functions:
+
+```{r}
+map_dbl(algorithms, test)
+```
+
+# 

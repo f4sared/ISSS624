@@ -234,8 +234,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#extract-the-clustering-variables" id="toc-extract-the-clustering-variables" class="nav-link" data-scroll-target="#extract-the-clustering-variables">Extract the clustering variables</a></li>
   <li><a href="#data-standardization" id="toc-data-standardization" class="nav-link" data-scroll-target="#data-standardization">Data Standardization</a></li>
   <li><a href="#compute-the-proximity-matrix" id="toc-compute-the-proximity-matrix" class="nav-link" data-scroll-target="#compute-the-proximity-matrix">Compute the proximity matrix</a></li>
+  <li><a href="#plotting-the-dendrogram" id="toc-plotting-the-dendrogram" class="nav-link" data-scroll-target="#plotting-the-dendrogram">Plotting the Dendrogram:</a></li>
+  <li><a href="#selecting-the-optimal-clustering-algorithm" id="toc-selecting-the-optimal-clustering-algorithm" class="nav-link" data-scroll-target="#selecting-the-optimal-clustering-algorithm">Selecting the optimal clustering algorithm:</a></li>
   </ul></li>
-  <li><a href="#test" id="toc-test" class="nav-link" data-scroll-target="#test">Test</a></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
   </ul>
 </nav>
     </div>
@@ -278,6 +280,7 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 <ul>
 <li><p>here: We use this to generate a path to the file stored at the root directory</p></li>
 <li><p>sf: We use this for manipulation of simple features</p></li>
+<li><p>funModeling:</p></li>
 <li><p>tmap: We use for thematic plotting</p></li>
 <li><p>tidyverse (<a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>)</p>
 <ul>
@@ -287,12 +290,13 @@ Download Nigeria-NGA-ADM2-2022 under the column “geoBoundaries”</p>
 </ul></li>
 <li><p>corrplot: For plotting of the correlation object</p></li>
 <li><p>heatmaply: For plotting of heatmaps and also for normalize() function</p></li>
+<li><p>cluster:</p></li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse, dplyr, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, tidyverse,  </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               funModeling, tmap,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               corrplot, heatmaply</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               corrplot, heatmaply, cluster</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -634,7 +638,7 @@ of ggplot2 3.3.4.
 <h1>Step 7: Hierarchy Cluster Analysis</h1>
 <section id="extract-the-clustering-variables" class="level2">
 <h2 class="anchored" data-anchor-id="extract-the-clustering-variables">Extract the clustering variables</h2>
-<p>To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe</p>
+<p>To perform the analysis, we need to extract the cluster variables without the geometric data. To do this, we we will use the function st_set_geometry(NULL) from sf package on our sf dataframe.</p>
 <p>We run the code as follow:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
@@ -669,7 +673,7 @@ Aba South          0.4929577    0.09859155 0.1267606 0.05633803
 Abadam             0.0000000    0.00000000       NaN 0.00000000</code></pre>
 </div>
 </div>
-<p>Now, we do not need the column shapeName anymore, so we do the following:</p>
+<p>Now, we do not need the column shapeName anymore, so we exclude it with the following:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">8</span>))</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -720,49 +724,79 @@ Abadam       0.00000000 0.00000000</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>hclust_ward <span class="ot">&lt;-</span> <span class="fu">hclust</span>(proxmat, <span class="at">method =</span> <span class="st">'ward.D'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>To view the outcome, we save the output as a png:<br>
+</section>
+<section id="plotting-the-dendrogram" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-the-dendrogram">Plotting the Dendrogram:</h2>
+<p>To view the outcome, we save the output as a png and then load it as a picture:<br>
 <a href="https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r" class="uri">https://stackoverflow.com/questions/11444743/how-to-adjust-sizes-of-x-axis-in-dendrogram-r</a></p>
+<p>Each time the code is run, the .png object will be updated. For better resolution, we increase the width and height of the .png file. The “cex” is adjusted such that the names of each region is just visible when we zoom in on the .png object.</p>
+<p>Additional parameters:</p>
+<ul>
+<li><p>lwd: Line width</p></li>
+<li><p>main: Title</p></li>
+<li><p>line: Position of title</p></li>
+<li><p>cex.main: Size of title</p></li>
+</ul>
+<p>We run the code as follow</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"plotdendogram.png"</span>,<span class="at">width=</span><span class="dv">12800</span>,<span class="at">height=</span><span class="dv">6400</span>)</span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hclust_ward, <span class="at">cex =</span> <span class="fl">1.0</span>)</span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="st">"plotdendogram.png"</span>,<span class="at">width=</span><span class="dv">12800</span>,<span class="at">height=</span><span class="dv">3200</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hclust_ward, <span class="at">cex =</span> <span class="fl">1.2</span>, <span class="at">lwd=</span><span class="fl">3.0</span>, <span class="at">main=</span><span class="st">"Dendrogram"</span>, <span class="at">line =</span> <span class="sc">-</span><span class="dv">20</span>, <span class="at">cex.main=</span><span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in graphics:::plotHclust(n1, merge, height, order(x$order), hang, :
+"line" is not a graphical parameter
+
+Warning in graphics:::plotHclust(n1, merge, height, order(x$order), hang, :
+"line" is not a graphical parameter</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>png 
   2 </code></pre>
 </div>
 </div>
-<p>Please open the png in a new tab to be able to zoom in:</p>
+<p>Please open the png in a new tab and then zoom in:</p>
 <p><img src="plotdendogram.png" class="img-fluid"></p>
 </section>
+<section id="selecting-the-optimal-clustering-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="selecting-the-optimal-clustering-algorithm">Selecting the optimal clustering algorithm:</h2>
+<p>In order the measure the strength of the clustering structure, we will need to measure the agglomerative coefficient. If we compare the aforementioned coefficient across various clustering algorithms, we will be able to compare and then select the algorithm that gives us the best clustering structure.</p>
+<p>Normally, we can do this via the agnes() function from the cluster package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>agnes_result <span class="ot">&lt;-</span> <span class="fu">agnes</span>(std_cluster_vars, <span class="at">method =</span> <span class="st">"average"</span>)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>agnes_result<span class="sc">$</span>ac</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9114067</code></pre>
+</div>
+</div>
+<p>The results are stored in the output data structure under the name agnes_result$ac. The higher the magnitude of this value, the better the clustering structure. We will need to test all 4 of the algorithm to determine which is the best to apply.</p>
+<p>First, we need to create a data structure to hold the names of the clustering algorithms:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>algorithms <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">"average"</span>, <span class="st">"single"</span>, <span class="st">"complete"</span>, <span class="st">"ward"</span>)</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(algorithms) <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">"average"</span>, <span class="st">"single"</span>, <span class="st">"complete"</span>, <span class="st">"ward"</span>)</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>algorithms</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   average     single   complete       ward 
+ "average"   "single" "complete"     "ward" </code></pre>
+</div>
+</div>
+<p>Next we write a simple function “test” that takes in the name of the clustering algorithm and then outputs the score of the clustering structure:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">agnes</span>(std_cluster_vars, <span class="at">method =</span> x)<span class="sc">$</span>ac</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, using the map_dbl() function from the purr package, we will map the name of each algorithm to the input of the functions:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dbl</span>(algorithms, test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  average    single  complete      ward 
+0.9114067 0.7819154 0.9440637 0.9902760 </code></pre>
+</div>
+</div>
 </section>
-<section id="test" class="level1">
-<h1>Test</h1>
-<p>get the clustering variables</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>cluster_vars <span class="ot">&lt;-</span> nga_wp <span class="sc">%&gt;%</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_geometry</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"shapeName"</span>, <span class="st">"wpt_functional"</span>, <span class="st">"wpt_non_functional"</span>,</span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_functional"</span>, <span class="st">"pct_non_functional"</span>, </span>
-<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"pct_hand_pump"</span>, )</span>
-<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(cluster_vars) <span class="ot">&lt;-</span> cluster_vars<span class="sc">$</span><span class="st">"shapeName"</span></span>
-<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>cluster_vars_o <span class="ot">&lt;-</span> <span class="fu">select</span>(cluster_vars, <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>))</span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(cluster_vars_o, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>fun <span class="ot">&lt;-</span> <span class="fu">cor</span>(cluster_vars_o)</span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot.mixed</span>(fun,</span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">lower =</span> <span class="st">"ellipse"</span>, </span>
-<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">upper =</span> <span class="st">"number"</span>,</span>
-<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.pos =</span> <span class="st">"lt"</span>,</span>
-<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">diag =</span> <span class="st">"l"</span>,</span>
-<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">tl.col =</span> <span class="st">"black"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+</section>
+<section id="section" class="level1">
+<h1></h1>
 
 
 </section>
