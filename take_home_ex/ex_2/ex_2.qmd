@@ -46,11 +46,13 @@ The following packages are imported:
 
 -   cluster:
 
+-   factoextra: Extract and Visualize the Results of Multivariate Data Analyses
+
 ```{r}
 pacman::p_load(here,
                sf, tidyverse,  
                funModeling, tmap,
-               corrplot, heatmaply, cluster
+               corrplot, heatmaply, cluster, factoextra
                )
 ```
 
@@ -344,7 +346,7 @@ nga_wp$pct_hand_pump[NaN_list] <- 0
 NaN_list <- is.nan(nga_wp$pct_hand_pump)
 nga_wp$pct_hand_pump[NaN_list] <- 0
 
-NaN_list <- is.nan(nga_wp$pct_less_1000)
+NaN_list <- is.nan(nga_wp$pct_1000)
 nga_wp$pct_1000[NaN_list] <- 0
 
 NaN_list <- is.nan(nga_wp$pct_rural)
@@ -371,7 +373,7 @@ In order to perform correlation analysis, we need to get the correlation matrix 
 Perform correlation analysis:
 
 ```{r}
-#| eval: false
+#| eval: true
 cluster_vars.cor = cor(corr_data)
 corrplot.mixed(cluster_vars.cor,
          lower = "ellipse", 
@@ -407,7 +409,7 @@ row.names(cluster_vars) <- cluster_vars$"shapeName"
 head(cluster_vars,3)
 ```
 
-Now, we do not need the column shapeName anymore, so we exclude it with the following:
+Now, we do not need the column shapeName & pct_1000 anymore, so we exclude it:
 
 ```{r}
 cluster_vars <- select(cluster_vars, c(2:6, 8))
@@ -502,4 +504,94 @@ Finally, using the map_dbl() function from the purr package, we will map the nam
 map_dbl(algorithms, test)
 ```
 
-# 
+## Determine optimal clusters
+
+In order to perform meaningful analysis, we need to select the optimal amount of cluster. Too little clusters, we won't be able to draw meaningful insights. Too many clusters, and we will also fail to draw meaning.
+
+There are 3 methods to do this:
+
+-   Elbow method
+
+-   Average silhouette method
+
+-   Gap statistic
+
+For this, we will make use of the tool called the gap statistic: \
+<https://hastie.su.domains/Papers/gap.pdf>
+
+The gap statistic is a measure of intra-cluster dispersal. The larger this value, the bigger the indication that the clustering structure is far from the random distribution of points. As we increase the number of cluster, we want to get a highest gap statistic number possible. The minimum number of clusters that we accept is 3 cluster for meaningful analysis.
+
+There are a few methods to determine clusters:
+
+-   firstSEmax
+
+-   Tibs2001SEmax
+
+-   globalSEmax
+
+-   firstmax
+
+-   globalmax
+
+Useful links: \
+<https://stats.stackexchange.com/questions/95290/how-should-i-interpret-gap-statistic>\
+<https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/clusGap.html>
+
+To do this, we use the clusGap() function from the cluster package: \
+(for predictability, we need to set a specific random seed)
+
+```{r}
+set.seed(2022)
+gap_stat <- clusGap(std_cluster_vars, 
+                    FUN = hcut, 
+                    # nstart = 25, 
+                    K.max = 25, 
+                    B = 50)
+# Print the result
+print(gap_stat, method = "Tibs2001SEmax")
+```
+
+Next, we will plot the Gap Statistics as follow:
+
+```{r}
+fviz_gap_stat(gap_stat)
+```
+
+From the graph we see that the gradient of the Gap Statistic decreases greatly from the 4th cluster onwards. Therefor, we will opt to keep 4 clusters.
+
+## Interpreting the Dendrograms
+
+```{r}
+png("plotdendogram_0.png",width=12800,height=3200)
+plot(hclust_ward, cex = 1.2, lwd=3.0, main="Dendrogram", line = -20, cex.main=20)
+rect.hclust(hclust_ward, k = 5, border = 2:5)
+dev.off()
+```
+
+To zoom in, right click and open picture on a new tab:
+
+![](plotdendogram_0.png)
+
+## Visual Hierarchical clustering Analysis
+
+```{r}
+mat_std_cluster_vars <- data.matrix(std_cluster_vars)
+```
+
+```{r}
+heatmaply(mat_std_cluster_vars,
+          Colv=NA,
+          showticklabels = c(TRUE, FALSE),
+          dist_method = "euclidean",
+          hclust_method = "ward.D",
+          seriate = "OLO",
+          colors = Blues,
+          k_row = 5,
+          margins = c(NA,200,60,NA),
+          fontsize_row = 4,
+          fontsize_col = 5,
+          main="ICT indicators",
+          xlab = "ICT Indicators",
+          ylab = "Nigeria LGA"
+          )
+```
