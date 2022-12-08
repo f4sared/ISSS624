@@ -518,7 +518,7 @@ There are 3 methods to do this:
 
 -   Gap statistic
 
-For this, we will make use of the tool called the gap statistic: \
+For this, we will make use of the tool called the gap statistic:\
 <https://hastie.su.domains/Papers/gap.pdf>
 
 The gap statistic is a measure of intra-cluster dispersal. The larger this value, the bigger the indication that the clustering structure is far from the random distribution of points. As we increase the number of cluster, we want to get a highest gap statistic number possible. The minimum number of clusters that we accept is 3 cluster for meaningful analysis.
@@ -535,11 +535,11 @@ There are a few methods to determine clusters:
 
 -   globalmax
 
-Useful links: \
+Useful links:\
 <https://stats.stackexchange.com/questions/95290/how-should-i-interpret-gap-statistic>\
 <https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/clusGap.html>
 
-To do this, we use the clusGap() function from the cluster package: \
+To do this, we use the clusGap() function from the cluster package:\
 (for predictability, we need to set a specific random seed)
 
 ```{r}

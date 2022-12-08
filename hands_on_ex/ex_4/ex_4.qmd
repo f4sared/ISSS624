@@ -1,0 +1,6 @@
+---
+title: "Hand on ex 3 - Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
+editor: visual
+---
+
+# Overview 
