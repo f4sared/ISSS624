@@ -1,6 +1,157 @@
 ---
-title: "Hand on ex 3 - Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
+title: "Hand on ex 4 - Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
 editor: visual
 ---
 
 # Overview 
+
+# Step 1: Loading the packages 
+
+Packages used:
+
+-   olsrr: used for building OLS and diagnostics
+
+-   GWmodel: used for calibrating geographically weighted models
+
+-   corrplot: used for correlation plots
+
+-   spdep: used for spatial weight matrix creation
+
+-   sf: used for reading and loading file to sf format
+
+-   tidyverse
+
+    -   readr: used for reading rectangular files
+
+    -   ggplot: used for more in depth plotting
+
+    -   dplyr: used for data manipulation
+
+-   tmap: used for thematic mapping
+
+-   ggpubr: used for publication ready ggplots.
+
+-   gtsummary: used for creating publication ready summary
+
+-   here: used for generating file paths
+
+```{r}
+pacman::p_load(olsrr, GWmodel, corrplot,
+               spdep, sf, tidyverse, tmap, ggpubr, gtsummary,
+               here)
+               
+```
+
+# Step 2: Loading data 
+
+## Boundary data: 
+
+First using the here function, we will generate the path
+
+```{r}
+boundary_file <- here("data","dataSingapore","geospatial")
+boundary_file
+```
+
+Using st_read of the sf package, we read the boundary data:
+
+```{r}
+mpsz = st_read(dsn = boundary_file, layer = "MP14_SUBZONE_WEB_PL")
+```
+
+Using the function st_crs() of the sf package, we check the data:
+
+```{r}
+st_crs(mpsz)
+```
+
+Check the bounding box with st_bbox(mpsz):
+
+```{r}
+st_bbox(mpsz) 
+```
+
+So here the EPSG is wrong, we need to transform it to 3414
+
+We use st_transform() of the sf package for this:
+
+```{r}
+mpsz_svy21 <- st_transform(mpsz, 3414)
+```
+
+We check the CRS once again:
+
+```{r}
+st_crs(mpsz_svy21)
+```
+
+Finally we check the bounding box:
+
+```{r}
+st_bbox(mpsz_svy21) 
+```
+
+## Aspatial Data:
+
+We generate file path:
+
+```{r}
+csv_file <- here("data","dataSingapore","aspatial", "Condo_resale_2015.csv")
+csv_file
+```
+
+Read the csv with read_csv() from readr package of the tidyverse, import as tibble frame:
+
+```{r}
+condo_resale = read_csv(csv_file)
+```
+
+Use glimpse() of dplyr to check the data:
+
+```{r}
+glimpse(condo_resale)
+```
+
+Check long data:
+
+```{r}
+head(condo_resale$LONGITUDE)
+```
+
+Check lat data:
+
+```{r}
+head(condo_resale$LATITUDE)
+```
+
+Use summary of base R to get the tibble frame summary statistics:
+
+```{r}
+summary(condo_resale)
+```
+
+## Convert Aspatial tibble dataframe to sf object: 
+
+We use the st_as_sf() function of the sf package to convert: \
+(need the name of the long and lat column, the order matters !)
+
+```{r}
+condo_resale.sf <- st_as_sf(condo_resale,
+                            coords = c("LONGITUDE", "LATITUDE"),
+                            crs=4326) %>%
+  st_transform(crs=3414)
+```
+
+Check the outcome:
+
+```{r}
+st_crs(condo_resale.sf) 
+```
+
+Check the data with head():
+
+```{r}
+head(condo_resale.sf)
+```
+
+Step 3: EDA
