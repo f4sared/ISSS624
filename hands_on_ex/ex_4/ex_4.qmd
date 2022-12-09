@@ -3,9 +3,9 @@ title: "Hand on ex 4 - Calibrating Hedonic Pricing Model for Private Highrise Pr
 editor: visual
 ---
 
-# Overview 
+# Overview
 
-# Step 1: Loading the packages 
+# Step 1: Loading the packages
 
 Packages used:
 
@@ -42,9 +42,9 @@ pacman::p_load(olsrr, GWmodel, corrplot,
                
 ```
 
-# Step 2: Loading data 
+# Step 2: Loading data
 
-## Boundary data: 
+## Boundary data:
 
 First using the here function, we will generate the path
 
@@ -82,6 +82,11 @@ We use st_transform() of the sf package for this:
 
 ```{r}
 mpsz_svy21 <- st_transform(mpsz, 3414)
+```
+
+```{r}
+tm_shape(mpsz_svy21)+
+  tm_polygons() 
 ```
 
 We check the CRS once again:
@@ -135,9 +140,9 @@ Use summary of base R to get the tibble frame summary statistics:
 summary(condo_resale)
 ```
 
-## Convert Aspatial tibble dataframe to sf object: 
+## Convert Aspatial tibble dataframe to sf object:
 
-We use the st_as_sf() function of the sf package to convert: \
+We use the st_as_sf() function of the sf package to convert:\
 (need the name of the long and lat column, the order matters !)
 
 ```{r}
@@ -190,7 +195,7 @@ ggplot(data=condo_resale.sf, aes(x=`LOG_SELLING_PRICE`)) +
 
 We observed that the data skewness has slightly improved.
 
-## Histogram of independent variables: 
+## Histogram of independent variables:
 
 Using ggarrange, we will plot the histogram of mutilple independent variables:
 
@@ -263,12 +268,12 @@ tm_shape(condo_resale.sf) +
 Set back to plot mode:
 
 ```{r}
-tmap_options(check.and.fix = TRUE)
+tmap_mode("plot")
 ```
 
-# Step 4: Hedonistic Pricing Model 
+# Step 4: Hedonistic Pricing Model in R
 
-## Simple Linear Regression: 
+## Simple Linear Regression:
 
 We use the function lm() of the R stats package to build a linear regression model:
 
@@ -293,7 +298,7 @@ ggplot(data=condo_resale.sf,
   geom_smooth(method = lm)
 ```
 
-## Check Correlation: 
+## Check Correlation:
 
 Before building the multiple linear regression, we need to check for correlation and remove some independent variables.
 
@@ -306,7 +311,7 @@ corrplot(cor(condo_resale[, 5:23]), diag = FALSE, order = "AOE",
 
 Lease_99 year will be removed since it is highly correlated to freehold.
 
-## Multiple linear regression method: 
+## Multiple linear regression method:
 
 Again we use the lm() of the R stats package to build a model:
 
@@ -363,7 +368,7 @@ ols_vif_tol(condo.mlr1)
 
 Since VIF are all below value of 10, there are no signs of multicollinearity.
 
-## Perform linearity assumption test: 
+## Perform linearity assumption test:
 
 In multiple linear regression, it is important to test the assumption for linearity.
 
@@ -460,4 +465,142 @@ The Moran's I test is then performed with lm.morantest() function of spdep:
 
 ```{r}
 lm.morantest(condo.mlr1, nb_lw)
+```
+
+# Step 5: Hedonic Pricing Model with GWmodel
+
+## Fixed bandwidth
+
+### Compute Fixed Bandwidth
+
+To identify the optimal fixed bandwidth, we use the bw.gwr() of the GWmodel package.
+
+We will specify the dependent variable followed by the independent variables:
+
+```{r}
+bw.fixed <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE + PROX_CBD + 
+                     PROX_CHILDCARE + PROX_ELDERLYCARE  + PROX_URA_GROWTH_AREA + 
+                     PROX_MRT   + PROX_PARK + PROX_PRIMARY_SCH + 
+                     PROX_SHOPPING_MALL + PROX_BUS_STOP + NO_Of_UNITS + 
+                     FAMILY_FRIENDLY + FREEHOLD, 
+                   data=condo_resale.sp, 
+                   approach="CV", 
+                   kernel="gaussian", 
+                   adaptive=FALSE, 
+                   longlat=FALSE)
+```
+
+### Calibrate GWR model with fixed bandwidth
+
+Using the output bw.fixed generated earlier, we will now calibrate the model:
+
+```{r}
+gwr.fixed <- gwr.basic(formula = SELLING_PRICE ~ AREA_SQM + AGE + PROX_CBD + 
+                         PROX_CHILDCARE + PROX_ELDERLYCARE  + PROX_URA_GROWTH_AREA + 
+                         PROX_MRT   + PROX_PARK + PROX_PRIMARY_SCH + 
+                         PROX_SHOPPING_MALL + PROX_BUS_STOP + NO_Of_UNITS + 
+                         FAMILY_FRIENDLY + FREEHOLD, 
+                       data=condo_resale.sp, 
+                       bw=bw.fixed, 
+                       kernel = 'gaussian', 
+                       longlat = FALSE)
+```
+
+We can check the output as follow:
+
+```{r}
+gwr.fixed
+```
+
+Question: Why is the adjusted R square value much better compared to R value of the multiple linear regression ?
+
+## Adaptive bandwidth
+
+### Compute adaptive bandwidth:
+
+Similar to the code above, we now change the "adaptive" setting to TRUE:
+
+```{r}
+bw.adaptive <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE  + 
+                        PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE    + 
+                        PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK + 
+                        PROX_PRIMARY_SCH + PROX_SHOPPING_MALL   + PROX_BUS_STOP + 
+                        NO_Of_UNITS + FAMILY_FRIENDLY + FREEHOLD, 
+                      data=condo_resale.sp, 
+                      approach="CV", 
+                      kernel="gaussian", 
+                      adaptive=TRUE, 
+                      longlat=FALSE)
+```
+
+Calibrate GWR model with adaptive bandwidth:
+
+```{r}
+gwr.adaptive <- gwr.basic(formula = SELLING_PRICE ~ AREA_SQM + AGE + 
+                            PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE + 
+                            PROX_URA_GROWTH_AREA + PROX_MRT + PROX_PARK + 
+                            PROX_PRIMARY_SCH + PROX_SHOPPING_MALL + PROX_BUS_STOP + 
+                            NO_Of_UNITS + FAMILY_FRIENDLY + FREEHOLD, 
+                          data=condo_resale.sp, bw=bw.adaptive, 
+                          kernel = 'gaussian', 
+                          adaptive=TRUE, 
+                          longlat = FALSE)
+```
+
+We display the model output as follow:
+
+```{r}
+gwr.adaptive
+```
+
+## Visualizing GWR output
+
+Question: Why is this chunk of code here ?
+
+```{r}
+# condo_resale.sf.adaptive <- st_as_sf(gwr.adaptive$SDF) %>%
+#   st_transform(crs=3414)
+```
+
+Question: Why is this chunk of code here ?
+
+```{r}
+# condo_resale.sf.adaptive.svy21 <- st_transform(condo_resale.sf.adaptive, 3414)
+# condo_resale.sf.adaptive.svy21  
+```
+
+Create the dataframe for plotting:
+
+```{r}
+gwr.adaptive.output <- as.data.frame(gwr.adaptive$SDF)
+condo_resale.sf.adaptive <- cbind(condo_resale.res.sf, as.matrix(gwr.adaptive.output))
+```
+
+Visualize Local R2:
+
+```{r}
+tmap_mode("view")
+tm_shape(mpsz_svy21)+
+  tm_polygons(alpha = 0.1) +
+tm_shape(condo_resale.sf.adaptive) +  
+  tm_dots(col = "Local_R2",
+          border.col = "gray60",
+          border.lwd = 1) +
+  tm_view(set.zoom.limits = c(11,14))
+```
+
+```{r}
+tmap_mode("plot")
+```
+
+Visualize central Region:
+
+```{r}
+tm_shape(mpsz_svy21[mpsz_svy21$REGION_N=="CENTRAL REGION", ])+
+  tm_polygons()+
+tm_shape(condo_resale.sf.adaptive) + 
+  tm_bubbles(col = "Local_R2",
+           size = 0.15,
+           border.col = "gray60",
+           border.lwd = 1)
 ```
