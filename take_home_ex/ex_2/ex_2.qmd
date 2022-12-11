@@ -70,7 +70,7 @@ csv_path <- here("data", "dataNigeria_2", "waterpoint", "wpdx.csv")
 csv_path
 ```
 
-We will use the read_csv() of the readr package to ingest the CSV file:
+We will use the read_csv() of the readr package to ingest the CSV file while filtering for Nigeria:
 
 ```{r}
 #| eval: false
@@ -127,8 +127,8 @@ write_rds(wp_nga_out, savefile_path)
 ## Load the water point data:
 
 Now, using the read_rds of the readr package, we load the data as follow:\
-(we will rename all the columns for ease of work)\
-(we will also replace all N/A values of the status with "Unknown")
+-we rename all the columns for ease of work\
+-we also replace all N/A values of the status with "Unknown"
 
 ```{r}
 wp_nga <- read_rds(savefile_path) %>%
@@ -148,6 +148,18 @@ We will now use the st_geometry of the sf package to look at our data info:
 st_geometry(wp_nga)
 ```
 
+We will check the CRS of the loaded rds file using st_crs() from sf:
+
+```{r}
+st_crs(wp_nga)
+```
+
+We will check the output:
+
+```{r}
+st_crs(wp_nga)
+```
+
 ## Load the Geo Boundary data:
 
 Once again, we need to generate the path as follow:
@@ -165,6 +177,12 @@ nga <- st_read(dsn = boundary_path,
                crs = 4326) %>% select(shapeName)
 ```
 
+We will check the CRS with st_crs() from sf package:
+
+```{r}
+st_crs(nga)
+```
+
 ## Handling Repeated Names
 
 We refer to our classmates' method:\
@@ -177,13 +195,106 @@ bool_list <- duplicated(nga$shapeName)
 duplicated_names <- nga$shapeName[bool_list]
 index_rows <- which(nga$shapeName %in% duplicated_names)
 index_rows
+duplicated_names
 ```
 
-Select rows that are duplicated
+Save the duplicated region as a new sf dataframe:
 
 ```{r}
-dup_rows <- nga %>% filter(nga$shapeName %in% duplicated_names)
-dup_rows$shapeName
+dup_regions <- nga %>% filter(nga$shapeName %in% duplicated_names)
+```
+
+Select the rows from the waterpoint data whose adm 2 is part of the duplicated list
+
+```{r}
+dup_points <- wp_nga %>%
+  filter(adm2 %in%
+           c("Bassa",
+             "Ifelodun",
+             "Irepodun",
+             "Nasarawa",
+             "Obi",
+             "Surulere"))
+```
+
+Perform a simple intersection between the duplicated regions and the earlier filtered waterpoints:
+
+```{r}
+dup_intersect <- st_intersects(dup_regions, dup_points)
+```
+
+Next, we will use the slice function to select rows that fall under each of the duplicated region, then we will display the column "adm1" which shows the sub name for that region.
+
+Bassa 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[1])))$adm1 %>% head()
+```
+
+Bassa 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[2])))$adm1 %>% head()
+```
+
+Ifelodun 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[3])))$adm1 %>% head()
+```
+
+Ifelodun 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[4])))$adm1 %>% head()
+```
+
+Irepodun 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[5])))$adm1 %>% head()
+```
+
+Irepodun 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[6])))$adm1 %>% head()
+```
+
+Nasarawa 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[7])))$adm1 %>% head()
+```
+
+Nasarawa 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[8])))$adm1 %>% head()
+```
+
+Obi 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[9])))$adm1 %>% head()
+```
+
+Obi 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[10])))$adm1 %>% head()
+```
+
+Surulere 1:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[11])))$adm1 %>% head()
+```
+
+Surulere 2:
+
+```{r}
+(dup_points %>% slice(unlist(dup_intersect[12])))$adm1 %>% head()
 ```
 
 Plot the areas that are duplicated:
@@ -197,12 +308,12 @@ tm_shape(dup_rows) + tm_polygons()
 Rename the duplicated areas
 
 ```{r}
-nga$shapeName[index_rows] <- c("Bassa_1", "Bassa_2", 
-                               "Ifelodun_1", "Ifelodun_2",
-                               "Irepodun_1", "Irepodun_2",
-                               "Nasarawa_1", "Nasarawa_2",
-                               "Obi_1", "Obi_2",
-                               "Surulere_1","Surulere_2")
+nga$shapeName[index_rows] <- c("Bassa_Kogi", "Bassa_Plateau", 
+                               "Ifelodun_Kwara", "Ifelodun_Osun",
+                               "Irepodun_Kwara", "Irepodun_Osun",
+                               "Nasarawa_0", "Nasarawa_Nasarawa",
+                               "Obi_Benue", "Obi_Nasawara",
+                               "Surulere_Lagos","Surulere_Oyo")
 ```
 
 Check to see if there are any repeated rows again:
@@ -212,6 +323,17 @@ bool_list <- duplicated(nga$shapeName)
 duplicated_names <- nga$shapeName[bool_list]
 index_rows <- which(nga$shapeName %in% duplicated_names)
 index_rows
+```
+
+We use the rm() function to remove the environment variables to reduce clutter:
+
+```{r}
+rm(dup_intersect)
+rm(dup_points)
+rm(dup_regions)
+rm(bool_list)
+rm(duplicated_names)
+rm(index_rows)
 ```
 
 # Step 4: Data Wrangling
@@ -299,7 +421,9 @@ freq(data=wp_nga, input = 'is_urban')
 
 ## Point-in-Polygon
 
-Point in polygon
+Since each of the waterpoint in wp_nga belongs to a specific region, we need to allocated them into their own respective region, we do this using the the st_intersect() function of the sf package along with the mutate() function of the dplyr package.
+
+We perform Point in polygon as follow:
 
 ```{r}
 #| eval: true
@@ -320,7 +444,7 @@ nga_wp <- nga %>%
     st_intersects(nga, wpt_rural))) 
 ```
 
-Calculate Percentage
+Calculate Percentage:
 
 ```{r}
 #| eval: true
@@ -361,9 +485,42 @@ qtm(nga_wp, fill = "wpt hand pump") +
     tm_layout(legend.height = 0.4,legend.width = 0.4)
 ```
 
+Once again, we now clean the environment of variables:
+
+```{r}
+rm(wpt_1000)
+rm(wpt_functional)
+rm(wpt_hand_pump)
+rm(wpt_nonfunctional)
+rm(wpt_rural)
+rm(wpt_unknown)
+rm(NaN_list)
+rm(wp_nga)
+```
+
+## Performing Projection to 26391
+
+We will now use st_trasnform() function to project to the Nigeria CRS of 26391:
+
+```{r}
+nga_wp <- st_transform(nga_wp, crs = 26391)
+```
+
+We will also transform the boundary file:
+
+```{r}
+nga <- st_transform(nga, crs = 26391)
+```
+
+# Step 5: EDA
+
+```{r}
+which(nga_wp$total_wpt == 0)
+```
+
 # Step 6: Correlation Analysis
 
-Get correlation variables as follow:\
+We will not get the correlation variables as follow:\
 (we use st_set_geometry(NULL) of sf package to exclude geometric data)
 
 ```{r}
@@ -385,7 +542,14 @@ corrplot.mixed(cluster_vars.cor,
                tl.col = "black")
 ```
 
-From the correlation plot above, we notice that the percentage of hand pump is highly negatively correlated with the percentage of well with 1000 capacity. Because the value is not that high extremely high, we always include it in the analysis at another time.
+From the correlation plot above, we notice that [**pct_hand_pump**]{.underline} is highly negatively correlated with [**pct_1000**]{.underline}. Because the value is not that high extremely high, we always include it in the analysis at another time.
+
+Perform cleanup:
+
+```{r}
+rm(cluster_vars.cor)
+rm(corr_data)
+```
 
 # Step 7: Hierarchy Cluster Analysis
 
@@ -420,9 +584,7 @@ head(cluster_vars, 3)
 
 ## Data Standardization
 
-From our dataframe "done_cluster_vars", we can see that the columns wpt_functional and wpt_non_functional have different ranges since they are counts instead of percentages. Thus we need to perform standardization on these columns. This is because analysis results will be biased towards clustering variables with large values.
-
-Hence the need for standardization before cluster analysis
+From our dataframe "done_cluster_vars", we can see that the columns [**wpt_functional**]{.underline} and [**wpt_non_functional**]{.underline} have much higher ranges since they are counts instead of percentages. Thus we need to perform standardization on these columns. This is because analysis results will be biased towards clustering variables with large values. Hence the need for standardization before cluster analysis
 
 We will therefore perform the min-max standardization using the normalize() of the heatmaply package:\
 (we use summary() of base R package to check the outcome)
@@ -434,13 +596,48 @@ summary(std_cluster_vars)
 
 ## Compute the proximity matrix
 
+When calculating proximity matrix, there are a few options available for us:\
+-Euclidean\
+-Maximum\
+-Manhattan / City Block Distance\
+-Canberra\
+-Binary\
+-Minkowski
+
+We will use Euclidean since it is the default.\
+Using the dist() of the base R package, we will compute the proximity matrix:
+
 ```{r}
 proxmat <- dist(std_cluster_vars, method = 'euclidean')
 ```
 
+## Compute the Clustering
+
+There are 2 forms of clustering methods:
+
+-   Agglomerative-AGNES: This is a bottom up manner where each point starts as a cluster
+
+-   Divise Analysis-DIANA: This is a top down approach. At each step, most heterogeneous is split.
+
+There are a total of eight clustering algorithms for AGNES:\
+-ward.D\
+-ward.D2\
+-single\
+-complete\
+-average(UPGMA)\
+-mcquitty(WPGMA)\
+-median(WPGMC)\
+-centroid(UPGMC)
+
+We will start off with "ward.D"
+
+Using hclust() of the base R package, we will compute the cluster as follow:
+
 ```{r}
 hclust_ward <- hclust(proxmat, method = 'ward.D')
 ```
+
+We will then get an object hclust_ward which contains the detaiLED information on the structure of the cluster tree. This will allow the later plot() function to know how to plot the structure correctly.
 
 ## Plotting the Dendrogram:
 
@@ -473,16 +670,21 @@ Please open the png in a new tab and then zoom in:
 
 ## Selecting the optimal clustering algorithm:
 
-In order the measure the strength of the clustering structure, we will need to measure the agglomerative coefficient. If we compare the aforementioned coefficient across various clustering algorithms, we will be able to compare and then select the algorithm that gives us the best clustering structure.
+In order the measure the strength of the clustering structure, we will need to measure the agglomerative coefficient. If we compare the aforementioned coefficient across various clustering algorithms, we will be able to select the algorithm that gives us the best clustering structure.
 
-Normally, we can do this via the agnes() function from the cluster package:
+The function agnes() functions similar to the hclust() function with the addition of a coefficient:\
+<https://rdrr.io/cran/cluster/man/agnes.html>
+
+We now use the agnes() function from the cluster package:
 
 ```{r}
-agnes_result <- agnes(std_cluster_vars, method = "average")
+agnes_result <- agnes(std_cluster_vars, method = "ward")
 agnes_result$ac
 ```
 
-The results are stored in the output data structure under the name agnes_result\$ac. The higher the magnitude of this value, the better the clustering structure. We will need to test all 4 of the algorithm to determine which is the best to apply.
+The results are stored in the output data structure under the name agnes_result\$ac. The higher the magnitude of this value, the better the clustering structure. In this case, "ward" gets a score of 0.990276 which shows strong clustering structure.
+
+We will need to test all 4 of the clustering algorithms to determine which is the best to apply.
 
 First, we need to create a data structure to hold the names of the clustering algorithms:
 
@@ -506,6 +708,18 @@ Finally, using the map_dbl() function from the purr package, we will map the nam
 map_dbl(algorithms, test)
 ```
 
+Of the clustering algorithms, we can see that "ward" methods gives us the best clustering structure. Hence we will use this for the rest of the analysis.
+
+We perform house keeping:
+
+```{r}
+rm(cluster_vars)
+rm(agnes_result)
+rm(algorithms)
+rm(proxmat)
+rm(test)
+```
+
 ## Determine optimal clusters
 
 In order to perform meaningful analysis, we need to select the optimal amount of cluster. Too little clusters, we won't be able to draw meaningful insights. Too many clusters, and we will also fail to draw meaning.
@@ -521,7 +735,7 @@ There are 3 methods to do this:
 For this, we will make use of the tool called the gap statistic:\
 <https://hastie.su.domains/Papers/gap.pdf>
 
-The gap statistic is a measure of intra-cluster dispersal. The larger this value, the bigger the indication that the clustering structure is far from the random distribution of points. As we increase the number of cluster, we want to get a highest gap statistic number possible. The minimum number of clusters that we accept is 3 cluster for meaningful analysis.
+The gap statistic is a measure of intra-cluster variation. The larger this value, the bigger the indication that the clustering behaviour is far from the random distribution of points. As we increase the number of cluster, we want to get a highest gap statistic number possible. The minimum number of clusters that we accept is 3 cluster for meaningful analysis.
 
 There are a few methods to determine clusters:
 
@@ -546,7 +760,7 @@ To do this, we use the clusGap() function from the cluster package:\
 set.seed(2022)
 gap_stat <- clusGap(std_cluster_vars, 
                     FUN = hcut, 
-                    # nstart = 25, 
+                    nstart = 25, 
                     K.max = 25, 
                     B = 50)
 # Print the result
@@ -559,7 +773,7 @@ Next, we will plot the Gap Statistics as follow:
 fviz_gap_stat(gap_stat)
 ```
 
-From the graph we see that the gradient of the Gap Statistic decreases greatly from the 4th cluster onwards. Therefor, we will opt to keep 4 clusters + 1 more for checking.
+From the graph we see that the gradient of the Gap Statistic decreases greatly from the 4th cluster onwards. Therefore, we will opt to keep 5 clusters
 
 ## Interpreting the Dendrograms
 
@@ -576,9 +790,13 @@ To zoom in, right click and open picture on a new tab:
 
 ## Visual Hierarchical clustering Analysis
 
+In order to plot the heatmap, we need to convert the dataframe into a data matrix:
+
 ```{r}
 mat_std_cluster_vars <- data.matrix(std_cluster_vars)
 ```
+
+Next using heatmaply() of the heatmaply package, we can plot the interactive as follow:
 
 ```{r}
 heatmaply(mat_std_cluster_vars,
@@ -600,83 +818,171 @@ heatmaply(mat_std_cluster_vars,
 
 ## Mapping the clusters
 
+We first use the function cutree() of R base to prune the clusters to 5:
+
 ```{r}
 groups <- as.factor(cutree(hclust_ward, k=5))
 ```
 
+Next, we will use cbind() from base R to save the clustering group as a column:
+
 ```{r}
-std_cluster_vars_cluster <- cbind(nga, as.matrix(groups)) %>%
+bind_std_cluster_vars <- cbind(nga, as.matrix(groups)) %>%
   rename(`CLUSTER`=`as.matrix.groups.`)
 ```
 
+Here we will do a simple filtering to allow us to get the group number of a specific region
+
 ```{r}
-qtm(std_cluster_vars_cluster, "CLUSTER")
+bind_std_cluster_vars %>% filter(shapeName == "Kanke")
+```
+
+Using qtm() of the tmap, we will perform a quick plot as follow:
+
+```{r}
+qtm(bind_std_cluster_vars, "CLUSTER")
+```
+
+From the above plot, we can see that if we do clustering without consideration for geographic location, we get a cluster map that has clusters that are highly fragmented.
+
+------------------------------------------------------------------------
+
+Housekeeping to remove variables from environment:
+
+```{r}
+rm(gap_stat)
+rm(hclust_ward)
+rm(mat_std_cluster_vars)
+rm(groups)
 ```
 
 # Step 8: SKATER
 
-```{r}
-nga_0 <- nga[c(1:85, 87:774),]
-```
+Unconstrained clustering often will show some form of regional clustering, but if we want all members of the clusters to show spatially contiguous relationships, we need specialized algorithm such as SKATER.
+
+A key idea here is that traditional cluster valuation measures is sub-optimal in practice because of real-world constraints. As shown from the unconstrained cluster evaluation above, our clusters turned out to be quite fragmented.
+
+Thus, the advantage of using SKATER is that it provides a hard requirement that spatial objects in the same cluster are also geographically linked. It is a rationalization approach using graph partitioning while preserving neighborhood connectivity.
+
+Additional Info for SKATER:\
+<https://www.dshkol.com/post/spatially-constrained-clustering-and-regionalization/>
+
+## Check for regions without neighbors:
+
+Using the summary function, we will check if all polygons have a neighbor:
 
 ```{r}
-nga_sp <- as_Spatial(nga_0)
+summary(poly2nb(nga))
 ```
 
-```{r}
-nb_nga_sp <- poly2nb(nga_sp)
-summary(nb_nga_sp)
-```
+It appears that polygon from row 86 does not have a neighbor:
 
 ```{r}
+poly2nb(nga)[86]
+```
+
+## Remove regions without neighbors:
+
+We remove row 86 from boundary file:
+
+```{r}
+nga <- nga[c(1:85, 87:774),]
+```
+
+We do the same for the clustering variables:
+
+```{r}
+bind_std_cluster_vars <- bind_std_cluster_vars[c(1:85, 87:774),]
+nga_wp <- nga_wp[c(1:85, 87:774),]
+std_cluster_vars <- std_cluster_vars[c(1:85, 87:774),]
+```
+
+## Compute the neighbors and the cost:
+
+### Neighbor
+
+We will convert the boundary file to a spatial file and then feed it to the function poly2nb():
+
+```{r}
+nga_sp <- as_Spatial(nga)
+nga.nb <- poly2nb(nga_sp)
+summary(nga.nb)
+```
+
+We can then plot the neighbor relationship:
+
+```{r, fig.width = 10, fig.height = 10}
 plot(nga_sp, 
-     border=grey(.5))
-plot(nb_nga_sp, 
+     border=grey(.5), main="Neighbor Map", cex.main=4)
+plot(nga.nb, 
      coordinates(nga_sp), 
      col="blue", 
      add=TRUE)
 ```
 
-```{r}
-std_cluster_vars_0 <- std_cluster_vars[c(1:85, 87:774),]
-```
+### Edge cost and weights
+
+Next we will use the neighbor list and the clustering variables to compute the edge cost \
+using nbcosts() of spdep package:
 
 ```{r}
-lcosts <- nbcosts(nb_nga_sp, std_cluster_vars_0)
+lcosts <- nbcosts(nga.nb, std_cluster_vars)
 ```
 
+Next we need to construct the weights taking into account the edge cost and the neighbors: \
+(We need to use "B" for binary here since we want the edge cost)
+
 ```{r}
-weights <- nb2listw(nb_nga_sp, 
+nga.w <- nb2listw(nga.nb, 
                    lcosts, 
                    style="B")
-summary(weights)
+summary(nga.w)
 ```
 
-```{r}
-nga_mst <- mstree(weights)
-```
+## Construct Minimum Spanning Tree
+
+Now, using mstree() of the spdep package, we will construct the minimum spanning tree:
 
 ```{r}
-class(nga_mst)
+nga.mst <- mstree(nga.w)
 ```
 
-```{r}
-dim(nga_mst)
-```
+We now check the class:
 
 ```{r}
+class(nga.mst)
+```
+
+We also check the dimension:
+
+```{r}
+dim(nga.mst)
+```
+
+We can check the contents of the minimum spanning tree:
+
+```{r}
+head(nga.mst)
+```
+
+Finally we can plot the minimum spanning tree as follow: \
+(We will set the size of label to be small so we can see the tree)
+
+```{r, fig.width = 10, fig.height = 10}
 plot(nga_sp, border=gray(.5))
-plot.mst(nga_mst,
+plot.mst(nga.mst,
          coordinates(nga_sp),
          col="blue",
-         cex.lab=0.7,
+         cex.lab=0.1,
          cex.circles=0.005,
          add=TRUE)
 ```
 
+## Compute Spatially constrained clusters with SKATER method
+
 ```{r}
-clust6 <- spdep::skater(edges = nga_mst[,1:2], 
-                 data = std_cluster_vars_0, 
+clust6 <- spdep::skater(edges = nga.mst[,1:2], 
+                 data = std_cluster_vars, 
                  method = "euclidean", 
                  ncuts = 5)
 ```
@@ -698,7 +1004,7 @@ plot(clust6,
 
 ```{r}
 groups_mat <- as.matrix(clust6$groups)
-nga_sf_spatialcluster <- cbind(nga_0, as.factor(groups_mat)) %>%
+nga_sf_spatialcluster <- cbind(nga, as.factor(groups_mat)) %>%
     rename(`SP_CLUSTER`=`as.factor.groups_mat.`)
 qtm(nga_sf_spatialcluster, "SP_CLUSTER")
 ```
