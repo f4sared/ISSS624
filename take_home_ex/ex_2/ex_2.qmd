@@ -839,8 +839,20 @@ bind_std_cluster_vars %>% filter(shapeName == "Kanke")
 
 Using qtm() of the tmap, we will perform a quick plot as follow:
 
-```{r}
-qtm(bind_std_cluster_vars, "CLUSTER")
+```{r, fig.width = 8, fig.height = 8}
+tmap_mode("plot")
+tm_shape(bind_std_cluster_vars) + 
+  tm_fill("CLUSTER") + 
+  tm_borders(alpha = 0.9) + 
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_layout(main.title = "Cluster Distribution of Nigeria",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) 
 ```
 
 From the above plot, we can see that if we do clustering without consideration for geographic location, we get a cluster map that has clusters that are highly fragmented.
@@ -911,7 +923,7 @@ summary(nga.nb)
 
 We can then plot the neighbor relationship:
 
-```{r, fig.width = 10, fig.height = 10}
+```{r, fig.width = 12, fig.height = 12}
 plot(nga_sp, 
      border=grey(.5), main="Neighbor Map", cex.main=4)
 plot(nga.nb, 
@@ -922,14 +934,14 @@ plot(nga.nb,
 
 ### Edge cost and weights
 
-Next we will use the neighbor list and the clustering variables to compute the edge cost \
+Next we will use the neighbor list and the clustering variables to compute the edge cost\
 using nbcosts() of spdep package:
 
 ```{r}
 lcosts <- nbcosts(nga.nb, std_cluster_vars)
 ```
 
-Next we need to construct the weights taking into account the edge cost and the neighbors: \
+Next we need to construct the weights taking into account the edge cost and the neighbors:\
 (We need to use "B" for binary here since we want the edge cost)
 
 ```{r}
@@ -965,11 +977,11 @@ We can check the contents of the minimum spanning tree:
 head(nga.mst)
 ```
 
-Finally we can plot the minimum spanning tree as follow: \
+Finally we can plot the minimum spanning tree as follow:\
 (We will set the size of label to be small so we can see the tree)
 
-```{r, fig.width = 10, fig.height = 10}
-plot(nga_sp, border=gray(.5))
+```{r, fig.width = 12, fig.height = 12}
+plot(nga_sp, border=gray(.5), main="Minimum Spanning Tree", cex.main=4)
 plot.mst(nga.mst,
          coordinates(nga_sp),
          col="blue",
@@ -978,33 +990,63 @@ plot.mst(nga.mst,
          add=TRUE)
 ```
 
+Housekeeping
+
+```{r}
+rm(lcosts)
+rm(nga.w)
+rm(nga.nb)
+```
+
 ## Compute Spatially constrained clusters with SKATER method
 
+Now that we have the minimum spanning tree, we can then compute the spatially constrained cluster using the skater() package of spdep. We will be needing the minimum spanning tree computed earlier as well as the standardized cluster variables.
+
+Note: the number of cuts is not equal to the number of clusters. For cluster 5, the number of cuts required is actually 4.
+
+We run the code as follow:
+
 ```{r}
-clust6 <- spdep::skater(edges = nga.mst[,1:2], 
+clust5 <- spdep::skater(edges = nga.mst[,1:2], 
                  data = std_cluster_vars, 
                  method = "euclidean", 
-                 ncuts = 5)
+                 ncuts = 4)
 ```
 
 ```{r}
-ccs6 <- clust6$groups
-# ccs6
+#| eval: false
+ccs5 <- clust5$groups
 ```
 
-```{r}
-plot(nga_sp, border=gray(.5))
-plot(clust6, 
+Next we will plot our the lines for each individual cluster:
+
+```{r, fig.width = 12, fig.height = 12}
+plot(nga_sp, border=gray(.1), main="SKATER Clusters", cex.main=4)
+plot(clust5, 
      coordinates(nga_sp), 
-     cex.lab=.7,
-     groups.colors=c("red","green","blue", "brown", "pink"),
-     cex.circles=0.005, 
+     cex.lab=0.1,
+     groups.colors=c("red","green","blue", "brown", "black"),
+     cex.circles=0.005, lwd=3.0,
      add=TRUE)
 ```
 
-```{r}
-groups_mat <- as.matrix(clust6$groups)
+Lastly we can visualize our outcome with qtm() of the tmap:
+
+```{r, fig.width = 8, fig.height = 8}
+groups_mat <- as.matrix(clust5$groups)
 nga_sf_spatialcluster <- cbind(nga, as.factor(groups_mat)) %>%
     rename(`SP_CLUSTER`=`as.factor.groups_mat.`)
-qtm(nga_sf_spatialcluster, "SP_CLUSTER")
+
+tm_shape(nga_sf_spatialcluster) + 
+  tm_fill("SP_CLUSTER") + 
+  tm_borders(alpha = 0.9) + 
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_layout(main.title = "Cluster Distribution of Nigeria",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) 
 ```
