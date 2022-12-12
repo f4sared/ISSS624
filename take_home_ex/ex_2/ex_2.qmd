@@ -826,10 +826,19 @@ We first use the function cutree() of R base to prune the clusters to 5:
 groups <- as.factor(cutree(hclust_ward, k=5))
 ```
 
+We will create a new sf dataframe nga_final which includes the geometry and the variables:
+
+```{r}
+nga_final <- nga_wp %>%
+  select("shapeName", "wpt_functional", "wpt_non_functional", 
+         "pct_functional", "pct_non_functional", 
+         "pct_hand_pump", "pct_1000", "pct_rural")
+```
+
 Next, we will use cbind() from base R to save the clustering group as a column:
 
 ```{r}
-bind_std_cluster_vars <- cbind(nga, as.matrix(groups)) %>%
+bind_std_cluster_vars <- cbind(nga_final, as.matrix(groups)) %>%
   rename(`CLUSTER`=`as.matrix.groups.`)
 ```
 
@@ -909,6 +918,7 @@ We do the same for the clustering variables:
 bind_std_cluster_vars <- bind_std_cluster_vars[c(1:85, 87:774),]
 nga_wp <- nga_wp[c(1:85, 87:774),]
 std_cluster_vars <- std_cluster_vars[c(1:85, 87:774),]
+nga_final <- nga_final[c(1:85, 87:774),]
 ```
 
 ## Compute the neighbors and the cost:
@@ -1036,7 +1046,7 @@ Lastly we can visualize our outcome with qtm() of the tmap:
 
 ```{r, fig.width = 8, fig.height = 8}
 groups_mat <- as.matrix(clust5$groups)
-nga_sf_spatialcluster <- cbind(nga, as.factor(groups_mat)) %>%
+nga_sf_spatialcluster <- cbind(nga_final, as.factor(groups_mat)) %>%
     rename(`SP_CLUSTER`=`as.factor.groups_mat.`)
 
 tm_shape(nga_sf_spatialcluster) + 
@@ -1104,7 +1114,7 @@ rm(skater_cluster.map)
 
 ClustGeo is a useful package that allows us to mix and find the best balance between maintaining spatial contiguity and the solution based on the variable of interest. All this is controlled by the mixing variable alpha.
 
-There are 2 matrix D0 & D1 that is involved: \
+There are 2 matrix D0 & D1 that is involved:\
 -D0: This matrix represents the dissimilarities in the attribute/clustering variable space.\
 -D1: This matrix represents the dissimilarities in the spatial domain.
 
@@ -1132,10 +1142,10 @@ Housekeeping:
 rm(non_geo_cluster) 
 ```
 
-## Preparing Spatially Constrained Hierarchical Clustering 
+## Preparing Spatially Constrained Hierarchical Clustering
 
-To perform the clustering, we need 3 ingredients: \
--Distance Matrix: Represents the spatial domain \
+To perform the clustering, we need 3 ingredients:\
+-Distance Matrix: Represents the spatial domain\
 -Proximity Matrix: Represents the variable domain\
 -Mixing variable Alpha: This is required for denoting the degree of mix
 
@@ -1144,7 +1154,7 @@ To perform the clustering, we need 3 ingredients: \
 We will use st_distance() of the sf package to compute the distance matrix:
 
 ```{r}
-dist <- st_distance(nga, nga)
+dist <- st_distance(nga_final, nga_final)
 distmat <- as.dist(dist)
 ```
 
@@ -1180,7 +1190,7 @@ groups <- as.factor(cutree(clustG, k=5))
 ```
 
 ```{r}
-nga_sf_Gcluster <- cbind(nga, as.matrix(groups)) %>%
+nga_sf_Gcluster <- cbind(nga_final, as.matrix(groups)) %>%
                   rename(`CLUSTER` = `as.matrix.groups.`)
 ```
 
@@ -1188,4 +1198,10 @@ nga_sf_Gcluster <- cbind(nga, as.matrix(groups)) %>%
 qtm(nga_sf_Gcluster, "CLUSTER")
 ```
 
-# Step 10: Interpreting our results 
+# Step 10: Interpreting our results
+
+```{r}
+ggplot(data = nga_sf_Gcluster,
+       aes(x = CLUSTER, y = pct_rural)) +
+  geom_boxplot()
+```
