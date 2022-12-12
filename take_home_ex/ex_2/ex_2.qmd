@@ -28,7 +28,7 @@ The following packages are imported:
 
 -   sf: We use this for manipulation of simple features
 
--   funModeling:
+-   funModeling: This is a useful package for us to do some EDA
 
 -   tmap: We use for thematic plotting
 
@@ -40,13 +40,15 @@ The following packages are imported:
 
     -   readr: We use this for reading rectangular data like csv
 
--   spdep:
+-   spdep: We use this for spatial related computations such as neighbors and weight matrix
 
 -   corrplot: For plotting of the correlation object
 
 -   heatmaply: For plotting of heatmaps and also for normalize() function
 
--   cluster:
+-   cluster: We use this package for performing clustering related computations
+
+-   ClustGeo:
 
 -   factoextra: Extract and Visualize the Results of Multivariate Data Analyses
 
@@ -54,7 +56,7 @@ The following packages are imported:
 pacman::p_load(here,
                sf, tidyverse, spdep,
                funModeling, tmap,
-               corrplot, heatmaply, cluster, factoextra
+               corrplot, heatmaply, cluster, ClustGeo, factoextra
                )
 ```
 
@@ -716,7 +718,7 @@ We perform house keeping:
 rm(cluster_vars)
 rm(agnes_result)
 rm(algorithms)
-rm(proxmat)
+# rm(proxmat)
 rm(test)
 ```
 
@@ -1050,3 +1052,140 @@ tm_shape(nga_sf_spatialcluster) +
             legend.width = 0.35,
             frame = TRUE) 
 ```
+
+After applying the SKATER method, we not see that the clusters becomes much less fragmented. as compared to earlier.
+
+We can easily compare the difference using tmap_arrange() from the tmap package:
+
+```{r, fig.width = 12, fig.height = 6}
+tmap_mode("plot")
+normal_cluster.map <- tm_shape(bind_std_cluster_vars) + 
+                      tm_fill("CLUSTER") + 
+                      tm_borders(alpha = 1.0) + 
+                      tm_compass(type="8star", size = 2) +
+                      tm_scale_bar() +
+                      tm_grid(alpha =0.2) +
+                      tm_layout(main.title = "Cluster Distribution of Nigeria",
+                                main.title.position = "center",
+                                main.title.size = 1.2,
+                                legend.height = 0.45, 
+                                legend.width = 0.35,
+                                frame = TRUE) 
+
+skater_cluster.map <- tm_shape(nga_sf_spatialcluster) + 
+                      tm_fill("SP_CLUSTER") + 
+                      tm_borders(alpha = 1.0) + 
+                      tm_compass(type="8star", size = 2) +
+                      tm_scale_bar() +
+                      tm_grid(alpha =0.2) +
+                      tm_layout(main.title = "Cluster Distribution of Nigeria",
+                                main.title.position = "center",
+                                main.title.size = 1.2,
+                                legend.height = 0.45, 
+                                legend.width = 0.35,
+                                frame = TRUE) 
+
+tmap_arrange(normal_cluster.map, skater_cluster.map,
+             asp=NA, ncol=2)
+```
+
+------------------------------------------------------------------------
+
+Housekeeping
+
+```{r}
+rm(clust5)
+rm(groups_mat)
+rm(normal_cluster.map)
+rm(skater_cluster.map)
+```
+
+# Step 9: Spatially Constrained Method with ClustGeo
+
+ClustGeo is a useful package that allows us to mix and find the best balance between maintaining spatial contiguity and the solution based on the variable of interest. All this is controlled by the mixing variable alpha.
+
+There are 2 matrix D0 & D1 that is involved: \
+-D0: This matrix represents the dissimilarities in the attribute/clustering variable space.\
+-D1: This matrix represents the dissimilarities in the spatial domain.
+
+Our goal is thus to find a good balance between this 2 matrix using the alpha variable.
+
+## Traditional Ward-Like clustering with ClustGeo
+
+ClustGeo also offers a non-spatially constrained clustering with hclustgeo() as follow:
+
+```{r}
+non_geo_cluster <- hclustgeo(proxmat)
+
+png("plotdendogram_1.png",width=12800,height=3200)
+plot(non_geo_cluster, cex = 1.2, lwd=3.0, main="Dendrogram", 
+     line = -20, cex.main=20)
+rect.hclust(non_geo_cluster, k = 5, border = 2:5)
+dev.off()
+```
+
+![](plotdendogram_1.png)
+
+Housekeeping:
+
+```{r}
+rm(non_geo_cluster) 
+```
+
+## Preparing Spatially Constrained Hierarchical Clustering 
+
+To perform the clustering, we need 3 ingredients: \
+-Distance Matrix: Represents the spatial domain \
+-Proximity Matrix: Represents the variable domain\
+-Mixing variable Alpha: This is required for denoting the degree of mix
+
+### Distance Matrix
+
+We will use st_distance() of the sf package to compute the distance matrix:
+
+```{r}
+dist <- st_distance(nga, nga)
+distmat <- as.dist(dist)
+```
+
+### Proximity Matrix
+
+Same as earlier, we will use dist() of the base R package to compute the variable proximity matrix:
+
+```{r}
+proxmat <- dist(std_cluster_vars, method = 'euclidean')
+```
+
+### Mixing Variable Alpha
+
+Using the above 2 ingredients, we can now get the third ingredient.
+
+We use the function choicealpha() from the ClustGeo package as follow:
+
+```{r}
+cr <- choicealpha(proxmat, distmat, range.alpha = seq(0, 1, 0.1), K=6, 
+                  graph = TRUE)
+```
+
+From the graph plotted, we observe that the optimal Qnorm value is at 0.5, we will now use this as the mixing variable.
+
+## Spatially Constrained Hierarchical Clustering
+
+```{r}
+clustG <- hclustgeo(proxmat, distmat, alpha = 0.5)
+```
+
+```{r}
+groups <- as.factor(cutree(clustG, k=5))
+```
+
+```{r}
+nga_sf_Gcluster <- cbind(nga, as.matrix(groups)) %>%
+                  rename(`CLUSTER` = `as.matrix.groups.`)
+```
+
+```{r}
+qtm(nga_sf_Gcluster, "CLUSTER")
+```
+
+# Step 10: Interpreting our results 
