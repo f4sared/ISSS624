@@ -34,7 +34,7 @@ The following packages are imported:
 
 -   tidyverse (<https://www.tidyverse.org/>)
 
-    -   ggplot2
+    -   ggplot2: Great for use during EDA
 
     -   dplyr: Used for data manipulation (e.g. mutate() )
 
@@ -48,16 +48,25 @@ The following packages are imported:
 
 -   cluster: We use this package for performing clustering related computations
 
--   ClustGeo:
+-   ClustGeo: We use this package for clustering with both variable and constraint space
 
 -   factoextra: Extract and Visualize the Results of Multivariate Data Analyses
+
+-   GGally: We use this package for multivariate analysis
 
 ```{r}
 pacman::p_load(here,
                sf, tidyverse, spdep,
-               funModeling, tmap,
-               corrplot, heatmaply, cluster, ClustGeo, factoextra
+               funModeling, tmap, ggpubr,
+               corrplot, heatmaply, cluster, ClustGeo, factoextra, GGally
                )
+```
+
+```{r}
+# pacman::p_load(rgdal, spdep, tmap, sf, ClustGeo, 
+#                spdep,funModeling, tmap,
+#                ggpubr, cluster, factoextra, NbClust,
+#                heatmaply, corrplot, psych, tidyverse, GGally)
 ```
 
 # Step 2: Shrinking the CSV file
@@ -399,15 +408,21 @@ wpt_hand_pump <- wp_nga %>% filter(tech_category == "Hand Pump")
 freq(data=wp_nga, input = 'tech_category')
 ```
 
-## Usage Capacity
+## Usage Capacity \< 1000
+
+We first use the freq() of the funModeling package to show the distribution of capacity:
+
+```{r}
+#| eval: true
+freq(data=wp_nga, input = 'usage_capacity')
+```
+
+The above plots shows us that majority of the values are either 300 or 1000.
+
+This for our analysis, we will focus on values that are less than 1000
 
 ```{r}
 wpt_1000 <- wp_nga %>% filter(usage_capacity < 1000)
-```
-
-```{r}
-#| eval: false
-freq(data=wp_nga, input = 'usage_capacity')
 ```
 
 ## Rural waterpoints
@@ -516,8 +531,229 @@ nga <- st_transform(nga, crs = 26391)
 
 # Step 5: EDA
 
+## Spatial Mapping
+
+First we will do a spatial plot with the functional & non-functional vars to check for any spatial patterns.
+
+We will make use of the tmap package and the tmap_arrange() function:
+
+```{r, fig.width = 14, fig.height = 12}
+#| eval: true
+
+functional.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "wpt_functional",
+                          n = 5,
+                          style = "jenks", 
+                          title = "wpt_functional") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Functional water points distribution",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE) 
+
+non_functional.map <- tm_shape(nga_wp) + 
+                    tm_fill(col = "wpt_non_functional",
+                            n = 5,
+                            style = "jenks", 
+                            title = "wpt_non_functional") + 
+                tm_borders(alpha = 0.9) +
+                tm_layout(main.title = "Non-functional water points distribution",
+                            main.title.position = "center",
+                            main.title.size = 1.2,
+                            legend.height = 0.6,
+                            legend.width = 0.6,
+                            frame = TRUE) 
+
+
+pct_functional.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "pct_functional",
+                          n = 5,
+                          style = "jenks", 
+                          title = "pct_functional") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Functional water points %",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE) 
+
+pct_non_functional.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "pct_non_functional",
+                          n = 5,
+                          style = "jenks", 
+                          title = "pct_non_functional") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Non-Functional water points %",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE) 
+
+tmap_arrange(functional.map, non_functional.map,
+             pct_functional.map,pct_non_functional.map,
+             asp=NA, ncol=2)
+```
+
+In the top left and top right plot, we have the absolute number of functional and non-functional water point. We can see a clear indication of patterns where certain cluster of regions have higher absolute value.
+
+However, the magnitude of the variable does not tell the full story, thus we will also make a plot of the percentage of functional and non-functional water points in the lower left and right plots. From these two plots, we also notice a distinct pattern and clustering behavior of the variables.
+
+Thus this is good evidence for us to look further.
+
+------------------------------------------------------------------------
+
+Next we further turn our attention to the remaining variables:
+
+```{r, fig.width = 14, fig.height = 12}
+#| eval: true
+hand_pump.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "pct_hand_pump",
+                          n = 5,
+                          style = "jenks", 
+                          title = "pct_hand_pump") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Handpump % distribution",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE)
+
+pct_1000.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "pct_1000",
+                          n = 5,
+                          style = "jenks", 
+                          title = "pct_1000") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Capacity < 1000 % distribution",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE) 
+
+pct_rural.map <- tm_shape(nga_wp) + 
+                  tm_fill(col = "pct_rural",
+                          n = 5,
+                          style = "jenks", 
+                          title = "pct_rural") + 
+                  tm_borders(alpha = 0.9) +
+                  tm_layout(main.title = "Rural % distribution",
+                          main.title.position = "center",
+                          main.title.size = 1.2,
+                          legend.height = 0.6,
+                          legend.width = 0.6,
+                          frame = TRUE) 
+
+tmap_arrange(hand_pump.map, pct_1000.map, pct_rural.map,
+             asp=NA, ncol=2)
+```
+
+For the reaming variables, we observe clustering pattern for heat pump % and capacity \< 1000 %. Interestingly, they seem to have similar spatial patterns which can suggest the possibility of correlation.
+
+For the rural % however, the clustering pattern appears to be more fragmented.
+
+Housekeeping:
+
 ```{r}
-which(nga_wp$total_wpt == 0)
+rm(functional.map)
+rm(non_functional.map)
+rm(pct_functional.map)
+rm(pct_non_functional.map)
+
+rm(hand_pump.map)
+rm(pct_1000.map)
+rm(pct_rural.map)
+```
+
+## Statistical
+
+Next, we will make use of ggplot package to explore the distribution of values.
+
+We will use geom_histogram() of the ggplot package to show the histogram of the variables:
+
+```{r, fig.width = 16, fig.height = 12}
+wpt_functional <- ggplot(data=nga_wp, 
+             aes(x= `wpt_functional`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+wpt_non_functional <- ggplot(data=nga_wp, 
+             aes(x= `wpt_non_functional`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+pct_functional <- ggplot(data=nga_wp, 
+             aes(x= `pct_functional`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+pct_non_functional <- ggplot(data=nga_wp, 
+             aes(x= `pct_non_functional`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+ggarrange(wpt_functional, wpt_non_functional, pct_functional, pct_non_functional,
+          ncol = 2, 
+          nrow = 2)
+```
+
+We can see that while this distribution of the functional and non-functional waterpoints are skewed, the % functional and % non-functional seems to follow a normal distribution.
+
+We will use geom_histogram() of the ggplot package to show the histogram of remaining variables:
+
+```{r, fig.width = 16, fig.height = 12}
+pct_handpump <- ggplot(data=nga_wp, 
+             aes(x= `pct_hand_pump`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+pct_1000 <- ggplot(data=nga_wp, 
+             aes(x= `pct_1000`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+pct_rural <- ggplot(data=nga_wp, 
+             aes(x= `pct_rural`)) +
+            geom_histogram(bins=20, 
+                           color="black", 
+                           fill="light blue")+
+            theme(axis.title=element_text(size=30,face="bold"))
+
+ggarrange(pct_handpump, pct_1000, pct_rural,
+          ncol = 2, 
+          nrow = 2)
+```
+
+From the above plots, we observe a left skew in the distribution of regions with \< 1000 capacity. We observe the same left skew for the distribution of rural waterpoints.
+
+Housekeeping:
+
+```{r}
+rm(wpt_functional)
+rm(wpt_non_functional)
+rm(pct_functional)
+rm(pct_non_functional)
+
+rm(hand_pump)
+rm(pct_1000)
+rm(pct_rural)
 ```
 
 # Step 6: Correlation Analysis
@@ -1088,7 +1324,7 @@ skater_cluster.map <- tm_shape(nga_sf_spatialcluster) +
                       tm_compass(type="8star", size = 2) +
                       tm_scale_bar() +
                       tm_grid(alpha =0.2) +
-                      tm_layout(main.title = "Cluster Distribution of Nigeria",
+                      tm_layout(main.title = "SKATER Distribution of Nigeria",
                                 main.title.position = "center",
                                 main.title.size = 1.2,
                                 legend.height = 0.45, 
@@ -1107,7 +1343,7 @@ Housekeeping
 rm(clust5)
 rm(groups_mat)
 rm(normal_cluster.map)
-rm(skater_cluster.map)
+# rm(skater_cluster.map)
 ```
 
 # Step 9: Spatially Constrained Method with ClustGeo
@@ -1181,13 +1417,19 @@ From the graph plotted, we observe that the optimal Qnorm value is at 0.5, we wi
 
 ## Spatially Constrained Hierarchical Clustering
 
+Once the mixing variable has been determined, we can then compute the clusters using hclustgeo():
+
 ```{r}
 clustG <- hclustgeo(proxmat, distmat, alpha = 0.5)
 ```
 
+Now that the clusters have been calculated, we will then use cutree() to limit number of clusters to 5:
+
 ```{r}
 groups <- as.factor(cutree(clustG, k=5))
 ```
+
+We will then append the cluster ID of each region to the nga_final dataframe and save as a new sf:
 
 ```{r}
 nga_sf_Gcluster <- cbind(nga_final, as.matrix(groups)) %>%
@@ -1195,13 +1437,67 @@ nga_sf_Gcluster <- cbind(nga_final, as.matrix(groups)) %>%
 ```
 
 ```{r}
-qtm(nga_sf_Gcluster, "CLUSTER")
+clustgeo_cluster.map <- tm_shape(nga_sf_Gcluster) + 
+                      tm_fill("CLUSTER") + 
+                      tm_borders(alpha = 1.0) + 
+                      tm_compass(type="8star", size = 2) +
+                      tm_scale_bar() +
+                      tm_grid(alpha =0.2) +
+                      tm_layout(main.title = "ClustGeo Distribution of Nigeria",
+                                main.title.position = "center",
+                                main.title.size = 1.2,
+                                legend.height = 0.45, 
+                                legend.width = 0.35,
+                                frame = TRUE) 
+clustgeo_cluster.map
 ```
+
+Using tmap_arrange(), we will do a comparison:
+
+```{r, fig.width = 12, fig.height = 6}
+tmap_arrange(skater_cluster.map, clustgeo_cluster.map,
+             asp=NA, ncol=2)
+```
+
+Comparing the SKATER and the clustGeo, we see that clustGeo is less strict on geographical relationship.
 
 # Step 10: Interpreting our results
 
+Using ggarrange(), we will combine multiple box plots:
+
 ```{r}
-ggplot(data = nga_sf_Gcluster,
-       aes(x = CLUSTER, y = pct_rural)) +
-  geom_boxplot()
+wpt_functional <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = wpt_functional)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold")) 
+
+wpt_non_functional <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = wpt_non_functional)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold"))   
+
+pct_functional <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = pct_functional)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold"))  
+
+pct_non_functional <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = pct_non_functional)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold"))  
+
+pct_hand_pump <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = pct_hand_pump)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold")) 
+
+pct_rural <- ggplot(data = nga_sf_Gcluster,
+               aes(x = CLUSTER, y = pct_rural)) +
+               geom_boxplot()+
+               theme(axis.title=element_text(size=6,face="bold"))  
+
+ggarrange(wpt_functional, wpt_non_functional, pct_functional, pct_non_functional,
+          pct_hand_pump, pct_rural,
+          ncol = 2, 
+          nrow = 3)
 ```
