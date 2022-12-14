@@ -62,13 +62,6 @@ pacman::p_load(here,
                )
 ```
 
-```{r}
-# pacman::p_load(rgdal, spdep, tmap, sf, ClustGeo, 
-#                spdep,funModeling, tmap,
-#                ggpubr, cluster, factoextra, NbClust,
-#                heatmaply, corrplot, psych, tidyverse, GGally)
-```
-
 # Step 2: Shrinking the CSV file
 
 Since the CSV file is really huge, we need to shrink it down first so we can store a copy of it on github. To do this, we will import the CSV file and then only select the rows that we are keen to keep using the select() function. The CSV will initially be imported as a tibble file format, thereafter once we select our referred columns, we also need to convert geometry coordinate before finally saving it as a rds file.
@@ -1501,3 +1494,61 @@ ggarrange(wpt_functional, wpt_non_functional, pct_functional, pct_non_functional
           ncol = 2, 
           nrow = 3)
 ```
+
+The above box plots tells us the the presence of each variable inside each cluster. We are able to make the following observations:
+
+-   Cluster 5 contains the regions with higher number of working water points (Plot wpt_functional)
+
+-   Cluster 5 contains regions with higher percentage of working water points (Plot pct_functional)
+
+-   Cluster 1, 2 & 4 have lower number of hand pump water points (Plot pct_hand_pump)
+
+-   Cluster 3, 4 & 5 consist more of rural water points
+
+We will need to normalize the wpt_functional & wpt_non_functional again since values are counts:
+
+```{r}
+nga_sf_Gcluster$wpt_functional <- normalize(nga_sf_Gcluster$wpt_functional)
+nga_sf_Gcluster$wpt_non_functional <- normalize(nga_sf_Gcluster$wpt_non_functional)
+```
+
+Using multi-variate visualization, we can try to explain the characteristic of each cluster:
+
+```{r, fig.width = 12, fig.height = 30}
+ggparcoord(data = nga_sf_Gcluster, 
+           columns = c(2:6,8), 
+           scale = "globalminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Multiple Parallel Coordinates Plots of ICT Variables by Cluster") +
+  facet_grid(rows = vars(CLUSTER)) + 
+  theme(axis.text.x = element_text(angle = 10))
+```
+
+From the above, we can derive further the characteristic if each cluster:
+
+-   Cluster 1:Majority non-rural water points what seem to be in good working condition
+
+-   Cluster 2: Majority non-rural water points
+
+-   Cluster 3: Mostly Rural water points which are mostly in good working condition which uses hand pump technology.
+
+-   Cluster 4: Highly Rural waterpoints which less numbers in working condition and most of them are not hand pump technology.
+
+-   Cluster 5: Highly Rural water points which are majority in good working condition which uses hand pump technology.
+
+Finally, we can compute our summary statistics as follow:
+
+```{r}
+nga_sf_Gcluster %>% 
+  st_set_geometry(NULL) %>%
+  group_by(CLUSTER) %>%
+  summarise(wpt_functional = mean(wpt_functional),
+            wpt_non_functional = mean(wpt_non_functional),
+            pct_functional = mean(pct_functional),
+            pct_non_functional = mean(pct_non_functional),
+            pct_hand_pump = mean(pct_hand_pump),
+            pct_rural = mean(pct_rural))
+```
+
+From our summary statistic, we can see that the mean values for each role matches our description from the multivariate visualization greatly.
