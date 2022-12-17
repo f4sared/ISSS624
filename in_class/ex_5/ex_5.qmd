@@ -15,6 +15,7 @@ Packages used:
 -   tmap: Use for plotting geo spatial maps
 -   skimr: provides summary statistics about variables in the dataframe
 -   corrplot: Used for performing correlation analysis
+-   blorr: Used to generate a report for our logistic regression model
 
 # Step 1: Load the required packages
 
@@ -31,7 +32,7 @@ We load the packages as follow:
 
 ```{r}
 pacman::p_load(here, sf, tidyverse, funModeling, tmap,
-               skimr, corrplot
+               skimr, corrplot, blorr
               )
 ```
 
@@ -88,7 +89,7 @@ Using the skim() from skimr package, we obtain the summary statistics as follow:
 osun_wp_sf %>% skim() 
 ```
 
-# Step 3: Selecting variables 
+# Step 3: Selecting variables
 
 Next, we will filter away the rows with na under the columns that we are interest in. We will also recode the usage_capacity as factor instead of the numerical form. This is done in preparation for the logistic regression.
 
@@ -119,7 +120,7 @@ Next we select the columns that we want:
 osun_wp <- osun_wp_sf_clean %>% select(c(7,35:39,42:43,46:47,57)) %>% st_set_geometry(NULL)
 ```
 
-# Step 4: Correlation Analysis: 
+# Step 4: Correlation Analysis:
 
 Next, we perform correlation analysis using cor() function of corrplot:
 
@@ -138,10 +139,13 @@ From the corrplot above, we do not see any variables that are highly correlated.
 
 # Step 5: Building a simple logistic regression model
 
+## Logistic Regression Model
+
+Using the glm() of the R statistics, we build a logistic regression model as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 model <- glm(status ~ distance_to_primary_road +
-             
                distance_to_secondary_road + 
                distance_to_tertiary_road + 
                distance_to_city + 
@@ -151,24 +155,50 @@ model <- glm(status ~ distance_to_primary_road +
                water_source_clean + 
                water_point_population + 
                local_population_1km,
-             data = osun_wp_sf_clean,
+             # data = osun_wp_sf_clean,
+             data = osun_wp, 
              family = binomial(link = "logit"))
 ```
 
+## Model Report
+
+Next we use blr_regress() of blorr to provide us a report on our model:
+
 ```{r}
-#| eval: false
+#| eval: true
 blr_regress(model)
 ```
 
-```{r}
-#| eval: false
-# report(model)
-```
+The report shows us that at 95% confidence level, all the variables are significant except distance to primary road and the distance to secondary road.
+
+Note from class:
+
+-   Categorical variable z value: +ve value implies above average correlation while -ve value implies a below average correlation.
+
+-   Continuous variable z value: +ve value implies direct correlation while -ve value implies inverse correlation.
+
+## Confusion Matrix
+
+Next, using blr_confusion_matrix() of blorr, we generate a confusion matrix as follow:
 
 ```{r}
-#| eval: false
+#| eval: true 
 blr_confusion_matrix(model, cutoff=0.5)
 ```
+
+Notes from class:
+
+The cutoff value of 0.5 means that any probability above 0.5 gets classified as true, while other values get classified as false. The default value we generally use is 0.5.
+
+-   Sensitivity: TP/(TP/FN) \>\> 0.7207
+
+-   Specificity: TN/(TN+FP) \>\> 0.6154
+
+-   Accuracy: (TP+TN)/(TP+FP+TN+FN)
+
+Since sensitivity is higher than the specificity, our model is better at catching true positives than catching true negatives.
+
+# Step 6: Spatially weighted geographical regression gwLR model
 
 ```{r}
 #| eval: false
