@@ -233,6 +233,7 @@ Using bw.ggwr() from GWmodel package, we will next determine the fixed bandwidth
 bw.fixed <- bw.ggwr(status ~ 
                       distance_to_primary_road + 
                       distance_to_secondary_road+
+                      distance_to_tertiary_road +
                       distance_to_city+
                       distance_to_town+
                       water_point_population+
@@ -271,7 +272,7 @@ gwlr.fixed <- ggwr.basic(status ~
                            usage_capacity + 
                            water_source_clean,
                          data=osun_wp_sp,
-                         bw=2448.701,
+                         bw=2599.672,
                          family = "binomial",
                          kernel = "gaussian",
                          adaptive = FALSE,
@@ -346,6 +347,64 @@ prob_T <- tm_shape(osun) +
           border.lwd = 1) + 
   tm_view(set.zoom.limits = c(9,14))
 prob_T
+```
+
+# Step 8: gwlr with only statistically significant variables 
+
+## Determine new fixed bandwidth 
+
+```{r}
+#| eval: false
+bw.fixed_new <- bw.ggwr(status ~ 
+#                     distance_to_primary_road + 
+#                     distance_to_secondary_road+
+                      distance_to_tertiary_road +
+                      distance_to_city+
+                      distance_to_town+
+                      water_point_population+
+                      local_population_1km+
+                      is_urban+
+                      usage_capacity+
+                      water_source_clean,
+                    data=osun_wp_sp,
+                    family="binomial",
+                    approach="AIC",
+                    kernel = "gaussian",
+                    adaptive = FALSE,
+                    longlat = FALSE)
+```
+
+```{r}
+#| eval: false
+bw.fixed_new
+```
+
+## Creating the new model 
+
+Using the new bandwidth, we create the new model
+
+```{r}
+#| eval: true
+gwlr.fixed <- ggwr.basic(status ~
+                           distance_to_tertiary_road + 
+                           distance_to_city + 
+                           distance_to_town + 
+                           water_point_population + 
+                           local_population_1km + 
+                           is_urban + 
+                           usage_capacity + 
+                           water_source_clean,
+                         data=osun_wp_sp,
+                         bw=2377.371,
+                         family = "binomial",
+                         kernel = "gaussian",
+                         adaptive = FALSE,
+                         longlat = FALSE)
+```
+
+```{r}
+#| eval: true
+gwlr.fixed 
 ```
 
 ```{r}
