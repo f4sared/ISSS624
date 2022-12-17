@@ -1,41 +1,76 @@
 ---
-title: "ex5"
+title: "In Class Ex5 - Spatially Weighted Regression"
 editor: visual
 ---
 
+# Overview
+
+Packages used:
+
+-   here: used to generate the file path to a specific folder
+-   tidyverse
+    -   readr: for reading rectangular files
+-   sf: Used to handle spatial dataframes
+-   funModeling: Used for plotting and EDA
+-   tmap: Use for plotting geo spatial maps
+-   skimr: provides summary statistics about variables in the dataframe
+-   corrplot: Used for performing correlation analysis
+
+# Step 1: Load the required packages
+
 ```{r}
-pacman::p_load(here,
-               sf, tidyverse, spdep,
-               funModeling, tmap, ggpubr,
-               corrplot, heatmaply, cluster, ClustGeo, factoextra, GGally,
-               blorr, skimr, caret, GWmodel,report
-               )
+# pacman::p_load(here,
+#                sf, tidyverse, spdep,
+#                funModeling, tmap, ggpubr,
+#                corrplot, heatmaply, cluster, ClustGeo, factoextra, GGally,
+#                blorr, skimr, caret, GWmodel,report
+#                )
 ```
+
+We load the packages as follow:
+
+```{r}
+pacman::p_load(here, sf, tidyverse, funModeling, tmap,
+               skimr, corrplot
+              )
+```
+
+We create the boundary path with the here() function:
 
 ```{r}
 boundary_path <- here("data", "dataOsun", "Osun.rds")
 boundary_path
 ```
 
+We create the path to the water point data:
+
 ```{r}
 data_path <- here("data", "dataOsun", "Osun_wp_sf.rds")
 data_path
 ```
 
+Using read_rds() from readr (tidyverse):
+
 ```{r}
 osun <- read_rds(boundary_path)
 ```
+
+Using read_rds() from readr (tidyverse):
 
 ```{r}
 osun_wp_sf <- read_rds(data_path)
 ```
 
+Using freq() from funModeling, we explore the status distribution:
+
 ```{r}
 osun_wp_sf %>% freq(input = 'status')
 ```
 
+Using the tmap package, we will plot the functional and non-functional water points:
+
 ```{r}
-#| eval: false
+#| eval: true
 tmap_mode('view')
 tm_shape(osun)+
   tm_polygons(alpha=0.4)+
@@ -44,13 +79,23 @@ tm_shape(osun)+
   tm_view(set.zoom.limits = c(9,12))
 ```
 
+# Step 2: EDA
+
+Using the skim() from skimr package, we obtain the summary statistics as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 osun_wp_sf %>% skim() 
 ```
 
+# Step 3: Selecting variables 
+
+Next, we will filter away the rows with na under the columns that we are interest in. We will also recode the usage_capacity as factor instead of the numerical form. This is done in preparation for the logistic regression.
+
+We run the code as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 osun_wp_sf_clean <- osun_wp_sf %>% 
   filter_at(vars(status,
                  distance_to_primary_road,
@@ -67,13 +112,19 @@ osun_wp_sf_clean <- osun_wp_sf %>%
   mutate(usage_capacity = as.factor(usage_capacity))
 ```
 
+Next we select the columns that we want:
+
 ```{r}
-#| eval: false
+#| eval: true
 osun_wp <- osun_wp_sf_clean %>% select(c(7,35:39,42:43,46:47,57)) %>% st_set_geometry(NULL)
 ```
 
+# Step 4: Correlation Analysis: 
+
+Next, we perform correlation analysis using cor() function of corrplot:
+
 ```{r}
-#| eval: false
+#| eval: true
 cluster_vars.cor = cor(osun_wp[,2:7])
 corrplot.mixed(cluster_vars.cor,
                lower="ellipse",
@@ -82,6 +133,10 @@ corrplot.mixed(cluster_vars.cor,
                diag="l",
                tl.col="black")
 ```
+
+From the corrplot above, we do not see any variables that are highly correlated. We can then proceed with building a simple logistic regression model
+
+# Step 5: Building a simple logistic regression model
 
 ```{r}
 #| eval: false
