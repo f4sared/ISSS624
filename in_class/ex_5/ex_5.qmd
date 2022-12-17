@@ -16,6 +16,7 @@ Packages used:
 -   skimr: provides summary statistics about variables in the dataframe
 -   corrplot: Used for performing correlation analysis
 -   blorr: Used to generate a report for our logistic regression model
+-   caret: Package for confusion matrix
 
 # Step 1: Load the required packages
 
@@ -32,7 +33,7 @@ We load the packages as follow:
 
 ```{r}
 pacman::p_load(here, sf, tidyverse, funModeling, tmap,
-               skimr, corrplot, blorr
+               skimr, corrplot, blorr, GWmodel, caret
               )
 ```
 
@@ -200,8 +201,14 @@ Since sensitivity is higher than the specificity, our model is better at catchin
 
 # Step 6: Spatially weighted geographical regression gwLR model
 
+## Converting to spatial data
+
+Notes: In the past, spatial data used to be the common currency in model building. So many functions still take in spatial data. Hence the conversion is needed. The simple features dataframe only came in recently.
+
+First we need to convert to spatial data as follow:
+
 ```{r}
-#| eval: false
+#| eval: true 
 osun_wp_sp <- osun_wp_sf_clean %>% 
   select(c(status,
            distance_to_primary_road,
@@ -216,6 +223,10 @@ osun_wp_sp <- osun_wp_sf_clean %>%
            water_source_clean)) %>% as_Spatial() 
 osun_wp_sp
 ```
+
+## Determine the fixed bandwidth
+
+Using bw.ggwr() from GWmodel package, we will next determine the fixed bandwidth:
 
 ```{r}
 #| eval: false
@@ -242,8 +253,12 @@ bw.fixed <- bw.ggwr(status ~
 bw.fixed
 ```
 
+## Creating the model
+
+using ggwr.basic() from the GWmodel, we will build the model as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwlr.fixed <- ggwr.basic(status ~
                            distance_to_primary_road + 
                            distance_to_secondary_road + 
@@ -263,43 +278,65 @@ gwlr.fixed <- ggwr.basic(status ~
                          longlat = FALSE)
 ```
 
+We get the results as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwlr.fixed
 ```
 
+A lower AIC indicated a better fit model.
+
+## Confusion Matrix
+
+We will convert the SDF object to a dataframe first:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwr.fixed <- as.data.frame(gwlr.fixed$SDF)
 ```
 
+Next, we will change the probability to True or False:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwr.fixed <- gwr.fixed %>% mutate(most=ifelse(gwr.fixed$yhat >= 0.5, T, F))
 ```
 
+Using confusionMatrix() of the caret package we run the following code:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwr.fixed$y <- as.factor(gwr.fixed$y)
 gwr.fixed$most <- as.factor(gwr.fixed$most)
 CM <- confusionMatrix(data=gwr.fixed$most, reference = gwr.fixed$y)
 CM
 ```
 
+Here we see a big improvement in accuracy, sensitivity & specificity. Thus by incorporating the geographical weights, we have now obtained a better model with better excitability.
+
+# Step 7: Visualizing the results 
+
+First we will select the required columns:
+
 ```{r}
-#| eval: false
+#| eval: true
 osun_wp_sf_selected <- osun_wp_sf_clean %>% select(c(ADM2_EN, ADM2_PCODE,
                                                      ADM1_EN, ADM1_PCODE,
                                                      status))
 ```
 
+Next we will cbind the earlier model results to get a new dataframe for plotting:
+
 ```{r}
-#| eval: false
+#| eval: true
 gwr_sf.fixed <- cbind(osun_wp_sf_selected, gwr.fixed)
 ```
 
+We plot the map as follow:
+
 ```{r}
-#| eval: false
+#| eval: true
 tmap_mode("view")
 prob_T <- tm_shape(osun) + 
   tm_polygons(alpha=0.1) + 
@@ -307,7 +344,7 @@ prob_T <- tm_shape(osun) +
   tm_dots(col="yhat",
           border.col = "gray60",
           border.lwd = 1) + 
-  tm_view(set.zoom.limits = c(8,14))
+  tm_view(set.zoom.limits = c(9,14))
 prob_T
 ```
 
