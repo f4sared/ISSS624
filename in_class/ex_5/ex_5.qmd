@@ -310,13 +310,13 @@ Using confusionMatrix() of the caret package we run the following code:
 #| eval: true
 gwr.fixed$y <- as.factor(gwr.fixed$y)
 gwr.fixed$most <- as.factor(gwr.fixed$most)
-CM <- confusionMatrix(data=gwr.fixed$most, reference = gwr.fixed$y)
+CM <- confusionMatrix(data=gwr.fixed$most, reference = gwr.fixed$y, positive = "TRUE")
 CM
 ```
 
 Here we see a big improvement in accuracy, sensitivity & specificity. Thus by incorporating the geographical weights, we have now obtained a better model with better excitability.
 
-# Step 7: Visualizing the results 
+# Step 7: Visualizing the results
 
 First we will select the required columns:
 
@@ -346,12 +346,58 @@ prob_T <- tm_shape(osun) +
           border.col = "gray60",
           border.lwd = 1) + 
   tm_view(set.zoom.limits = c(9,14))
-prob_T
+
+actual <- tm_shape(osun) + 
+  tm_polygons(alpha=0.1) + 
+  tm_shape(gwr_sf.fixed) + 
+  tm_dots(col="status",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+tmap_arrange(actual, prob_T, 
+             asp = 1, ncol = 2, sync = TRUE)
 ```
 
-# Step 8: gwlr with only statistically significant variables 
+## Show only false results
 
-## Determine new fixed bandwidth 
+We perform a simple filter:
+
+```{r}
+#| eval: true
+false_results <- gwr_sf.fixed %>% filter(status == "FALSE")
+```
+
+Next we plot as normal:
+
+```{r}
+#| eval: true
+tmap_mode("view")
+prob_T_false <- tm_shape(osun) + 
+  tm_polygons(alpha=0.1) + 
+  tm_shape(false_results) + 
+  tm_dots(col="yhat",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+actual <- tm_shape(osun) + 
+  tm_polygons(alpha=0.1) + 
+  tm_shape(false_results) + 
+  tm_dots(col="status",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+tmap_arrange(actual, prob_T_false, 
+             asp = 1, ncol = 2, sync = TRUE)
+```
+
+Here we can see that among the false results, there are quite a few false negatives.
+
+# Step 8: gwlr with only statistically significant variables
+
+## Determine new fixed bandwidth
 
 ```{r}
 #| eval: false
@@ -379,13 +425,13 @@ bw.fixed_new <- bw.ggwr(status ~
 bw.fixed_new
 ```
 
-## Creating the new model 
+## Creating the new model
 
 Using the new bandwidth, we create the new model
 
 ```{r}
 #| eval: true
-gwlr.fixed <- ggwr.basic(status ~
+gwlr.fixed_new <- ggwr.basic(status ~
                            distance_to_tertiary_road + 
                            distance_to_city + 
                            distance_to_town + 
@@ -404,18 +450,96 @@ gwlr.fixed <- ggwr.basic(status ~
 
 ```{r}
 #| eval: true
-gwlr.fixed 
+gwlr.fixed_new
+```
+
+## Confusion Matrix
+
+Next we will make a dataframe from the earlier created model:
+
+```{r}
+#| eval: true
+gwlr.fixed_new <- as.data.frame(gwlr.fixed_new$SDF)
+```
+
+We will then assign TRUE or FALSE based on the output probability:
+
+```{r}
+#| eval: true
+gwr.fixed_new <- gwlr.fixed_new %>% mutate(most=ifelse(gwlr.fixed_new$yhat >= 0.5, T, F))
+```
+
+Then we can plot the confusion matrix as follow:
+
+```{r}
+#| eval: true
+gwr.fixed_new$y <- as.factor(gwr.fixed_new$y)
+gwr.fixed_new$most <- as.factor(gwr.fixed_new$most)
+CM <- confusionMatrix(data=gwr.fixed_new$most, reference = gwr.fixed_new$y, positive = "TRUE")
+CM
+```
+
+From the results, we can see that by taking geographical relationships into account, we are then able to obtain a better model with higher accuracy. The improvement in the models ability to explain is also shown in the improvement in the sensitivity and specificity values.
+
+# Step 9: Visualizing the new results
+
+Let's then combine the earlier results with the region boundary data in order to plot:
+
+```{r}
+gwr_sf.fixed_new <- cbind(osun_wp_sf_selected, gwr.fixed_new)
 ```
 
 ```{r}
-#| eval: false
-tertiary_TV <- tm_shape(osun) + 
+#| eval: true
+tmap_mode("view")
+prob_T_new <- tm_shape(osun) + 
   tm_polygons(alpha=0.1) + 
-  tm_shape(gwr_sf.fixed) + 
-  tm_dots(col="distance_to_tertirary_road_TV", border.col="gray60", border.lwd=1) + tm_view(set.zoom.limits = c(8,14))
+  tm_shape(gwr_sf.fixed_new) + 
+  tm_dots(col="yhat",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+actual <- tm_shape(osun) + 
+  tm_polygons(alpha=0.1) + 
+  tm_shape(gwr_sf.fixed_new) + 
+  tm_dots(col="status",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+tmap_arrange(actual, prob_T_new, 
+             asp = 1, ncol = 2, sync = TRUE)
 ```
 
+## Show only false results
+
+We perform a simple filter for only false results
+
 ```{r}
-#| eval: false
-tmap_arrange(tertiary_SE, tertiary_TV, asp=1, ncol=2, sync=True)
+#| eval: true
+false_results_new <- gwr_sf.fixed_new %>% filter(status == "FALSE")
 ```
+
+Next we visualize the plot:
+
+```{r}
+#| eval: true
+tmap_mode("view")
+prob_T_false_new <- tm_shape(osun) + 
+  tm_polygons(alpha=0.1) + 
+  tm_shape(false_results_new) + 
+  tm_dots(col="yhat",
+          border.col = "gray60",
+          border.lwd = 1) + 
+  tm_view(set.zoom.limits = c(9,14))
+
+tmap_arrange(prob_T_false, prob_T_false_new, 
+             asp = 1, ncol = 2, sync = TRUE)
+```
+
+In the above plot, only the false results are plotted. Since all are false results, in the ideal world, we should only be seeing the white color dots instead of the darker color dots. The left plot is the original prediction from the earlier model while the right plot is the result from the new models with insignificant variables removed.
+
+We see that for certain water points on the right plot, the color intensity actually decreased which shows the improvement of the model's explain ability.
+
+However, it is clear that for certain waterpoints, the false positive is still high. This means that additional data may still be needed to fully explain the results.
